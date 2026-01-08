@@ -30,19 +30,10 @@ export function ButtonType({
   const baseStyles = "cursor-pointer inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
   
   const variants = {
-    // Azul da Marca (#1459ad) com um hover levemente mais escuro (#0f4485)
-    primary: "bg-[#1459ad] text-white hover:bg-[#0f4485] shadow-sm hover:shadow-md",
-    
-    // Cinza neutro para ações secundárias
+    primary: "bg-[var(--color-primary)] text-white hover:bg-[var(--color-hover-button)] shadow-sm hover:shadow-md",
     secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",
-    
-    // Borda simples
     outline: "border border-gray-300 bg-transparent hover:bg-gray-50 text-gray-700",
-    
-    // Botão "invisível"
     ghost: "bg-transparent hover:bg-gray-100 text-gray-700",
-
-    // Vermelho da Marca (#ed2027) - Use com cuidado (Ex: Sair, Excluir)
     danger: "bg-[#ed2027] text-white hover:bg-[#c91b21] shadow-sm",
   };
 

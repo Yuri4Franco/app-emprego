@@ -2,7 +2,7 @@
 
 :root {
   /* Cores Base da Marca */
-  --brand-blue: #1459ad;
+  --brand-blue: #021c72;
   --brand-red: #ed2027;
 
   /* Cores de Fundo e Texto (Modo Claro Padrão) */
@@ -12,6 +12,8 @@
   
   /* Textos secundários (legendas, placeholders) */
   --muted: #64748b;      /* Slate-500 */
+
+  --hover-button: #25a8cb; 
 }
 
 @theme inline {
@@ -19,7 +21,7 @@
   
   /* Uso: bg-primary, text-primary, border-primary */
   --color-primary: var(--brand-blue);
-  --color-primary-hover: #0f4485; /* Um tom mais escuro para o hover */
+  --color-hover-button: var(--hover-button); 
 
   /* Uso: bg-accent, text-accent (USE COM MODERAÇÃO) */
   --color-accent: var(--brand-red);
@@ -49,5 +51,24 @@ body {
   input:focus, textarea:focus, select:focus {
     outline: 2px solid var(--brand-blue);
     outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  @keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); } 
+  }
+
+  .animate-scroll {
+    animation: scroll 25s linear infinite;
+  }
+
+  .animate-scroll-reverse {
+    animation: scroll 25s linear infinite reverse;
+  }
+
+  .pause-on-hover:hover {
+    animation-play-state: paused;
   }
 }

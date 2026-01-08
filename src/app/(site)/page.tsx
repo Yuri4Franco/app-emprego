@@ -1,9 +1,9 @@
 import Image from "next/image"; // Importe o componente Image
 import SearchBar from "@/src/components/SearchBar";
 import heroBgImage from "@/src/assets/backgrounds/bg-1.png";
-import ImagemBanco from "@/src/assets/designs/2.png";
 import { ButtonType } from "@/src/components/ButtonType";
 import { RandomDesignImage } from "./RandomDesignImagem";
+import FAQ from "@/src/components/FAQ";
 
 export default function Home() {
   return (
@@ -34,7 +34,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="w-full bg-gray-100 py-16">
+        <div className="w-full bg-gray-100 py-16 min-h-[750px] flex items-center justify-center">
           {/* 1. flex-col-reverse: No celular, inverte a ordem dos BLOCOS PRINCIPAIS.
          O bloco de texto vai para cima, o bloco da imagem vai para baixo.
   */}
@@ -81,6 +81,7 @@ export default function Home() {
 
           </div>
         </div>
+        <FAQ />
       </main>
     </div>
   );
