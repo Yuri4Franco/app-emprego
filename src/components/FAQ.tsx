@@ -101,7 +101,7 @@ export default function FAQ() {
 
                                     {/* MUDANÇA 6: Cor da Seta */}
                                     <IoIosArrowDown
-                                        className={`text-xl transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : 'rotate-0 text-white'
+                                        className={`text-lg min-w-[1.125rem]  transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : 'rotate-0 text-white'
                                             }`}
                                     />
                                 </button>
