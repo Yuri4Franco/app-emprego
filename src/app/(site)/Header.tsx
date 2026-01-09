@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "@/src/assets/logos/logo-transparente.png";
-import NavLinks from "./nav-links";
+import NavLinks from "./NavLinks";
 import { ButtonType } from "@/src/components/ButtonType";
 
 export default function Header() {
