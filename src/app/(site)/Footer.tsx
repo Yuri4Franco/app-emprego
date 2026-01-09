@@ -3,14 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "@/src/assets/logos/logo-transparente.png";
-import { FaInstagram, FaLinkedin, FaFacebookSquare, FaWhatsapp } from "react-icons/fa";
+import { FaInstagram, FaLinkedin, FaFacebookSquare, FaWhatsapp, FaExternalLinkAlt } from "react-icons/fa";
 import { HiOutlineMail, HiOutlineLocationMarker, HiOutlinePhone } from "react-icons/hi";
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="w-full bg-white border-t border-gray-200 pt-16 pb-8">
+        <footer className="w-full bg-white border-t border-gray-200 pt-16 pb-8 shadow-[0px_-10px_15px_-3px_rgba(0,0,0,0.6)]">
             <div className="max-w-7xl mx-auto px-6 md:px-8">
 
                 {/* --- GRID PRINCIPAL --- */}
@@ -56,7 +56,7 @@ export default function Footer() {
                                 <Link href="/empresas" className="text-gray-600 hover:text-[#1459ad] transition-colors">Para Empresas</Link>
                             </li>
                             <li>
-                                <Link href="/sobre" className="text-gray-600 hover:text-[#1459ad] transition-colors">Sobre a ACI</Link>
+                                <Link href="https://acipanambi.com/" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#1459ad] transition-colors">Sobre a ACI <FaExternalLinkAlt className="inline text-[10px] relative -top-0.5" /> </Link>
                             </li>
                             <li>
                                 <Link href="/candidato/login" className="text-gray-600 hover:text-[#1459ad] transition-colors">Área do Candidato</Link>
