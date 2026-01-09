@@ -3,7 +3,7 @@ import Link from "next/link";
 import SearchBar from "@/src/components/SearchBar";
 import heroBgImage from "@/src/assets/backgrounds/bg-1.png";
 import { ButtonType } from "@/src/components/ButtonType";
-import { RandomDesignImage } from "./randomDesignImagem";
+import { RandomDesignImage } from "./RandomDesignImagem";
 import FAQ from "@/src/components/FAQ";
 
 export default function Home() {
