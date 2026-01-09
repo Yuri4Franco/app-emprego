@@ -10,10 +10,9 @@ import Img3 from "@/src/assets/designs/3.png";
 import Img4 from "@/src/assets/designs/4.png";
 import Img5 from "@/src/assets/designs/5.png";
 import Img6 from "@/src/assets/designs/6.png";
-import Img7 from "@/src/assets/designs/7.png";
 
 // Array com todas as opções
-const designs = [Img1, Img2, Img3, Img4, Img5, Img6, Img7];
+const designs = [Img1, Img2, Img3, Img4, Img5, Img6];
 
 export const RandomDesignImage = () => {
   const [imageSrc, setImageSrc] = useState(designs[0]); // Começa com a 1 como padrão
