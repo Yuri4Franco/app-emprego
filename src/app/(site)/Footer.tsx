@@ -116,7 +116,7 @@ export default function Footer() {
                     <p className="text-sm text-gray-400 flex items-center gap-1">
                         Desenvolvido por
                         <a
-                            href="https://seu-portfolio.com"
+                            href="https://www.linkedin.com/in/yuri-antunes-franco-a20792140/"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-medium text-gray-600 hover:text-[#1459ad] transition-colors"
