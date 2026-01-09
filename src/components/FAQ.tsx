@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from "react";
-import { IoIosArrowDown } from "react-icons/io"; // Certifique-se de ter react-icons instalado
+import { IoIosArrowDown } from "react-icons/io";
 
-// Dados do FAQ (Você pode mover isso para um arquivo separado depois se quiser)
 const faqData = [
     {
         question: "O que é a ACI Empregos?",
@@ -126,7 +125,7 @@ export default function FAQ() {
 
                 {/* Call to Action Final */}
                 <div className="mt-12 text-center">
-                    {/* MUDANÇA 8: Textos do rodapé em branco */}
+                    <a href="/faq" className="text-hover-button font-bold hover:underline hover:text-white transition-colors">Ver todas as perguntas</a>
                     <p className="text-white/80">
                         Ainda tem dúvidas?{' '}
                         {/* Link usando a cor de hover-button para destaque */}
