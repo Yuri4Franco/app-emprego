@@ -1,0 +1,305 @@
+'use client';
+
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { ButtonType } from "@/src/components/ButtonType";
+import {
+    HiOutlineOfficeBuilding,
+    HiOutlineUserGroup,
+    HiOutlineCheckCircle,
+    HiOutlineMail,
+    HiOutlineChatAlt2,
+    HiOutlineDocumentText,
+    HiOutlineCursorClick,
+    HiOutlineSearch
+} from "react-icons/hi";
+import { IoIosArrowDown } from "react-icons/io";
+
+// --- DADOS DO FAQ (Extraídos do PDF) ---
+const faqData = [
+    {
+        question: "Preciso ser associado da ACI- Panambi?",
+        answer: "Embora a plataforma seja uma iniciativa da ACI, oferecemos planos especiais para associados. Entre em contato para entender as condições exclusivas para membros e as opções para não-sócios."
+    },
+    {
+        question: "Tem algum custo?",
+        answer: "Para empresas associadas, o uso da plataforma pode estar incluso na mensalidade ou ter um custo simbólico. Para não associados, trabalhamos com planos de assinatura ou por vaga avulsa. Fale com nosso consultor para uma proposta personalizada."
+    },
+    {
+        question: "É só para empresas de Panambi?",
+        answer: "Nosso foco principal é conectar talentos e empresas de Panambi e região (Condor, Ijuí, etc), fortalecendo a economia local. Se sua empresa é de fora mas quer contratar aqui, você é muito bem-vindo!"
+    },
+    {
+        question: "É para empresas de todos os portes?",
+        answer: "Com certeza! Desde o MEI que precisa contratar seu primeiro ajudante até grandes indústrias com processos seletivos contínuos. A plataforma se adapta à sua necessidade."
+    },
+    {
+        question: "Como faço para publicar uma vaga?",
+        answer: "É simples: Primeiro, preencha o formulário abaixo para ativar seu acesso. Nossa equipe validará seu cadastro e liberará seu painel administrativo. Lá, você poderá criar vagas em poucos cliques."
+    }
+];
+
+export default function EmpresasPage() {
+    // Estado para o FAQ
+    const [openIndex, setOpenIndex] = useState<number | null>(null);
+    const toggleFAQ = (index: number) => setOpenIndex(openIndex === index ? null : index);
+
+    return (
+        <div className="w-full bg-white">
+
+            {/* --- 1. HERO SECTION --- */}
+            {/* Fundo Azul para impacto corporativo, texto branco */}
+            <section className="relative w-full py-24 md:py-32 bg-primary overflow-hidden">
+                {/* Elemento decorativo de fundo (opcional) */}
+                <div className="absolute top-0 right-0 w-1/2 h-full bg-white/5 skew-x-12 translate-x-1/4 pointer-events-none"></div>
+
+                <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+                    <div className="max-w-3xl">
+                        <span className="inline-block py-1 px-3 rounded-full bg-blue-400/20 text-blue-100 text-sm font-bold tracking-wide mb-6 border border-blue-400/30">
+                            PARA EMPRESAS
+                        </span>
+                        <h1 className="text-2xl md:text-5xl lg:text-5xl font-bold text-white leading-tight mb-6">
+                            Publique sua vaga em minutos e encontre o talento certo.
+                        </h1>
+                        <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed max-w-2xl">
+                            Chega de currículos perdidos em caixas de e-mail ou redes sociais. A ACI Empregos é a nova plataforma oficial da Associação Comercial e Industrial  de panambi para centralizar e profissionalizar o recrutamento na nossa cidade. Conectamos sua empresa diretamente aos candidatos locais de forma organizada, ágil e confiável.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <ButtonType href="#contato" variant="secondary" size="lg" className="shadow-lg shadow-blue-900/20">
+                                Falar com um consultor
+                            </ButtonType>
+                            <ButtonType href="/sobre" variant="outline" size="lg" className="border-blue-200 text-blue-100 hover:bg-white/10 hover:border-white">
+                                Conhecer a ACI
+                            </ButtonType>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* --- 2. COMO FUNCIONA (STEPS) --- */}
+            <section className="py-20 bg-gray-50">
+                <div className="max-w-7xl mx-auto px-6 md:px-8">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">Como funciona?</h2>
+                        <p className="text-gray-600 max-w-2xl mx-auto">
+                            Simplificamos o processo para você focar no que importa: as pessoas.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {/* Passo 1 */}
+                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50 opacity-50 group-hover:text-blue-50 transition-colors select-none">1</div>
+                            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-primary text-2xl mb-6 relative z-10">
+                                <HiOutlineChatAlt2 />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-2 relative z-10">Ative seu acesso</h3>
+                            <p className="text-gray-600 relative z-10">Converse com a gente e formalize o seu cadastro na plataforma.</p>
+                        </div>
+
+                        {/* Passo 2 */}
+                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50 opacity-50 group-hover:text-blue-50 transition-colors select-none">2</div>
+                            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-primary text-2xl mb-6 relative z-10">
+                                <HiOutlineDocumentText />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-2 relative z-10">Cadastre sua vaga</h3>
+                            <p className="text-gray-600 relative z-10">Preencha os detalhes, requisitos e benefícios da oportunidade.</p>
+                        </div>
+
+                        {/* Passo 3 */}
+                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50 opacity-50 group-hover:text-blue-50 transition-colors select-none">3</div>
+                            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-primary text-2xl mb-6 relative z-10">
+                                <HiOutlineCursorClick />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-2 relative z-10">Receba candidatos</h3>
+                            <p className="text-gray-600 relative z-10">Visualize currículos padronizados e organize sua seleção pelo painel.</p>
+                        </div>
+
+                        {/* Passo 4 */}
+                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50 opacity-50 group-hover:text-blue-50 transition-colors select-none">4</div>
+                            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-primary text-2xl mb-6 relative z-10">
+                                <HiOutlineCheckCircle />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-2 relative z-10">Contrate o talento</h3>
+                            <p className="text-gray-600 relative z-10">Encontre o profissional certo em Panambi e região para o seu time.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* --- 3. BENEFÍCIOS (Turbine seu RH) --- */}
+            <section className="py-24 bg-white">
+                <div className="max-w-7xl mx-auto px-6 md:px-8">
+                    <div className="flex flex-col md:flex-row items-center gap-16">
+
+                        {/* Texto */}
+                        <div className="w-full md:w-1/2 space-y-8">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight">
+                                Turbine seu RH com a gente
+                            </h2>
+
+                            <div className="space-y-6">
+                                <div className="flex gap-4">
+                                    <div className="w-12 h-12 shrink-0 bg-red-50 rounded-full flex items-center justify-center text-red-500 text-xl">
+                                        <HiOutlineMail />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-800 text-lg">Adeus, caixa de e-mail caótica</h3>
+                                        <p className="text-gray-600 mt-1">Centralize tudo aqui. Currículos padronizados em um único painel intuitivo, sem perder arquivos.</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <div className="w-12 h-12 shrink-0 bg-blue-50 rounded-full flex items-center justify-center text-primary text-xl">
+                                        <HiOutlineSearch />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-800 text-lg">O radar certo em Panambi</h3>
+                                        <p className="text-gray-600 mt-1">Encontre talentos locais com mais facilidade. Nossa base é focada em quem mora ou quer trabalhar na região.</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4">
+                                    <div className="w-12 h-12 shrink-0 bg-amber-50 rounded-full flex items-center justify-center text-amber-500 text-xl">
+                                        <HiOutlineOfficeBuilding />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-800 text-lg">Selo de confiança ACI</h3>
+                                        <p className="text-gray-600 mt-1">Sua vaga tem mais credibilidade e alcance ao ser divulgada na plataforma oficial da Associação Comercial.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Imagem / Visual Ilustrativo */}
+                        <div className="w-full md:w-1/2 bg-gray-100 rounded-3xl min-h-[400px] flex items-center justify-center relative overflow-hidden">
+                            {/* Aqui você colocaria uma imagem real. Como placeholder, uso um padrão abstrato */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10"></div>
+                            <div className="relative z-10 text-center p-8">
+                                <HiOutlineUserGroup className="text-6xl text-primary/20 mx-auto mb-4" />
+                                <p className="text-gray-400 font-medium">Imagem do Painel Administrativo<br />ou Ambiente Corporativo</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            {/* --- 4. NÚMEROS (Social Proof) --- */}
+            <section className="bg-primary py-16 text-white">
+                <div className="max-w-7xl mx-auto px-6 md:px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-white/20">
+                        <div className="py-4">
+                            <div className="text-5xl font-bold mb-2">+5000</div>
+                            <div className="text-blue-200 text-lg font-medium">Currículos Cadastrados</div>
+                        </div>
+                        <div className="py-4">
+                            <div className="text-5xl font-bold mb-2">+300</div>
+                            <div className="text-blue-200 text-lg font-medium">Empresas Parceiras</div>
+                        </div>
+                        <div className="py-4">
+                            <div className="text-5xl font-bold mb-2">+30</div>
+                            <div className="text-blue-200 text-lg font-medium">Vagas Divulgadas Hoje</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* --- 5. FAQ (Especifico para Empresas) --- */}
+            <section className="py-24 bg-gray-50">
+                <div className="max-w-4xl mx-auto px-6">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">Perguntas Frequentes [cite: 172]</h2>
+                        <p className="text-gray-600">Tire suas dúvidas sobre como contratar pela ACI Empregos.</p>
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                        {faqData.map((item, index) => {
+                            const isOpen = openIndex === index;
+                            return (
+                                <div key={index} className={`bg-white rounded-xl border transition-all duration-300 ${isOpen ? 'border-primary shadow-md' : 'border-gray-200 hover:border-blue-300'}`}>
+                                    <button onClick={() => toggleFAQ(index)} className="w-full flex items-center justify-between p-6 text-left focus:outline-none">
+                                        <span className={`text-lg font-medium ${isOpen ? 'text-primary' : 'text-gray-700'}`}>{item.question}</span>
+                                        <IoIosArrowDown className={`text-primary transition-transform duration-300 ${isOpen ? 'rotate-180' : 'rotate-0'}`} />
+                                    </button>
+                                    <div className={`grid overflow-hidden transition-all duration-300 ${isOpen ? 'grid-rows-[1fr] opacity-100 pb-6' : 'grid-rows-[0fr] opacity-0'}`}>
+                                        <div className="overflow-hidden px-6 text-gray-600">{item.answer}</div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+
+            {/* --- 6. FORMULÁRIO DE CONTATO --- */}
+            <section id="contato" className="py-24 bg-white scroll-mt-20">
+                <div className="max-w-6xl mx-auto px-6 md:px-8">
+                    <div className="bg-primary rounded-3xl p-8 md:p-16 flex flex-col md:flex-row gap-12 shadow-2xl relative overflow-hidden">
+
+                        {/* Decorativo */}
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
+
+                        {/* Texto */}
+                        <div className="w-full md:w-1/2 text-white relative z-10">
+                            <h2 className="text-3xl md:text-4xl font-bold mb-6">Pronto para encontrar os melhores talentos? [cite: 154]</h2>
+                            <p className="text-blue-100 text-lg mb-8">
+                                Preencha o formulário ao lado e um de nossos consultores entrará em contato para ativar o cadastro da sua empresa.
+                            </p>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3 text-blue-100">
+                                    <HiOutlineCheckCircle className="text-2xl text-blue-300" />
+                                    <span>Atendimento personalizado</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-blue-100">
+                                    <HiOutlineCheckCircle className="text-2xl text-blue-300" />
+                                    <span>Planos exclusivos para associados</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-blue-100">
+                                    <HiOutlineCheckCircle className="text-2xl text-blue-300" />
+                                    <span>Suporte para cadastro de vagas</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* O Formulário  */}
+                        <div className="w-full md:w-1/2 bg-white rounded-2xl p-8 shadow-lg relative z-10">
+                            <h3 className="text-gray-800 font-bold text-xl mb-6">Fale Conosco</h3>
+                            <form className="space-y-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Empresa ou Responsável</label>
+                                    <input type="text" className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="Ex: ACI Panambi" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">E-mail Profissional</label>
+                                    <input type="email" className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="rh@suaempresa.com.br" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Assunto</label>
+                                    <select className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
+                                        <option>Quero cadastrar minha empresa</option>
+                                        <option>Dúvidas sobre planos</option>
+                                        <option>Suporte técnico</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem [cite: 182]</label>
+                                    <textarea rows={4} className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="Como podemos ajudar?"></textarea>
+                                </div>
+                                <ButtonType variant="primary" size="lg" className="w-full justify-center mt-2">
+                                    Enviar Mensagem [cite: 183]
+                                </ButtonType>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    );
+}

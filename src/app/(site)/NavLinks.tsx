@@ -39,15 +39,15 @@ export default function NavLinks({ direction = 'row', className, onLinkClick }: 
         onClick={onLinkClick} // <--- AQUI
         className="text-gray-600 hover:text-[#1459ad] text-base font-medium transition-colors"
       >
-        Vagas
+        Vagas Disponíveis
       </Link>
 
       <Link
-        href="/contato"
+        href="/para-empresas"
         onClick={onLinkClick} // <--- E AQUI
         className="text-gray-600 hover:text-[#1459ad] text-base font-medium transition-colors"
       >
-        Sou uma Empresa
+        Para Empresas
       </Link>
     </nav>
   );
