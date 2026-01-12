@@ -4,31 +4,31 @@ import Link from "next/link";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-// Utilitário para juntar classes (se você já tiver isso num arquivo 'utils.ts', pode importar de lá)
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 interface NavLinksProps {
-  // A propriedade 'direction' é opcional (?) e o padrão será 'row'
   direction?: 'row' | 'col';
   className?: string;
+  // NOVA PROP: Função opcional para quando clicar no link
+  onLinkClick?: () => void;
 }
 
-export default function NavLinks({ direction = 'row', className }: NavLinksProps) {
+export default function NavLinks({ direction = 'row', className, onLinkClick }: NavLinksProps) {
   return (
     <nav
       className={cn(
         "flex",
-        // Lógica de Direção:
         direction === 'col'
-          ? "flex-col items-start gap-4 items-center"  // Vertical: Alinha à esquerda, gap menor
-          : "flex-row items-center gap-8", // Horizontal: Alinha ao centro, gap maior
+          ? "flex-col items-center gap-4 "
+          : "flex-row items-center gap-8",
         className
       )}
     >
       <Link
         href="/"
+        onClick={onLinkClick} // <--- ADICIONE ISSO EM TODOS OS LINKS
         className="text-gray-600 hover:text-[#1459ad] text-base font-medium transition-colors"
       >
         Início
@@ -36,16 +36,18 @@ export default function NavLinks({ direction = 'row', className }: NavLinksProps
 
       <Link
         href="/vagas"
+        onClick={onLinkClick} // <--- AQUI
         className="text-gray-600 hover:text-[#1459ad] text-base font-medium transition-colors"
       >
-        Vagas Disponíveis
+        Vagas
       </Link>
 
       <Link
         href="/contato"
+        onClick={onLinkClick} // <--- E AQUI
         className="text-gray-600 hover:text-[#1459ad] text-base font-medium transition-colors"
       >
-        Para Empresas
+        Sou uma Empresa
       </Link>
     </nav>
   );

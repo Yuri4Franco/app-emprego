@@ -117,30 +117,41 @@ export default function Header() {
                     }`}
             >
                 <div className="flex flex-col items-center w-full h-full p-8 pt-24 space-y-12 overflow-y-auto">
+
+                    {/* Logo dentro do menu */}
                     <div className="h-24 relative shrink-0">
-                        <Image
-                            src={Logo}
-                            alt="ACI Empregos Logo"
-                            className="h-full w-auto object-contain"
-                            priority
-                        />
+                        {/* Adicionei onClick={closeMenu} aqui na logo também por garantia */}
+                        <Link href="/" onClick={closeMenu}>
+                            <Image
+                                src={Logo}
+                                alt="ACI Empregos Logo"
+                                className="h-full w-auto object-contain"
+                                priority
+                            />
+                        </Link>
                     </div>
 
                     <div className="flex flex-col items-center w-full space-y-4">
                         <h1 className="text-xl font-bold text-[#1459ad]">Menu Principal</h1>
-                        <NavLinks direction="col" className="text-2xl gap-6" />
+
+                        {/* AQUI ESTÁ A MÁGICA: Passamos a função closeMenu */}
+                        <NavLinks
+                            direction="col"
+                            className="text-2xl gap-6"
+                            onLinkClick={closeMenu}
+                        />
                     </div>
 
                     <div className="w-full h-px bg-gray-100 shrink-0"></div>
 
-                    <div className="w-full">
+                    {/* Wrapper onClick para fechar ao clicar no botão também */}
+                    <div className="w-full" onClick={closeMenu}>
                         <ButtonType href="/candidato/login" variant="primary" size="lg" className="w-full py-4 text-lg">
                             Área do Candidato
                         </ButtonType>
                     </div>
                 </div>
             </div>
-
         </header>
     );
 }

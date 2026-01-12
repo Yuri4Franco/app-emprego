@@ -2,6 +2,7 @@
 
 import { ButtonType } from "./ButtonType";
 import {
+  HiOutlineDocumentDuplicate,
   HiOutlineClock, 
   HiOutlineCurrencyDollar, 
   HiOutlineBriefcase,
@@ -21,6 +22,7 @@ export interface JobProps {
   type: string;
   contract: string;
   salary?: string;
+  shift?: string;
   
   // MUDANÇA AQUI: Em vez de true/false, agora temos tipos
   pcdType?: 'exclusive' | 'inclusive' | null; 
@@ -109,11 +111,16 @@ export function JobCard({ job }: { job: JobProps }) {
             <HiOutlineBriefcase className="text-primary" /> {job.type}
           </span>
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-gray-50 text-xs font-medium text-gray-600 border border-gray-100">
-            <HiOutlineClock className="text-primary" /> {job.contract}
+            <HiOutlineDocumentDuplicate   className="text-primary" /> {job.contract}
           </span>
           {job.salary && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-green-50 text-xs font-medium text-green-700 border border-green-100">
               <HiOutlineCurrencyDollar /> {job.salary}
+            </span>
+          )}
+          {job.shift && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-blue-50 text-xs font-medium text-blue-700 border border-blue-100">
+              <HiOutlineClock /> {job.shift}
             </span>
           )}
         </div>
