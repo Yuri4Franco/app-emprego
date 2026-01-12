@@ -59,7 +59,7 @@ export default function Home() {
 
               {/* Botão Mobile (Só aparece em telas pequenas) */}
               <div className="w-full md:hidden mt-8 flex justify-center">
-                <ButtonType href="/candidato/login" variant="primary" size="lg" className="w-full shadow-lg">
+                <ButtonType href="/entrar" variant="primary" size="lg" className="w-full shadow-lg">
                   Cadastre-se no Banco de Talentos
                 </ButtonType>
               </div>
@@ -78,7 +78,7 @@ export default function Home() {
 
               {/* Botão Desktop (Só aparece em telas médias+) */}
               <div className="hidden md:block pt-4">
-                <ButtonType href="/candidato/login" variant="primary" size="lg" className="shadow-lg">
+                <ButtonType href="/entrar" variant="primary" size="lg" className="shadow-lg">
                   Cadastre-se no Banco de Talentos
                 </ButtonType>
               </div>

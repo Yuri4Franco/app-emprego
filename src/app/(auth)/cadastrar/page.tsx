@@ -134,7 +134,7 @@ export default function RegisterPage() {
                     {/* Rodapé */}
                     <p className="text-center text-sm text-gray-600">
                         Já tem cadastro?{" "}
-                        <Link href="/candidato/login" className="text-primary font-bold hover:underline">
+                        <Link href="/entrar" className="text-primary font-bold hover:underline">
                             Fazer Login
                         </Link>
                     </p>
