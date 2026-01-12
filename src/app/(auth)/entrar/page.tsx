@@ -53,7 +53,7 @@ export default function LoginPage() {
         <div className="flex min-h-screen w-full">
 
             {/* --- LADO ESQUERDO: FORMULÁRIO --- */}
-            <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-2 bg-white">
+            <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 md:p-2 bg-white">
                 <div className="w-full max-w-md space-y-8">
 
 
