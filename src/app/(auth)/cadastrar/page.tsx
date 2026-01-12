@@ -8,6 +8,9 @@ import { z } from "zod";
 import { Input } from "@/src/components/Input"; // Seu componente reutilizável
 import { ButtonType } from "@/src/components/ButtonType";
 import { HiOutlineEye, HiOutlineEyeOff, HiArrowRight } from "react-icons/hi";
+import Image from "next/image";
+import Logo from "@/src/assets/logos/logo-transparente.png";
+
 
 // 1. Schema de Validação
 const registerSchema = z.object({
@@ -55,6 +58,11 @@ export default function RegisterPage() {
                 <div className="w-full max-w-md space-y-8">
 
                     {/* Cabeçalho */}
+                    <div className="text-center">
+                        <Link href="/" className="inline-block mb-8">
+                            <Image src={Logo} alt="Logo ACI Empregos" className="w-50 mx-auto mb-4" />
+                        </Link>
+                    </div>
                     <div className="text-center md:text-left">
                         <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">
                             Crie sua conta gratuita

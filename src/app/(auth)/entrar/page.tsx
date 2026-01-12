@@ -8,11 +8,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
-import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
+import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi"; 
 
 // Imagem ilustrativa (pode ser alguém trabalhando feliz)
-import bgAuth from "@/src/assets/backgrounds/bg-auth.jpg";
-import logo from "@/src/assets/logos/logo-aci.png";
+import bgAuth from "@/src/assets/backgrounds/bg-login.jpg";
+import logo from "@/src/assets/logos/logo-transparente.png";
 
 // 1. Schema de Validação (A Regra do Jogo)
 const loginSchema = z.object({
@@ -53,16 +53,17 @@ export default function LoginPage() {
         <div className="flex min-h-screen w-full">
 
             {/* --- LADO ESQUERDO: FORMULÁRIO --- */}
-            <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-white">
+            <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-2 bg-white">
                 <div className="w-full max-w-md space-y-8">
+
+
 
                     {/* Cabeçalho do Form */}
                     <div className="text-center">
                         <Link href="/" className="inline-block mb-8">
-                            {/* Use sua logo aqui */}
-                            <h1 className="text-3xl font-bold text-primary tracking-tight">ACI Empregos</h1>
+                            <Image src={logo} alt="Logo ACI Empregos" className="w-50 mx-auto mb-4" />
                         </Link>
-                        <h2 className="text-2xl font-bold text-gray-900">Bem-vindo de volta!</h2>
+                        <h2 className="text-2xl font-bold text-gray-900">Bem-vindo!</h2>
                         <p className="text-gray-500 mt-2">
                             Acesse sua conta para visualizar vagas e candidaturas.
                         </p>
@@ -140,9 +141,14 @@ export default function LoginPage() {
             {/* --- LADO DIREITO: IMAGEM/BRANDING (Some no Mobile) --- */}
             <div className="hidden lg:block w-1/2 relative bg-gray-900">
                 {/* Imagem de Fundo */}
-                <div className="absolute inset-0 bg-primary/40 z-10 mix-blend-multiply"></div>
-                {/* Você pode usar <Image src={bgAuth} fill ... /> aqui */}
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-50"></div>
+                <div className="absolute inset-0 bg-primary z-10 mix-blend-multiply"></div>
+                <Image
+                    src={bgAuth}
+                    alt="Imagem de Fundo ACI Empregos"
+                    fill
+                    className="object-cover w-full h-full"
+                />
+                <div className="absolute inset-0 bg-cover bg-center opacity-50"></div>
 
                 <div className="relative z-20 h-full flex flex-col justify-end p-16 text-white">
                     <blockquote className="space-y-4">
