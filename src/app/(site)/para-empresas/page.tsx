@@ -90,7 +90,7 @@ export default function EmpresasPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {/* Passo 1 */}
                         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50 opacity-50 group-hover:text-blue-50 transition-colors select-none">1</div>
+                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50  group-hover:text-blue-50 transition-colors select-none">1</div>
                             <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-primary text-2xl mb-6 relative z-10">
                                 <HiOutlineChatAlt2 />
                             </div>
@@ -100,7 +100,7 @@ export default function EmpresasPage() {
 
                         {/* Passo 2 */}
                         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50 opacity-50 group-hover:text-blue-50 transition-colors select-none">2</div>
+                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50 group-hover:text-blue-50 transition-colors select-none">2</div>
                             <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-primary text-2xl mb-6 relative z-10">
                                 <HiOutlineDocumentText />
                             </div>
@@ -110,7 +110,7 @@ export default function EmpresasPage() {
 
                         {/* Passo 3 */}
                         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50 opacity-50 group-hover:text-blue-50 transition-colors select-none">3</div>
+                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50  group-hover:text-blue-50 transition-colors select-none">3</div>
                             <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-primary text-2xl mb-6 relative z-10">
                                 <HiOutlineCursorClick />
                             </div>
@@ -120,7 +120,7 @@ export default function EmpresasPage() {
 
                         {/* Passo 4 */}
                         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50 opacity-50 group-hover:text-blue-50 transition-colors select-none">4</div>
+                            <div className="absolute -right-4 -top-4 text-9xl font-bold text-gray-50  group-hover:text-blue-50 transition-colors select-none">4</div>
                             <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-primary text-2xl mb-6 relative z-10">
                                 <HiOutlineCheckCircle />
                             </div>
@@ -213,7 +213,7 @@ export default function EmpresasPage() {
             <section className="py-24 bg-gray-50">
                 <div className="max-w-4xl mx-auto px-6">
                     <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-4">Perguntas Frequentes [cite: 172]</h2>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">Perguntas Frequentes</h2>
                         <p className="text-gray-600">Tire suas dúvidas sobre como contratar pela ACI Empregos.</p>
                     </div>
 
@@ -246,7 +246,7 @@ export default function EmpresasPage() {
 
                         {/* Texto */}
                         <div className="w-full md:w-1/2 text-white relative z-10">
-                            <h2 className="text-3xl md:text-4xl font-bold mb-6">Pronto para encontrar os melhores talentos? [cite: 154]</h2>
+                            <h2 className="text-3xl md:text-4xl font-bold mb-6">Pronto para encontrar os melhores talentos?</h2>
                             <p className="text-blue-100 text-lg mb-8">
                                 Preencha o formulário ao lado e um de nossos consultores entrará em contato para ativar o cadastro da sua empresa.
                             </p>
@@ -287,11 +287,11 @@ export default function EmpresasPage() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem [cite: 182]</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem</label>
                                     <textarea rows={4} className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="Como podemos ajudar?"></textarea>
                                 </div>
                                 <ButtonType variant="primary" size="lg" className="w-full justify-center mt-2">
-                                    Enviar Mensagem [cite: 183]
+                                    Enviar Mensagem
                                 </ButtonType>
                             </form>
                         </div>
