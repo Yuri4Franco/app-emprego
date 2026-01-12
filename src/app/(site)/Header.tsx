@@ -83,7 +83,7 @@ export default function Header() {
             {/* NAV DESKTOP */}
             <div className="hidden md:flex items-center gap-6">
                 <NavLinks direction="row" />
-                <ButtonType href="/candidato/login" variant="primary" size="md">
+                <ButtonType href="/login" variant="primary" size="md">
                     Área do Candidato
                 </ButtonType>
             </div>
@@ -146,7 +146,7 @@ export default function Header() {
 
                     {/* Wrapper onClick para fechar ao clicar no botão também */}
                     <div className="w-full" onClick={closeMenu}>
-                        <ButtonType href="/candidato/login" variant="primary" size="lg" className="w-full py-4 text-lg">
+                        <ButtonType href="/login" variant="primary" size="lg" className="w-full py-4 text-lg">
                             Área do Candidato
                         </ButtonType>
                     </div>

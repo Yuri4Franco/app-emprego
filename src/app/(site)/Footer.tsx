@@ -59,7 +59,7 @@ export default function Footer() {
                                 <Link href="https://acipanambi.com/" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#1459ad] transition-colors">Sobre a ACI <FaExternalLinkAlt className="inline text-[10px] relative -top-0.5" /> </Link>
                             </li>
                             <li>
-                                <Link href="/candidato/login" className="text-gray-600 hover:text-[#1459ad] transition-colors">Área do Candidato</Link>
+                                <Link href="/login" className="text-gray-600 hover:text-[#1459ad] transition-colors">Área do Candidato</Link>
                             </li>
                         </ul>
                     </div>
