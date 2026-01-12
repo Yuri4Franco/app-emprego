@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ButtonType } from "@/src/components/ButtonType";
+import BgImagem from "@/src/assets/backgrounds/bg-t1.jpg";
 import {
     HiOutlineOfficeBuilding,
     HiOutlineUserGroup,
@@ -16,7 +17,6 @@ import {
 } from "react-icons/hi";
 import { IoIosArrowDown } from "react-icons/io";
 
-// --- DADOS DO FAQ (Extraídos do PDF) ---
 const faqData = [
     {
         question: "Preciso ser associado da ACI- Panambi?",
@@ -51,8 +51,37 @@ export default function EmpresasPage() {
             {/* --- 1. HERO SECTION --- */}
             {/* Fundo Azul para impacto corporativo, texto branco */}
             <section className="relative w-full py-32 md:py-32 bg-primary overflow-hidden">
-                {/* Elemento decorativo de fundo (opcional) */}
-                <div className="absolute top-0 right-0 w-1/2 h-full bg-white/5 skew-x-12 translate-x-1/4 pointer-events-none"></div>
+
+                {/* --- INÍCIO DA MODIFICAÇÃO DO BACKGROUND --- */}
+
+                {/*
+           Este é o container inclinado original que você tinha.
+           Adicionei 'overflow-hidden' para que a imagem não vaze das bordas inclinadas.
+           Aumentei um pouco a largura (w-3/5) para a imagem aparecer mais.
+        */}
+                <div className="absolute top-0 right-0 w-full md:w-3/5 h-full pointer-events-none overflow-hidden">
+                    {/* CAMADA 1: A Imagem de Fundo */}
+                    {/* Usamos style inline para pegar o .src da imagem importada com segurança */}
+                    <div
+                        className="absolute inset-0 bg-cover bg-center object-cover "
+                        style={{
+                            backgroundImage: `url(${BgImagem.src})`,
+                            filter: 'brightness(0.8)'
+                        }}
+                    ></div>
+
+                    {/* CAMADA 2: O Degradê de Fusão (Overlay) */}
+                    {/*
+               Este é o segredo do efeito. É um degradê que vai da esquerda para a direita (to-r).
+               - 'from-primary': Começa na cor sólida do seu fundo (esquerda)
+               - 'via-primary/60': Fica semi-transparente no meio (ajuste o /60 se quiser mais ou menos)
+               - 'to-transparent/10': Fica quase totalmente transparente na direita, revelando a imagem.
+            */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-primary/60"></div>
+
+                </div>
+                {/* --- FIM DA MODIFICAÇÃO DO BACKGROUND --- */}
+
 
                 <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
                     <div className="max-w-3xl">
@@ -63,7 +92,7 @@ export default function EmpresasPage() {
                             Publique sua vaga em minutos e encontre o talento certo.
                         </h1>
                         <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed max-w-2xl">
-                            Chega de currículos perdidos em caixas de e-mail ou redes sociais. A ACI Empregos é a nova plataforma oficial da Associação Comercial e Industrial  de panambi para centralizar e profissionalizar o recrutamento na nossa cidade. Conectamos sua empresa diretamente aos candidatos locais de forma organizada, ágil e confiável.
+                            Chega de currículos perdidos em caixas de e-mail ou redes sociais. A ACI Empregos é a nova plataforma oficial da Associação Comercial e Industrial de panambi para centralizar e profissionalizar o recrutamento na nossa cidade. Conectamos sua empresa diretamente aos candidatos locais de forma organizada, ágil e confiável.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <ButtonType href="#contato" variant="secondary" size="lg" className="shadow-lg shadow-blue-900/20">
