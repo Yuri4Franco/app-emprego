@@ -50,7 +50,7 @@ export default function EmpresasPage() {
 
             {/* --- 1. HERO SECTION --- */}
             {/* Fundo Azul para impacto corporativo, texto branco */}
-            <section className="relative w-full py-24 md:py-32 bg-primary overflow-hidden">
+            <section className="relative w-full py-32 md:py-32 bg-primary overflow-hidden">
                 {/* Elemento decorativo de fundo (opcional) */}
                 <div className="absolute top-0 right-0 w-1/2 h-full bg-white/5 skew-x-12 translate-x-1/4 pointer-events-none"></div>
 
@@ -257,7 +257,7 @@ export default function EmpresasPage() {
                                 </div>
                                 <div className="flex items-center gap-3 text-blue-100">
                                     <HiOutlineCheckCircle className="text-2xl text-blue-300" />
-                                    <span>Planos exclusivos para associados</span>
+                                    <span>Condições exclusivas para associados</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-blue-100">
                                     <HiOutlineCheckCircle className="text-2xl text-blue-300" />
