@@ -146,9 +146,9 @@ export default function LoginPage() {
                     src={bgAuth}
                     alt="Imagem de Fundo ACI Empregos"
                     fill
-                    className="object-cover w-full h-full"
+                    className="object-cover w-full h-full opacity-70"
                 />
-                <div className="absolute inset-0 bg-cover bg-center opacity-50"></div>
+                <div className="absolute inset-0 bg-cover bg-center"></div>
 
                 <div className="relative z-20 h-full flex flex-col justify-end p-16 text-white">
                     <blockquote className="space-y-4">

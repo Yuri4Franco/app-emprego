@@ -10,6 +10,7 @@ import { ButtonType } from "@/src/components/ButtonType";
 import { HiOutlineEye, HiOutlineEyeOff, HiArrowRight } from "react-icons/hi";
 import Image from "next/image";
 import Logo from "@/src/assets/logos/logo-transparente.png";
+import bgAuth from "@/src/assets/backgrounds/bg-cadastrar.jpg";
 
 
 // 1. Schema de Validação
@@ -153,7 +154,16 @@ export default function RegisterPage() {
             {/* --- LADO DIREITO: BRANDING --- */}
             <div className="hidden lg:block w-1/2 relative bg-primary">
                 {/* Imagem diferente do Login para dar contexto de "Futuro/Carreira" */}
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-primary z-10 mix-blend-multiply"></div>
+
+                <Image
+                    src={bgAuth}
+                    alt="Imagem de Fundo ACI Empregos"
+                    fill
+                    className="object-cover w-full h-full opacity-70"
+                />
+                <div className="absolute inset-0 bg-cover bg-center"></div>
+
 
                 <div className="relative z-20 h-full flex flex-col justify-between p-16 text-white">
                     <div className="pt-10">

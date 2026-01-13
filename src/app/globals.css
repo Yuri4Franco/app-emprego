@@ -13,7 +13,7 @@
   /* Textos secundários (legendas, placeholders) */
   --muted: #64748b;      /* Slate-500 */
 
-  --hover-button: #25a8cb; 
+  --hover-button: #2b6cb0; 
 }
 
 @theme inline {
