@@ -113,7 +113,7 @@ export default function VagasPage() {
         });
 
         setIsLoading(false);
-    }, [isLoading, hasMore]); // REMOVIDO 'jobs' das dependências para evitar loop/stale state
+    }, [isLoading, hasMore]);
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
