@@ -25,7 +25,7 @@ export default function Footer() {
                                 className="object-contain object-left"
                             />
                         </div>
-                        <p className="text-gray-500 text-sm leading-relaxed">
+                        <p className="text-gray-500 text-sm leading-relaxed pt-4">
                             Conectando talentos e empresas para impulsionar o desenvolvimento de Panambi e região. Uma iniciativa da Associação Comercial e Industrial.
                         </p>
                         <div className="flex items-center gap-4">
