@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "../globals.css";
+import '../globals.css';
 import Header from "./Header";
 import Footer from "./Footer";
+import { Toaster } from "react-hot-toast";
 // <--- Importe o novo componente
 
 const geistSans = Geist({
@@ -35,6 +36,24 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}
       >
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#333',
+              color: '#fff',
+              borderRadius: '12px',
+            },
+            success: {
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
+
         <Header />
 
         {children}

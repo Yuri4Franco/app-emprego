@@ -7,21 +7,21 @@
 
   /* Cores de Fundo e Texto (Modo Claro Padrão) */
   --background: #f8fafc; /* Um cinza super clarinho (Slate-50) para não cansar a vista como o branco puro */
-  --surface: #ffffff;    /* Branco puro para cards e barra de pesquisa */
+  --surface: #ffffff; /* Branco puro para cards e barra de pesquisa */
   --foreground: #0f172a; /* Slate-900 (Quase preto, mas mais suave) */
-  
-  /* Textos secundários (legendas, placeholders) */
-  --muted: #64748b;      /* Slate-500 */
 
-  --hover-button: #2b6cb0; 
+  /* Textos secundários (legendas, placeholders) */
+  --muted: #64748b; /* Slate-500 */
+
+  --hover-button: #2b6cb0;
 }
 
 @theme inline {
   /* Mapeando para classes do Tailwind */
-  
+
   /* Uso: bg-primary, text-primary, border-primary */
   --color-primary: var(--brand-blue);
-  --color-hover-button: var(--hover-button); 
+  --color-hover-button: var(--hover-button);
 
   /* Uso: bg-accent, text-accent (USE COM MODERAÇÃO) */
   --color-accent: var(--brand-red);
@@ -47,7 +47,9 @@ body {
 
 @layer base {
   /* Remove a borda azul padrão feia dos inputs no Chrome/Edge */
-  input:focus, textarea:focus, select:focus {
+  input:focus,
+  textarea:focus,
+  select:focus {
     outline: 2px solid var(--brand-blue);
     outline-offset: 2px;
   }

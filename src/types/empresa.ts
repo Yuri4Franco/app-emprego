@@ -2,7 +2,7 @@ export interface EmpresaListagem {
   id_empresa: number;
   nome_fantasia: string;
   cnpj: string;
-  tipo_vinculo_aci: "ASSOCIADO" | "NAO_ASSOCIADO";
+  tipo_vinculo_aci: "ASSOCIADA" | "NAO_ASSOCIADA";
   cidade: string;
   bairro: string;
   vagas_count: number;

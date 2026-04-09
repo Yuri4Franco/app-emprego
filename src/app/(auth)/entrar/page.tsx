@@ -12,40 +12,19 @@ import Cookies from "js-cookie";
 // Componentes e Ícones
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
-import {
-  HiOutlineEye,
-  HiOutlineEyeOff,
-  HiUser,
-  HiOfficeBuilding,
-} from "react-icons/hi";
+import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 
 // Assets e Configurações
 import bgAuth from "@/src/assets/backgrounds/bg-login.jpg";
 import logo from "@/src/assets/logos/logo-transparente.png";
 import api from "@/src/services/api";
 
-// 1. Schema de Validação Flexível
-const loginSchema = z
-  .object({
-    loginType: z.enum(["CANDIDATO", "EMPRESA"]),
-    email: z.string().optional(),
-    cnpj: z.string().optional(),
-    password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
-    remember: z.boolean().optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.loginType === "CANDIDATO") {
-        return !!data.email && /^\S+@\S+\.\S+$/.test(data.email);
-      }
-      // Validação simples de CNPJ (mínimo 14 números)
-      return !!data.cnpj && data.cnpj.replace(/\D/g, "").length >= 14;
-    },
-    {
-      message: "Informe um e-mail válido ou CNPJ completo",
-      path: ["email"], // Mostra o erro no campo principal
-    },
-  );
+// 1. Schema Simplificado (Apenas E-mail e Senha)
+const loginSchema = z.object({
+  email: z.string().min(1, "E-mail é obrigatório").email("Digite um e-mail válido"),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  remember: z.boolean().optional(),
+});
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
@@ -56,9 +35,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [loginType, setLoginType] = useState<"CANDIDATO" | "EMPRESA">(
-    "CANDIDATO",
-  );
 
   const {
     register,
@@ -68,25 +44,16 @@ export default function LoginPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      loginType: "CANDIDATO",
       remember: false,
     },
   });
 
-  // 2. Implementação do "Lembrar de Mim" (Carregamento)
+  // 2. Implementação do "Lembrar de Mim"
   useEffect(() => {
-    const saved = localStorage.getItem("@aci:remembered_user");
-    if (saved) {
-      const { identifier, type } = JSON.parse(saved);
-      setLoginType(type);
-      setValue("loginType", type);
+    const savedEmail = localStorage.getItem("@aci:remembered_email");
+    if (savedEmail) {
+      setValue("email", savedEmail);
       setValue("remember", true);
-
-      if (type === "CANDIDATO") {
-        setValue("email", identifier);
-      } else {
-        setValue("cnpj", identifier);
-      }
     }
   }, [setValue]);
 
@@ -96,42 +63,32 @@ export default function LoginPage() {
     setErrorMessage("");
 
     try {
-      // Prepara o payload conforme o seu Backend espera (email ou cnpj + senha)
-      const payload =
-        data.loginType === "CANDIDATO"
-          ? { email: data.email, senha: data.password }
-          : { cnpj: data.cnpj, senha: data.password };
+      const response = await api.post("/login", {
+        email: data.email,
+        senha: data.password, // Mantendo 'senha' conforme seu backend espera
+      });
 
-      const response = await api.post("/login", payload);
-
-      // O seu backend retorna: { success: true, data: { token, tipo } }
       const { token, tipo } = response.data.data;
 
-      // Persistência do "Lembrar de Mim"
+      // Salva ou remove o e-mail do localStorage
       if (data.remember) {
-        const info = {
-          identifier: data.loginType === "CANDIDATO" ? data.email : data.cnpj,
-          type: data.loginType,
-        };
-        localStorage.setItem("@aci:remembered_user", JSON.stringify(info));
+        localStorage.setItem("@aci:remembered_email", data.email);
       } else {
-        localStorage.removeItem("@aci:remembered_user");
+        localStorage.removeItem("@aci:remembered_email");
       }
 
-      // Salva os Cookies de sessão (expira em 7 dias)
+      // Salva Cookies de sessão (7 dias)
       Cookies.set("aci_token", token, { expires: 7, secure: true });
       Cookies.set("user_role", tipo, { expires: 7 });
 
-      // Redirecionamento lógico
+      // Redirecionamento baseado no cargo retornado pelo back
       if (tipo === "ADM") {
         router.push("/admin");
       } else {
         router.push("/dashboard");
       }
     } catch (error: any) {
-      // Captura a mensagem de erro do seu Controller
-      const msg =
-        error.response?.data?.error || "E-mail/CNPJ ou senha incorretos.";
+      const msg = error.response?.data?.error || "E-mail ou senha incorretos.";
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
@@ -140,76 +97,34 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen w-full bg-gray-50">
+
       {/* LADO ESQUERDO: FORMULÁRIO */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-white">
         <div className="w-full max-w-md space-y-8">
+
           <div className="text-center">
             <Link href="/" className="inline-block mb-6">
-              <Image
-                src={logo}
-                alt="Logo ACI Empregos"
-                className="w-48 mx-auto"
-              />
+              <Image src={logo} alt="Logo ACI Empregos" className="w-48 mx-auto" />
             </Link>
-          </div>
-
-          {/* Switch de Tipo de Login */}
-          <div className="flex p-1 bg-gray-100 rounded-2xl border border-gray-200">
-            <button
-              type="button"
-              onClick={() => {
-                setLoginType("CANDIDATO");
-                setValue("loginType", "CANDIDATO");
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-xl transition-all ${
-                loginType === "CANDIDATO"
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <HiUser size={18} /> Sou Candidato
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setLoginType("EMPRESA");
-                setValue("loginType", "EMPRESA");
-              }}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-semibold rounded-xl transition-all ${
-                loginType === "EMPRESA"
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <HiOfficeBuilding size={18} /> Sou Empresa
-            </button>
+            <h2 className="text-3xl font-bold text-gray-900">Bem-vindo de volta</h2>
+            <p className="text-gray-500 mt-2">Acesse sua conta para continuar</p>
           </div>
 
           {/* Mensagem de Erro do Backend */}
           {errorMessage && (
-            <div className="p-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl text-center font-medium animate-pulse">
+            <div className="p-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl text-center font-medium">
               {errorMessage}
             </div>
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {loginType === "CANDIDATO" ? (
-              <Input
-                label="E-mail"
-                type="email"
-                placeholder="exemplo@email.com"
-                error={errors.email?.message}
-                {...register("email")}
-              />
-            ) : (
-              <Input
-                label="CNPJ da Empresa"
-                type="text"
-                placeholder="00.000.000/0000-00"
-                error={errors.cnpj?.message}
-                {...register("cnpj")}
-              />
-            )}
+            <Input
+              label="E-mail"
+              type="email"
+              placeholder="exemplo@email.com"
+              error={errors.email?.message}
+              {...register("email")}
+            />
 
             <div className="relative">
               <Input
@@ -224,11 +139,7 @@ export default function LoginPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-[38px] text-gray-400 hover:text-primary transition-colors"
               >
-                {showPassword ? (
-                  <HiOutlineEyeOff size={22} />
-                ) : (
-                  <HiOutlineEye size={22} />
-                )}
+                {showPassword ? <HiOutlineEyeOff size={22} /> : <HiOutlineEye size={22} />}
               </button>
             </div>
 
@@ -243,10 +154,7 @@ export default function LoginPage() {
                   Lembrar de mim
                 </span>
               </label>
-              <Link
-                href="/recuperar-senha"
-                className="text-primary font-bold hover:underline"
-              >
+              <Link href="/recuperar-senha" className="text-primary font-bold hover:underline">
                 Esqueceu a senha?
               </Link>
             </div>
@@ -262,10 +170,7 @@ export default function LoginPage() {
 
           <p className="text-center text-gray-600">
             Ainda não tem conta?{" "}
-            <Link
-              href="/cadastrar"
-              className="text-primary font-bold hover:underline"
-            >
+            <Link href="/cadastrar" className="text-primary font-bold hover:underline">
               Cadastre-se grátis
             </Link>
           </p>
@@ -274,25 +179,20 @@ export default function LoginPage() {
 
       {/* LADO DIREITO: BRANDING */}
       <div className="hidden lg:block w-1/2 relative bg-gray-900">
-        {/* Imagem de Fundo */}
-        <div className="absolute inset-0 bg-primary z-10 mix-blend-multiply"></div>
+        <div className="absolute inset-0 bg-blue-900 z-10 mix-blend-multiply opacity-60"></div>
         <Image
           src={bgAuth}
           alt="Imagem de Fundo ACI Empregos"
           fill
           className="object-cover w-full h-full opacity-70"
+          priority
         />
-        <div className="absolute inset-0 bg-cover bg-center"></div>
-
         <div className="relative z-20 h-full flex flex-col justify-end p-16 text-white">
           <blockquote className="space-y-4">
             <p className="text-2xl font-medium leading-relaxed">
-              "Graças à ACI Empregos, consegui minha recolocação no mercado em
-              menos de uma semana. A plataforma é incrível!"
+              "Conectar talentos às melhores empresas de Panambi é o nosso compromisso diário."
             </p>
-            <footer className="opacity-80">
-              — Julia M., contratada via Banco de Talentos
-            </footer>
+            <footer className="opacity-80">— Equipe ACI Panambi</footer>
           </blockquote>
         </div>
       </div>
