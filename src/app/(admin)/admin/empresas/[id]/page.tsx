@@ -17,8 +17,13 @@ import {
   HiOutlinePencilAlt,
   HiOutlineLockClosed,
   HiOutlineLockOpen,
+  HiOutlinePlus,
+  HiOutlineCalendar,
 } from "react-icons/hi";
 import { ButtonType } from "@/src/components/ButtonType";
+import { ModalAdicionarUsuario } from "@/src/components/admin/ModalAdicionarUsuario";
+import { ModalEditarUsuario } from "@/src/components/admin/ModalEditarUsuario";
+import { ModalConfirmarStatusEmpresa } from "@/src/components/admin/ModalConfirmarStatusEmpresa";
 
 export default function DetalhesEmpresaPage() {
   const { id } = useParams();
@@ -26,6 +31,12 @@ export default function DetalhesEmpresaPage() {
 
   const [empresa, setEmpresa] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
 
   const fetchDetalhes = useCallback(async () => {
     setIsLoading(true);
@@ -83,6 +94,27 @@ export default function DetalhesEmpresaPage() {
     );
   };
 
+  const handleAlterarStatusEmpresa = async () => {
+    // Se você tiver um campo status na empresa, use ele, senão vamos basear na ação
+    // Aqui vou assumir que você quer DESATIVAR (já que o botão é vermelho)
+    const acao = "DESATIVAR";
+
+    setStatusLoading(true);
+    await toast.promise(
+      api.patch(`/admin/empresas/${id}/status`, { acao }),
+      {
+        loading: "Processando alteração...",
+        success: (res) => {
+          setIsStatusModalOpen(false);
+          fetchDetalhes(); // Recarrega a página para atualizar usuários/vagas na tela
+          return res.data.message;
+        },
+        error: (err) => err.response?.data?.error || "Erro ao alterar status.",
+      }
+    );
+    setStatusLoading(false);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header com Navegação */}
@@ -110,7 +142,11 @@ export default function DetalhesEmpresaPage() {
         </div>
 
         <div className="flex gap-3">
-          <ButtonType variant="secondary" className="px-6">
+          <ButtonType
+            variant="danger"
+            className="px-6 shadow-lg shadow-red-100"
+            onClick={() => setIsStatusModalOpen(true)}
+          >
             Desativar Empresa
           </ButtonType>
           <ButtonType variant="primary" className="px-6">
@@ -201,8 +237,11 @@ export default function DetalhesEmpresaPage() {
                 <HiOutlineUserGroup className="text-purple-600" /> Usuários com
                 Acesso
               </h3>
-              <button className="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors">
-                + Adicionar Usuário
+              <button
+                onClick={() => setIsUserModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-xl text-sm font-bold hover:bg-purple-100 transition-all"
+              >
+                <HiOutlinePlus size={18} /> Adicionar Usuário
               </button>
             </div>
             <div className="overflow-x-auto">
@@ -211,6 +250,7 @@ export default function DetalhesEmpresaPage() {
                   <tr>
                     <th className="px-8 py-4">Nome</th>
                     <th className="px-8 py-4">Status</th>
+                    <th className="px-8 py-4">Último Acesso</th>
                     <th className="px-8 py-4 text-right">Ações</th>
                   </tr>
                 </thead>
@@ -232,25 +272,33 @@ export default function DetalhesEmpresaPage() {
                       </td>
                       <td className="px-8 py-4">
                         <span
-                          className={`px-2 py-1 rounded-full text-[10px] font-bold ${
-                            user.status === "ATIVO"
-                              ? "bg-green-50 text-green-700"
-                              : "bg-amber-50 text-amber-700"
-                          }`}
+                          className={`px-2 py-1 rounded-full text-[10px] font-bold ${user.status === "ATIVO"
+                            ? "bg-green-50 text-green-700"
+                            : "bg-amber-50 text-amber-700"
+                            }`}
                         >
                           {user.status}
                         </span>
                       </td>
                       <td className="px-8 py-4">
+                        <div className="flex items-center gap-2 text-xs">
+                          <HiOutlineCalendar className="text-gray-300" size={14} />
+                          {user.ultimo_login ? (
+                            <div className="flex flex-col">
+                              <span className="font-semibold text-gray-700">
+                                {new Date(user.ultimo_login).toLocaleDateString('pt-BR')}
+                              </span>
+                              <span className="text-[10px] text-gray-400">
+                                às {new Date(user.ultimo_login).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 italic">Nunca acessou</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-8 py-4">
                         <div className="flex justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                          {/* Visualizar */}
-                          <button
-                            title="Visualizar Perfil"
-                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                          >
-                            <HiOutlineEye size={18} />
-                          </button>
-
                           {/* Alterar Status */}
                           <button
                             onClick={() =>
@@ -264,11 +312,10 @@ export default function DetalhesEmpresaPage() {
                                 ? "Bloquear Usuário"
                                 : "Ativar Usuário"
                             }
-                            className={`p-2 rounded-xl transition-all ${
-                              user.status === "ATIVO"
-                                ? "text-gray-400 hover:text-amber-600 hover:bg-amber-50"
-                                : "text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"
-                            }`}
+                            className={`p-2 rounded-xl transition-all ${user.status === "ATIVO"
+                              ? "text-gray-400 hover:text-amber-600 hover:bg-amber-50"
+                              : "text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"
+                              }`}
                           >
                             {user.status === "ATIVO" ? (
                               <HiOutlineLockClosed size={18} />
@@ -279,6 +326,10 @@ export default function DetalhesEmpresaPage() {
 
                           {/* Editar */}
                           <button
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setIsEditUserModalOpen(true);
+                            }}
                             title="Editar Usuário"
                             className="p-2 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all"
                           >
@@ -324,6 +375,28 @@ export default function DetalhesEmpresaPage() {
           </section>
         </div>
       </div>
+      <ModalAdicionarUsuario
+        isOpen={isUserModalOpen}
+        onClose={() => setIsUserModalOpen(false)}
+        idEmpresa={Number(id)} // O id que vem do useParams()
+        onSuccess={() => fetchDetalhes()} // Recarrega os dados da empresa (e a lista de usuários)
+      />
+      <ModalEditarUsuario
+        isOpen={isEditUserModalOpen}
+        onClose={() => {
+          setIsEditUserModalOpen(false);
+          setSelectedUser(null);
+        }}
+        usuario={selectedUser}
+        onSuccess={() => fetchDetalhes()}
+      />
+      <ModalConfirmarStatusEmpresa
+        isOpen={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
+        onConfirm={handleAlterarStatusEmpresa}
+        isLoading={statusLoading}
+        tipo="DESATIVAR"
+      />
     </div>
   );
 }

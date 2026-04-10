@@ -57,7 +57,6 @@ export default function LoginPage() {
     }
   }, [setValue]);
 
-  // 3. Função de Login
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setErrorMessage("");
@@ -65,12 +64,11 @@ export default function LoginPage() {
     try {
       const response = await api.post("/login", {
         email: data.email,
-        senha: data.password, // Mantendo 'senha' conforme seu backend espera
+        senha: data.password,
       });
 
       const { token, tipo } = response.data.data;
-
-      // Salva ou remove o e-mail do localStorage
+      
       if (data.remember) {
         localStorage.setItem("@aci:remembered_email", data.email);
       } else {
@@ -97,11 +95,11 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen w-full bg-gray-50">
-
+      
       {/* LADO ESQUERDO: FORMULÁRIO */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-white">
         <div className="w-full max-w-md space-y-8">
-
+          
           <div className="text-center">
             <Link href="/" className="inline-block mb-6">
               <Image src={logo} alt="Logo ACI Empregos" className="w-48 mx-auto" />
