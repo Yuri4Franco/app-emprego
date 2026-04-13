@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (pathname === '/entrar' || pathname === '/login') { // Ajuste conforme sua rota
+  if (pathname === '/entrar' || pathname === '/entrar') { // Ajuste conforme sua rota
     if (token) {
       // Se for ADM, manda direto pro painel administrativo
       if (role === 'ADM') {
@@ -21,15 +21,15 @@ export function middleware(request: NextRequest) {
 
   if (pathname.startsWith('/admin')) {
     if (!token || role !== 'ADM') {
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/entrar', request.url));
     }
   }
 
   if (pathname.startsWith('/dashboard') && !token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL('/entrar', request.url));
   }
 
-  if (pathname === '/login' && token) {
+  if (pathname === '/entrar' && token) {
     return role === 'ADM' 
       ? NextResponse.redirect(new URL('/admin', request.url))
       : NextResponse.redirect(new URL('/dashboard', request.url));

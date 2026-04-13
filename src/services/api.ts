@@ -28,8 +28,8 @@ api.interceptors.response.use(
       toast.error("Sua sessão expirou. Por favor, faça login novamente.");
 
       // 3. Redireciona para o login (se não estiver na página de login)
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
+      if (window.location.pathname !== "/entrar") {
+        window.location.href = "/entrar";
       }
     }
     return Promise.reject(error);

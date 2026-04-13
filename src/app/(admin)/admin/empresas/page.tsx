@@ -18,6 +18,9 @@ export default function EmpresasAdminPage() {
   // Estados de Dados
   const [empresas, setEmpresas] = useState<EmpresaListagem[]>([]);
   const [busca, setBusca] = useState("");
+  const [statusFiltro, setStatusFiltro] = useState<"ATIVO" | "BLOQUEADO">(
+    "ATIVO",
+  );
 
   // Estados de Controle de Scroll
   const [pagina, setPagina] = useState(1);
@@ -29,44 +32,54 @@ export default function EmpresasAdminPage() {
   const [meta, setMeta] = useState({
     total: 0,
     total_associadas: 0,
-    total_nao_associadas: 0
+    total_nao_associadas: 0,
   });
 
+  const fetchEmpresas = useCallback(
+    async (resetList = false) => {
+      if (isLoading) return;
 
-  const fetchEmpresas = useCallback(async (resetList = false) => {
-    if (isLoading) return;
+      setIsLoading(true);
 
-    setIsLoading(true);
-    const targetPage = resetList ? 1 : pagina;
+      const targetPage = resetList ? 1 : pagina;
 
-    try {
-      const response = await api.get(`/admin/empresas`, {
-        params: {
-          search: busca,
-          page: targetPage,
-          limit: 15
-        }
-      });
+      try {
+        const response = await api.get(`/admin/empresas`, {
+          params: {
+            search: busca,
 
-      const { data, meta: backendMeta } = response.data;
+            page: targetPage,
 
-      setEmpresas(prev => resetList ? data : [...prev, ...data]);
-      setMeta({
-        total: backendMeta.total,
-        total_associadas: backendMeta.total_associadas,
-        total_nao_associadas: backendMeta.total_nao_associadas
-      });
-      setHasMore(targetPage < backendMeta.total_paginas);
+            status: statusFiltro,
 
-      if (!resetList) setPagina(prev => prev + 1);
-      else setPagina(2);
+            limit: 15,
+          },
+        });
 
-    } catch (error) {
-      console.error("Erro ao carregar empresas:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [busca, pagina, isLoading]);
+        const { data, meta: backendMeta } = response.data;
+
+        setEmpresas((prev) => (resetList ? data : [...prev, ...data]));
+
+        setMeta({
+          total: backendMeta.total,
+
+          total_associadas: backendMeta.total_associadas,
+
+          total_nao_associadas: backendMeta.total_nao_associadas,
+        });
+
+        setHasMore(targetPage < backendMeta.total_paginas);
+
+        if (!resetList) setPagina((prev) => prev + 1);
+        else setPagina(2);
+      } catch (error) {
+        console.error("Erro ao carregar empresas:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [busca, pagina, isLoading, statusFiltro ],
+  );
 
   // Efeito para busca (Debounce manual ou disparado pelo input)
   useEffect(() => {
@@ -77,13 +90,22 @@ export default function EmpresasAdminPage() {
     return () => clearTimeout(delayDebounceFn);
   }, [busca]);
 
+  useEffect(() => {
+    fetchEmpresas(true);
+  }, [statusFiltro]);
+
   // Listener de Scroll
   useEffect(() => {
     const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+      const { scrollTop, scrollHeight, clientHeight } =
+        document.documentElement;
 
       // Dispara quando estiver a 100px do fundo
-      if (scrollTop + clientHeight >= scrollHeight - 100 && hasMore && !isLoading) {
+      if (
+        scrollTop + clientHeight >= scrollHeight - 100 &&
+        hasMore &&
+        !isLoading
+      ) {
         fetchEmpresas();
       }
     };
@@ -98,7 +120,9 @@ export default function EmpresasAdminPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Empresas</h1>
-          <p className="text-gray-500 text-sm">Gerencie o ecossistema de empresas da ACI Panambi.</p>
+          <p className="text-gray-500 text-sm">
+            Gerencie o ecossistema de empresas da ACI Panambi.
+          </p>
         </div>
         <ButtonType
           variant="primary"
@@ -111,27 +135,25 @@ export default function EmpresasAdminPage() {
 
       {/* Cards de Métricas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card Total */}
+
+        {/* Card Associadas */}
+        
+        {/* Card Total Dinâmico */}
         <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-          <div className="p-4 bg-blue-50 text-blue-600 rounded-2xl">
+          <div
+            className={`p-4 rounded-2xl ${statusFiltro === "ATIVO" ? "bg-blue-50 text-blue-600" : "bg-red-50 text-red-600"}`}
+          >
             <HiOutlineOfficeBuilding size={28} />
           </div>
           <div>
-            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Total Geral</p>
-            <p className="text-3xl font-bold text-gray-900 leading-tight">{meta.total}</p>
-          </div>
-        </div>
-
-        {/* Card Associadas */}
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-          <div className="p-4 bg-emerald-50 text-emerald-600 rounded-2xl">
-            <HiOutlineCheckCircle size={28} />
-          </div>
-          <div>
-            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Associadas</p>
-            <div className="flex items-baseline gap-2">
-              <p className="text-3xl font-bold text-emerald-600 leading-tight">{meta.total_associadas}</p>
-            </div>
+            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+              {statusFiltro === "ATIVO" ? "Total Ativas" : "Total Bloqueadas"}
+            </p>
+            <p
+              className={`text-3xl font-bold leading-tight ${statusFiltro === "ATIVO" ? "text-gray-900" : "text-red-600"}`}
+            >
+              {meta.total}
+            </p>
           </div>
         </div>
 
@@ -141,15 +163,22 @@ export default function EmpresasAdminPage() {
             <HiOutlineOfficeBuilding size={28} />
           </div>
           <div>
-            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Não Associadas</p>
-            <p className="text-3xl font-bold text-amber-600 leading-tight">{meta.total_nao_associadas}</p>
+            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+              Não Associadas
+            </p>
+            <p className="text-3xl font-bold text-amber-600 leading-tight">
+              {meta.total_nao_associadas}
+            </p>
           </div>
         </div>
       </div>
       {/* Barra de Busca */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+      <div className="bg-white p-4 flex space-x-4 rounded-2xl shadow-sm border border-gray-100">
         <div className="relative max-w-md">
-          <HiOutlineSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+          <HiOutlineSearch
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={20}
+          />
           <input
             type="text"
             placeholder="Nome, CNPJ ou Razão Social..."
@@ -157,6 +186,29 @@ export default function EmpresasAdminPage() {
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
           />
+        </div>
+        {/* Filtro de Status (Switch/Tabs) */}
+        <div className="flex items-center gap-2 p-1 bg-gray-100 w-fit rounded-2xl mb-2">
+          <button
+            onClick={() => setStatusFiltro("ATIVO")}
+            className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${
+              statusFiltro === "ATIVO"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            ATIVAS
+          </button>
+          <button
+            onClick={() => setStatusFiltro("BLOQUEADO")}
+            className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${
+              statusFiltro === "BLOQUEADO"
+                ? "bg-white text-red-600 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            BLOQUEADAS
+          </button>
         </div>
       </div>
 
@@ -175,11 +227,18 @@ export default function EmpresasAdminPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {empresas.map((empresa) => (
-                <tr key={empresa.id_empresa} className="hover:bg-gray-50/50 transition-colors group">
+                <tr
+                  key={empresa.id_empresa}
+                  className="hover:bg-gray-50/50 transition-colors group"
+                >
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{empresa.nome_fantasia}</span>
-                      <span className="text-xs text-gray-400 font-mono">{empresa.cnpj}</span>
+                      <span className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        {empresa.nome_fantasia}
+                      </span>
+                      <span className="text-xs text-gray-400 font-mono">
+                        {empresa.cnpj}
+                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -195,8 +254,12 @@ export default function EmpresasAdminPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="text-sm text-gray-700 font-medium">{empresa.responsavel?.nome || "N/A"}</span>
-                      <span className="text-xs text-gray-400">{empresa.responsavel?.email || "-"}</span>
+                      <span className="text-sm text-gray-700 font-medium">
+                        {empresa.responsavel?.nome || "N/A"}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {empresa.responsavel?.email || "-"}
+                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
@@ -229,8 +292,13 @@ export default function EmpresasAdminPage() {
         {/* Empty State */}
         {!isLoading && empresas.length === 0 && (
           <div className="p-20 text-center">
-            <HiOutlineOfficeBuilding className="mx-auto text-gray-200 mb-4" size={48} />
-            <p className="text-gray-500 font-medium">Nenhuma empresa encontrada.</p>
+            <HiOutlineOfficeBuilding
+              className="mx-auto text-gray-200 mb-4"
+              size={48}
+            />
+            <p className="text-gray-500 font-medium">
+              Nenhuma empresa encontrada.
+            </p>
           </div>
         )}
       </div>

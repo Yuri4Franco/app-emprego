@@ -37,7 +37,7 @@ export default function AdminLayout({
       >
 
         <Toaster
-          position="top-right"
+          position="top-left"
           toastOptions={{
             // Estilo padrão para todos os toasts
             className: 'font-sans font-medium text-sm',

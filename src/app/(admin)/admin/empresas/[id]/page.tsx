@@ -24,6 +24,7 @@ import { ButtonType } from "@/src/components/ButtonType";
 import { ModalAdicionarUsuario } from "@/src/components/admin/ModalAdicionarUsuario";
 import { ModalEditarUsuario } from "@/src/components/admin/ModalEditarUsuario";
 import { ModalConfirmarStatusEmpresa } from "@/src/components/admin/ModalConfirmarStatusEmpresa";
+import { ModalEditarEmpresa } from "@/src/components/admin/ModalEditarEmpresa";
 
 export default function DetalhesEmpresaPage() {
   const { id } = useParams();
@@ -37,6 +38,7 @@ export default function DetalhesEmpresaPage() {
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchDetalhes = useCallback(async () => {
     setIsLoading(true);
@@ -95,23 +97,19 @@ export default function DetalhesEmpresaPage() {
   };
 
   const handleAlterarStatusEmpresa = async () => {
-    // Se você tiver um campo status na empresa, use ele, senão vamos basear na ação
-    // Aqui vou assumir que você quer DESATIVAR (já que o botão é vermelho)
-    const acao = "DESATIVAR";
+    // Determina a ação com base no status atual
+    const acao = empresa.status === "ATIVO" ? "DESATIVAR" : "ATIVAR";
 
     setStatusLoading(true);
-    await toast.promise(
-      api.patch(`/admin/empresas/${id}/status`, { acao }),
-      {
-        loading: "Processando alteração...",
-        success: (res) => {
-          setIsStatusModalOpen(false);
-          fetchDetalhes(); // Recarrega a página para atualizar usuários/vagas na tela
-          return res.data.message;
-        },
-        error: (err) => err.response?.data?.error || "Erro ao alterar status.",
-      }
-    );
+    await toast.promise(api.patch(`/admin/empresas/${id}/status`, { acao }), {
+      loading: "Processando alteração...",
+      success: (res) => {
+        setIsStatusModalOpen(false);
+        fetchDetalhes(); // Recarrega os dados para o botão e badges mudarem
+        return res.data.message;
+      },
+      error: (err) => err.response?.data?.error || "Erro ao alterar status.",
+    });
     setStatusLoading(false);
   };
 
@@ -142,16 +140,33 @@ export default function DetalhesEmpresaPage() {
         </div>
 
         <div className="flex gap-3">
-          <ButtonType
-            variant="danger"
-            className="px-6 shadow-lg shadow-red-100"
-            onClick={() => setIsStatusModalOpen(true)}
-          >
-            Desativar Empresa
-          </ButtonType>
-          <ButtonType variant="primary" className="px-6">
-            Editar Dados
-          </ButtonType>
+          <div className="flex gap-3">
+            {empresa.status === "ATIVO" ? (
+              <ButtonType
+                variant="danger"
+                className="px-6 shadow-lg shadow-red-100"
+                onClick={() => setIsStatusModalOpen(true)}
+              >
+                Desativar Empresa
+              </ButtonType>
+            ) : (
+              <ButtonType
+                variant="primary"
+                className="px-6 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-100 border-none"
+                onClick={() => setIsStatusModalOpen(true)}
+              >
+                Reativar Empresa
+              </ButtonType>
+            )}
+
+            <ButtonType
+              variant="secondary"
+              className="px-6 border-gray-200"
+              onClick={() => setIsEditModalOpen(true)} // ABRE O MODAL
+            >
+              Editar Dados
+            </ButtonType>
+          </div>
         </div>
       </div>
 
@@ -272,28 +287,40 @@ export default function DetalhesEmpresaPage() {
                       </td>
                       <td className="px-8 py-4">
                         <span
-                          className={`px-2 py-1 rounded-full text-[10px] font-bold ${user.status === "ATIVO"
-                            ? "bg-green-50 text-green-700"
-                            : "bg-amber-50 text-amber-700"
-                            }`}
+                          className={`px-2 py-1 rounded-full text-[10px] font-bold ${
+                            user.status === "ATIVO"
+                              ? "bg-green-50 text-green-700"
+                              : "bg-amber-50 text-amber-700"
+                          }`}
                         >
                           {user.status}
                         </span>
                       </td>
                       <td className="px-8 py-4">
                         <div className="flex items-center gap-2 text-xs">
-                          <HiOutlineCalendar className="text-gray-300" size={14} />
+                          <HiOutlineCalendar
+                            className="text-gray-300"
+                            size={14}
+                          />
                           {user.ultimo_login ? (
                             <div className="flex flex-col">
                               <span className="font-semibold text-gray-700">
-                                {new Date(user.ultimo_login).toLocaleDateString('pt-BR')}
+                                {new Date(user.ultimo_login).toLocaleDateString(
+                                  "pt-BR",
+                                )}
                               </span>
                               <span className="text-[10px] text-gray-400">
-                                às {new Date(user.ultimo_login).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                às{" "}
+                                {new Date(user.ultimo_login).toLocaleTimeString(
+                                  "pt-BR",
+                                  { hour: "2-digit", minute: "2-digit" },
+                                )}
                               </span>
                             </div>
                           ) : (
-                            <span className="text-gray-400 italic">Nunca acessou</span>
+                            <span className="text-gray-400 italic">
+                              Nunca acessou
+                            </span>
                           )}
                         </div>
                       </td>
@@ -312,10 +339,11 @@ export default function DetalhesEmpresaPage() {
                                 ? "Bloquear Usuário"
                                 : "Ativar Usuário"
                             }
-                            className={`p-2 rounded-xl transition-all ${user.status === "ATIVO"
-                              ? "text-gray-400 hover:text-amber-600 hover:bg-amber-50"
-                              : "text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"
-                              }`}
+                            className={`p-2 rounded-xl transition-all ${
+                              user.status === "ATIVO"
+                                ? "text-gray-400 hover:text-amber-600 hover:bg-amber-50"
+                                : "text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"
+                            }`}
                           >
                             {user.status === "ATIVO" ? (
                               <HiOutlineLockClosed size={18} />
@@ -395,7 +423,13 @@ export default function DetalhesEmpresaPage() {
         onClose={() => setIsStatusModalOpen(false)}
         onConfirm={handleAlterarStatusEmpresa}
         isLoading={statusLoading}
-        tipo="DESATIVAR"
+        tipo={empresa.status === "ATIVO" ? "DESATIVAR" : "ATIVAR"}
+      />
+      <ModalEditarEmpresa
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        empresa={empresa} // Passa o objeto completo que você já tem no estado
+        onSuccess={() => fetchDetalhes()} // Recarrega os dados após editar
       />
     </div>
   );

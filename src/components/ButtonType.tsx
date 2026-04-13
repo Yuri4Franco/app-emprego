@@ -34,7 +34,7 @@ export function ButtonType({
     secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200",
     outline: "border border-gray-300 bg-transparent hover:bg-gray-50 text-gray-700",
     ghost: "bg-transparent hover:bg-gray-100 text-gray-700",
-    danger: "bg-[#ed2027] text-white hover:bg-[#c91b21] shadow-sm",
+    danger: "bg-[#ff4d4d] text-white hover:bg-[#c91b21] shadow-sm",
   };
 
   const sizes = {
