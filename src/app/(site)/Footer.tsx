@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import Logo from "@/src/assets/logos/logo-transparente.png";
+import Logo from "@/src/assets/logos/logo-site-aci-transparente.png";
 import { FaInstagram, FaLinkedin, FaFacebookSquare, FaWhatsapp, FaExternalLinkAlt } from "react-icons/fa";
 import { HiOutlineMail, HiOutlineLocationMarker, HiOutlinePhone } from "react-icons/hi";
 
@@ -22,7 +22,7 @@ export default function Footer() {
                             <Image
                                 src={Logo}
                                 alt="Logo ACI Panambi"
-                                className="object-contain object-left"
+                                className="object-contain w-full h-full"
                             />
                         </div>
                         <p className="text-gray-500 text-sm leading-relaxed pt-4">

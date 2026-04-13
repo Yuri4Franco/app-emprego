@@ -78,6 +78,7 @@ export default function LoginPage() {
       // Salva Cookies de sessão (7 dias)
       Cookies.set("aci_token", token, { expires: 7, secure: true });
       Cookies.set("user_role", tipo, { expires: 7 });
+      Cookies.set("exigir_troca_senha", response.data.data.exigir_troca_senha, { expires: 7 });
 
       // Redirecionamento baseado no cargo retornado pelo back
       if (tipo === "ADM") {

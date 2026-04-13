@@ -31,57 +31,16 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-br">
-      <body
-        className="flex min-h-screen"
-      >
+    <main
+      className="flex min-h-screen"
+    >
 
-        <Toaster
-          position="top-left"
-          toastOptions={{
-            // Estilo padrão para todos os toasts
-            className: 'font-sans font-medium text-sm',
-            style: {
-              borderRadius: '16px', // Bem arredondado (estilo 2026)
-              background: '#333',
-              color: '#fff',
-              padding: '12px 20px',
-            },
-            // Customização por tipo
-            success: {
-              duration: 5000,
-              style: {
-                background: '#ecfdf5', // emerald-50
-                color: '#065f46',      // emerald-800
-                border: '1px solid #a7f3d0', // emerald-200
-              },
-              iconTheme: {
-                primary: '#10b981',    // emerald-500
-                secondary: '#fff',
-              },
-            },
-            error: {
-              duration: 6000,
-              style: {
-                background: '#fef2f2', // red-50
-                color: '#991b1b',      // red-800
-                border: '1px solid #fecaca', // red-200
-              },
-              iconTheme: {
-                primary: '#ef4444',    // red-500
-                secondary: '#fff',
-              },
-            },
-          }}
-        />
-
-        <aside className="w-64 h-screen sticky top-0 flex-shrink-0 bg-blue-900">
-          <Sidebar />
-        </aside>
-        <main className="flex-1 p-8 overflow-y-auto">
-          <div className="max-w-7xl mx-auto">{children}</div>
-        </main>
-      </body>
-    </html>
+      <aside className="w-64 h-screen sticky top-0 flex-shrink-0 bg-blue-900">
+        <Sidebar />
+      </aside>
+      <div className="flex-1 p-8 overflow-y-auto">
+        <div className="max-w-7xl mx-auto">{children}</div>
+      </div>
+    </main>
   );
 }

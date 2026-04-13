@@ -10,7 +10,7 @@ function cn(...inputs: ClassValue[]) {
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'; // Adicionei 'danger' caso precise do vermelho
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   href?: string; 
