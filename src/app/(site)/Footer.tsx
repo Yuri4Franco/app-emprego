@@ -17,15 +17,15 @@ export default function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
 
                     {/* COLUNA 1: Marca e Sobre */}
-                    <div className="space-y-10">
-                        <div className="h-16 relative w-40">
+                    <div className="space-y-2">
+                        <div className="relative w-full">
                             <Image
                                 src={Logo}
                                 alt="Logo ACI Panambi"
-                                className="object-contain w-full h-full"
+                                className="object-contain"
                             />
                         </div>
-                        <p className="text-gray-500 text-sm leading-relaxed pt-4">
+                        <p className="text-gray-500 text-sm leading-relaxed pt-1">
                             Conectando talentos e empresas para impulsionar o desenvolvimento de Panambi e região. Uma iniciativa da Associação Comercial e Industrial.
                         </p>
                         <div className="flex items-center gap-4">

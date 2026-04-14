@@ -31,11 +31,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main
-      className="flex min-h-screen"
-    >
-
-      <aside className="w-64 h-screen sticky top-0 flex-shrink-0 bg-blue-900">
+    <main className="flex min-h-screen">
+      <aside className="w-64 h-screen sticky top-0 shrink-0 bg-blue-900">
         <Sidebar />
       </aside>
       <div className="flex-1 p-8 overflow-y-auto">

@@ -25,6 +25,7 @@ import { ModalAdicionarUsuario } from "@/src/components/admin/ModalAdicionarUsua
 import { ModalEditarUsuario } from "@/src/components/admin/ModalEditarUsuario";
 import { ModalConfirmarStatusEmpresa } from "@/src/components/admin/ModalConfirmarStatusEmpresa";
 import { ModalGerenciarCreditos } from "@/src/components/admin/ModalGerenciarCreditos";
+import { ModalEditarEmpresa } from "@/src/components/admin/ModalEditarEmpresa";
 
 export default function DetalhesEmpresaPage() {
   const { id } = useParams();
@@ -39,6 +40,7 @@ export default function DetalhesEmpresaPage() {
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
   const [isCreditosModalOpen, setIsCreditosModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchDetalhes = useCallback(async () => {
     setIsLoading(true);
@@ -102,18 +104,15 @@ export default function DetalhesEmpresaPage() {
     const acao = "DESATIVAR";
 
     setStatusLoading(true);
-    await toast.promise(
-      api.patch(`/admin/empresas/${id}/status`, { acao }),
-      {
-        loading: "Processando alteração...",
-        success: (res) => {
-          setIsStatusModalOpen(false);
-          fetchDetalhes(); // Recarrega a página para atualizar usuários/vagas na tela
-          return res.data.message;
-        },
-        error: (err) => err.response?.data?.error || "Erro ao alterar status.",
-      }
-    );
+    await toast.promise(api.patch(`/admin/empresas/${id}/status`, { acao }), {
+      loading: "Processando alteração...",
+      success: (res) => {
+        setIsStatusModalOpen(false);
+        fetchDetalhes(); // Recarrega a página para atualizar usuários/vagas na tela
+        return res.data.message;
+      },
+      error: (err) => err.response?.data?.error || "Erro ao alterar status.",
+    });
     setStatusLoading(false);
   };
 
@@ -151,7 +150,11 @@ export default function DetalhesEmpresaPage() {
           >
             Desativar Empresa
           </ButtonType>
-          <ButtonType variant="primary" className="px-6">
+          <ButtonType
+            variant="primary"
+            className="px-6"
+            onClick={() => setIsEditModalOpen(true)} // <-- ADICIONE ISSO
+          >
             Editar Dados
           </ButtonType>
         </div>
@@ -274,28 +277,40 @@ export default function DetalhesEmpresaPage() {
                       </td>
                       <td className="px-8 py-4">
                         <span
-                          className={`px-2 py-1 rounded-full text-[10px] font-bold ${user.status === "ATIVO"
-                            ? "bg-green-50 text-green-700"
-                            : "bg-amber-50 text-amber-700"
-                            }`}
+                          className={`px-2 py-1 rounded-full text-[10px] font-bold ${
+                            user.status === "ATIVO"
+                              ? "bg-green-50 text-green-700"
+                              : "bg-amber-50 text-amber-700"
+                          }`}
                         >
                           {user.status}
                         </span>
                       </td>
                       <td className="px-8 py-4">
                         <div className="flex items-center gap-2 text-xs">
-                          <HiOutlineCalendar className="text-gray-300" size={14} />
+                          <HiOutlineCalendar
+                            className="text-gray-300"
+                            size={14}
+                          />
                           {user.ultimo_login ? (
                             <div className="flex flex-col">
                               <span className="font-semibold text-gray-700">
-                                {new Date(user.ultimo_login).toLocaleDateString('pt-BR')}
+                                {new Date(user.ultimo_login).toLocaleDateString(
+                                  "pt-BR",
+                                )}
                               </span>
                               <span className="text-[10px] text-gray-400">
-                                às {new Date(user.ultimo_login).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                às{" "}
+                                {new Date(user.ultimo_login).toLocaleTimeString(
+                                  "pt-BR",
+                                  { hour: "2-digit", minute: "2-digit" },
+                                )}
                               </span>
                             </div>
                           ) : (
-                            <span className="text-gray-400 italic">Nunca acessou</span>
+                            <span className="text-gray-400 italic">
+                              Nunca acessou
+                            </span>
                           )}
                         </div>
                       </td>
@@ -314,10 +329,11 @@ export default function DetalhesEmpresaPage() {
                                 ? "Bloquear Usuário"
                                 : "Ativar Usuário"
                             }
-                            className={`p-2 rounded-xl transition-all ${user.status === "ATIVO"
-                              ? "text-gray-400 hover:text-amber-600 hover:bg-amber-50"
-                              : "text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"
-                              }`}
+                            className={`p-2 rounded-xl transition-all ${
+                              user.status === "ATIVO"
+                                ? "text-gray-400 hover:text-amber-600 hover:bg-amber-50"
+                                : "text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50"
+                            }`}
                           >
                             {user.status === "ATIVO" ? (
                               <HiOutlineLockClosed size={18} />
@@ -355,12 +371,20 @@ export default function DetalhesEmpresaPage() {
             </h3>
             <div className="space-y-6">
               <div className="bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Créditos de Vagas</p>
-                <p className="text-3xl font-bold">{empresa.creditos_vagas || 0}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">
+                  Créditos de Vagas
+                </p>
+                <p className="text-3xl font-bold">
+                  {empresa.creditos_vagas || 0}
+                </p>
               </div>
               <div className="bg-white/10 p-4 rounded-2xl backdrop-blur-sm border border-white/10">
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Créditos de Currículos</p>
-                <p className="text-3xl font-bold">{empresa.creditos_curriculos || 0}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">
+                  Créditos de Currículos
+                </p>
+                <p className="text-3xl font-bold">
+                  {empresa.creditos_curriculos || 0}
+                </p>
               </div>
 
               {/* BOTAO QUE ABRE O MODAL */}
@@ -400,6 +424,12 @@ export default function DetalhesEmpresaPage() {
         isOpen={isCreditosModalOpen}
         onClose={() => setIsCreditosModalOpen(false)}
         idEmpresa={Number(id)}
+        onSuccess={() => fetchDetalhes()}
+      />
+      <ModalEditarEmpresa
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        empresa={empresa}
         onSuccess={() => fetchDetalhes()}
       />
     </div>

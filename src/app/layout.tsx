@@ -2,57 +2,60 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "../AuthContext";
 import { Geist, Geist_Mono } from "next/font/google";
 //@ts-ignore
-import './globals.css';
+import "./globals.css";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <html lang="pt-br">
-            <body>
-                {/* Provedores Globais */}
-                <AuthProvider>
-                    <Toaster
-                        position="top-left"
-                        toastOptions={{
-                            // Estilo padrão para todos os toasts
-                            className: 'font-sans font-medium text-sm',
-                            style: {
-                                borderRadius: '16px', // Bem arredondado (estilo 2026)
-                                background: '#333',
-                                color: '#fff',
-                                padding: '12px 20px',
-                            },
-                            // Customização por tipo
-                            success: {
-                                duration: 5000,
-                                style: {
-                                    background: '#ecfdf5', // emerald-50
-                                    color: '#065f46',      // emerald-800
-                                    border: '1px solid #a7f3d0', // emerald-200
-                                },
-                                iconTheme: {
-                                    primary: '#10b981',    // emerald-500
-                                    secondary: '#fff',
-                                },
-                            },
-                            error: {
-                                duration: 6000,
-                                style: {
-                                    background: '#fef2f2', // red-50
-                                    color: '#991b1b',      // red-800
-                                    border: '1px solid #fecaca', // red-200
-                                },
-                                iconTheme: {
-                                    primary: '#ef4444',    // red-500
-                                    secondary: '#fff',
-                                },
-                            },
-                        }}
-                    />
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="pt-br">
+      <body>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            // Estilo padrão para todos os toasts
+            className: "font-sans font-medium text-sm",
+            style: {
+              borderRadius: "16px", // Bem arredondado (estilo 2026)
+              background: "#333",
+              color: "#fff",
+              padding: "12px 20px",
+            },
+            // Customização por tipo
+            success: {
+              duration: 5000,
+              style: {
+                background: "#ecfdf5", // emerald-50
+                color: "#065f46", // emerald-800
+                border: "1px solid #a7f3d0", // emerald-200
+              },
+              iconTheme: {
+                primary: "#10b981", // emerald-500
+                secondary: "#fff",
+              },
+            },
+            error: {
+              duration: 6000,
+              style: {
+                background: "#fef2f2", // red-50
+                color: "#991b1b", // red-800
+                border: "1px solid #fecaca", // red-200
+              },
+              iconTheme: {
+                primary: "#ef4444", // red-500
+                secondary: "#fff",
+              },
+            },
+          }}
+        />
 
-                    {children} {/* Aqui entrarão os layouts dos grupos */}
-
-                </AuthProvider>
-            </body>
-        </html>
-    );
+        {/* Provedores Globais */}
+        <AuthProvider>
+          {children} {/* Aqui entrarão os layouts dos grupos */}
+        </AuthProvider>
+      </body>
+    </html>
+  );
 }

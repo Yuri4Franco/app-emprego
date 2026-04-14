@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 //@ts-ignore
-import '../globals.css';
+import "../globals.css";
 import Header from "./Header";
 import Footer from "./Footer";
 import { Toaster } from "react-hot-toast";
@@ -33,33 +33,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-br">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background`}
-      >
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#333',
-              color: '#fff',
-              borderRadius: '12px',
-            },
-            success: {
-              iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
-              },
-            },
-          }}
-        />
-
-        <Header />
-
-        {children}
-        <Footer />
-      </body>
-    </html>
+    <div>
+      <Header />
+      {children}
+      <Footer />
+    </div>
   );
 }
