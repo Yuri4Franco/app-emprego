@@ -15,7 +15,7 @@ interface User {
 
 interface AuthContextData {
   user: User | null;
-  perfil: any; // Adicionado para a Sidebar
+  perfil: any; 
   isAuthenticated: boolean;
   login: (token: string) => void;
   logout: () => void;
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user,
-      perfil, // Agora o perfil está disponível globalmente!
+      perfil,
       isAuthenticated,
       login,
       logout,
