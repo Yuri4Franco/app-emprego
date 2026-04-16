@@ -19,8 +19,8 @@ export default function SidebarCandidato() {
 
   // Função para verificar se a rota está ativa
   const isActive = (path: string) => {
-    if (path === "/dashboard" && pathname === "/dashboard") return true;
-    if (path !== "/dashboard" && pathname.startsWith(path)) return true;
+    if (path === "/" && pathname === "/") return true;
+    if (path !== "/" && pathname.startsWith(path)) return true;
     return false;
   };
 
@@ -56,28 +56,28 @@ export default function SidebarCandidato() {
       {/* Navegação */}
       <nav className="flex-1 px-4 py-6 space-y-1.5">
         <MenuLink
-          href="/dashboard"
+          href="/inicio"
           icon={<HiOutlineHome size={22} />}
           label="Início"
           active={isActive("/inicio")}
         />
         <MenuLink
-          href="/dashboard/curriculo"
+          href="/meu-curriculo"
           icon={<HiOutlineDocumentText size={22} />}
           label="Meu Currículo"
           active={isActive("/meu-curriculo")}
         />
         <MenuLink
-          href="/dashboard/vagas"
+          href="/ver-vagas"
           icon={<HiOutlineBriefcase size={22} />}
           label="Vagas"
           active={isActive("/ver-vagas")}
         />
         <MenuLink
-          href="/dashboard/suporte"
+          href="/suporte-para-candidato"
           icon={<HiOutlineSupport size={22} />}
           label="Suporte"
-          active={isActive("/c-suporte")}
+          active={isActive("/suporte-para-candidato")}
         />
       </nav>
 

@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 
 // Sugestão de Menu para o ACI Empregos
 const menuItems = [
-  { name: "Dashboard", href: "/admin", icon: HiOutlineChartBar },
+  { name: "Dashboard", href: "/admin/dashboard", icon: HiOutlineChartBar },
   { name: "Vagas", href: "/admin/vagas", icon: HiOutlineBriefcase },
   { name: "Empresas", href: "/admin/empresas", icon: HiOutlineOfficeBuilding },
   { name: "Candidatos", href: "/admin/candidatos", icon: HiOutlineUsers },
