@@ -19,9 +19,11 @@ import bgAuth from "@/src/assets/backgrounds/bg-login.jpg";
 import logo from "@/src/assets/logos/logo-transparente.png";
 import api from "@/src/services/api";
 
-// 1. Schema Simplificado (Apenas E-mail e Senha)
 const loginSchema = z.object({
-  email: z.string().min(1, "E-mail é obrigatório").email("Digite um e-mail válido"),
+  email: z
+    .string()
+    .min(1, "E-mail é obrigatório")
+    .email("Digite um e-mail válido"),
   password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
   remember: z.boolean().optional(),
 });
@@ -48,7 +50,6 @@ export default function LoginPage() {
     },
   });
 
-  // 2. Implementação do "Lembrar de Mim"
   useEffect(() => {
     const savedEmail = localStorage.getItem("@aci:remembered_email");
     if (savedEmail) {
@@ -68,26 +69,36 @@ export default function LoginPage() {
       });
 
       const { token, tipo } = response.data.data;
-      
+
       if (data.remember) {
         localStorage.setItem("@aci:remembered_email", data.email);
       } else {
         localStorage.removeItem("@aci:remembered_email");
       }
 
-      // Salva Cookies de sessão (7 dias)
       Cookies.set("aci_token", token, { expires: 7, secure: true });
       Cookies.set("user_role", tipo, { expires: 7 });
-      Cookies.set("exigir_troca_senha", response.data.data.exigir_troca_senha, { expires: 7 });
+      Cookies.set("exigir_troca_senha", response.data.data.exigir_troca_senha, {
+        expires: 7,
+      });
 
-      // Redirecionamento baseado no cargo retornado pelo back
       if (tipo === "ADM") {
-        router.push("/admin");
+        router.push("/admin/dashboard");
+      } else if (tipo === "EMPRESA") {
+        router.push("/empresa/dashboard");
       } else {
-        router.push("/dashboard");
+        router.push("/dashboard"); // CANDIDATO
       }
     } catch (error: any) {
       const msg = error.response?.data?.error || "E-mail ou senha incorretos.";
+
+      if (msg.includes("Verifique seu email")) {
+        sessionStorage.setItem("@ACI:pendingEmail", data.email);
+
+        router.push("/verificar-email");
+        return;
+      }
+
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
@@ -96,17 +107,23 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen w-full bg-gray-50">
-      
       {/* LADO ESQUERDO: FORMULÁRIO */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-white">
         <div className="w-full max-w-md space-y-8">
-          
           <div className="text-center">
             <Link href="/" className="inline-block mb-6">
-              <Image src={logo} alt="Logo ACI Empregos" className="w-48 mx-auto" />
+              <Image
+                src={logo}
+                alt="Logo ACI Empregos"
+                className="w-48 mx-auto"
+              />
             </Link>
-            <h2 className="text-3xl font-bold text-gray-900">Bem-vindo de volta</h2>
-            <p className="text-gray-500 mt-2">Acesse sua conta para continuar</p>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Bem-vindo de volta
+            </h2>
+            <p className="text-gray-500 mt-2">
+              Acesse sua conta para continuar
+            </p>
           </div>
 
           {/* Mensagem de Erro do Backend */}
@@ -138,7 +155,11 @@ export default function LoginPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-[38px] text-gray-400 hover:text-primary transition-colors"
               >
-                {showPassword ? <HiOutlineEyeOff size={22} /> : <HiOutlineEye size={22} />}
+                {showPassword ? (
+                  <HiOutlineEyeOff size={22} />
+                ) : (
+                  <HiOutlineEye size={22} />
+                )}
               </button>
             </div>
 
@@ -153,7 +174,10 @@ export default function LoginPage() {
                   Lembrar de mim
                 </span>
               </label>
-              <Link href="/recuperar-senha" className="text-primary font-bold hover:underline">
+              <Link
+                href="/recuperar-senha"
+                className="text-primary font-bold hover:underline"
+              >
                 Esqueceu a senha?
               </Link>
             </div>
@@ -169,7 +193,10 @@ export default function LoginPage() {
 
           <p className="text-center text-gray-600">
             Ainda não tem conta?{" "}
-            <Link href="/cadastrar" className="text-primary font-bold hover:underline">
+            <Link
+              href="/cadastrar"
+              className="text-primary font-bold hover:underline"
+            >
               Cadastre-se grátis
             </Link>
           </p>
@@ -189,7 +216,8 @@ export default function LoginPage() {
         <div className="relative z-20 h-full flex flex-col justify-end p-16 text-white">
           <blockquote className="space-y-4">
             <p className="text-2xl font-medium leading-relaxed">
-              "Conectar talentos às melhores empresas de Panambi é o nosso compromisso diário."
+              "Conectar talentos às melhores empresas de Panambi é o nosso
+              compromisso diário."
             </p>
             <footer className="opacity-80">— Equipe ACI Panambi</footer>
           </blockquote>

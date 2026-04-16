@@ -1,16 +1,5 @@
+import SidebarCandidato from "@/src/components/candidato/SidebarCandidato";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "../globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -23,19 +12,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-br">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <header className="bg-white dark:bg-black border-b border-zinc-200 dark:border-zinc-800">
-          <div className="mx-auto max-w-3xl px-16 py-4">
-            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-              ACI EMPREGOS
-            </h1>
-          </div>
-        </header> 
-          {children}
-      </body>
-    </html>
+    <div>
+      <SidebarCandidato />
+      {children}
+    </div>
   );
 }

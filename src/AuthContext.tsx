@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
@@ -15,7 +21,7 @@ interface User {
 
 interface AuthContextData {
   user: User | null;
-  perfil: any; 
+  perfil: any;
   isAuthenticated: boolean;
   login: (token: string) => void;
   logout: () => void;
@@ -68,16 +74,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       exigir_troca_senha: decoded.exigir_troca_senha,
     };
 
-    Cookies.set("aci_token", token, { expires: 1, path: '/' });
-    Cookies.set("user_role", userData.role, { expires: 1, path: '/' });
-    Cookies.set("exigir_troca_senha", String(userData.exigir_troca_senha), { expires: 1, path: '/' });
+    Cookies.set("aci_token", token, { expires: 1, path: "/" });
+    Cookies.set("user_role", userData.role, { expires: 1, path: "/" });
+    Cookies.set("exigir_troca_senha", String(userData.exigir_troca_senha), {
+      expires: 1,
+      path: "/",
+    });
 
     setUser(userData);
-
     if (userData.exigir_troca_senha) {
       router.push("/trocar-senha");
     } else {
-      router.push(userData.role === "ADM" ? "/admin" : "/dashboard");
+      // REDIRECIONAMENTO COM 3 PERFIS AQUI TAMBÉM
+      if (userData.role === "ADM") {
+        router.push("/admin/dashboard");
+      } else if (userData.role === "EMPRESA") {
+        router.push("/empresa/dashboard");
+      } else {
+        router.push("/inicio");
+      }
     }
   };
 
@@ -100,14 +115,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [logout]);
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      perfil,
-      isAuthenticated,
-      login,
-      logout,
-      isLoading
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        perfil,
+        isAuthenticated,
+        login,
+        logout,
+        isLoading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
