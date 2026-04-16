@@ -14,7 +14,7 @@ import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 
-// Assets e Configurações
+// A  ssets e Configurações
 import bgAuth from "@/src/assets/backgrounds/bg-login.jpg";
 import logo from "@/src/assets/logos/logo-transparente.png";
 import api from "@/src/services/api";
@@ -87,7 +87,7 @@ export default function LoginPage() {
       } else if (tipo === "EMPRESA") {
         router.push("/empresa/dashboard");
       } else {
-        router.push("/dashboard"); // CANDIDATO
+        router.push("/inicio"); // CANDIDATO
       }
     } catch (error: any) {
       const msg = error.response?.data?.error || "E-mail ou senha incorretos.";
