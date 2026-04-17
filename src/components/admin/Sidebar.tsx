@@ -20,11 +20,6 @@ const menuItems = [
   { name: "Vagas", href: "/admin/vagas", icon: HiOutlineBriefcase },
   { name: "Empresas", href: "/admin/empresas", icon: HiOutlineOfficeBuilding },
   { name: "Candidatos", href: "/admin/candidatos", icon: HiOutlineUsers },
-  {
-    name: "Bairros / Cidades",
-    href: "/admin/taxonomia",
-    icon: HiOutlineLocationMarker,
-  },
   { name: "Configurações", href: "/admin/configuracoes", icon: HiOutlineCog },
 ];
 

@@ -59,7 +59,7 @@ export const maskTelefone = (value: string | undefined | null) => {
 
 // 1. Schema dos Dados Gerais (Espelho do Backend)
 const dadosGeraisSchema = z.object({
-  cpf: z.string().length(11, "CPF deve ter 11 dígitos").optional().nullable(),
+  cpf: z.string().length(14, "CPF deve ter 11 dígitos").optional().nullable(),
   data_nascimento: z.string().optional().nullable(),
   genero: z.string().optional().nullable(),
   telefone: z.string().optional().nullable(),
