@@ -197,19 +197,28 @@ export default async function DetalhesVagaPage({ params }: PageProps) {
               )}
             </div>
           </section>
-
-          {/* BENEFÍCIOS (Se o seu backend enviar um dia, já fica preparado) */}
-          {vaga.beneficios && (
+          {/* COLE ESTE BLOCO NOVO: */}
+          {vaga.beneficios && vaga.beneficios.length > 0 && (
             <section className="bg-white p-8 md:p-12 rounded-[40px] shadow-sm border border-gray-100 space-y-6">
               <h2 className="text-2xl font-black text-gray-800 border-b border-gray-100 pb-4">
                 Benefícios
               </h2>
-              <div className="prose prose-lg prose-gray max-w-none whitespace-pre-wrap text-gray-600 leading-relaxed">
-                {vaga.beneficios}
+
+              <div className="flex flex-wrap gap-3">
+                {vaga.beneficios.map((item: any) => (
+                  <span
+                    key={`ben-${item.id_beneficio}`}
+                    className="flex items-center gap-2 px-5 py-3 bg-emerald-50/50 text-emerald-700 border border-emerald-100 rounded-2xl text-sm font-bold shadow-sm"
+                  >
+                    <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    {item.beneficio.descricao}
+                  </span>
+                ))}
               </div>
             </section>
           )}
-
           {/* SOBRE A EMPRESA E REDES SOCIAIS */}
           <section className="bg-gradient-to-br from-gray-900 to-gray-800 p-8 md:p-12 rounded-[40px] shadow-xl text-white space-y-8 relative overflow-hidden">
             {/* Decoração de fundo */}
