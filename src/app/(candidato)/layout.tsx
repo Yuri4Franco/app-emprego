@@ -13,11 +13,9 @@ export default function RootLayout({
 }>) {
   return (
     <main className="flex min-h-screen">
-      <aside className="w-64 h-screen sticky top-0 shrink-0 bg-blue-900">
         <SidebarCandidato />
-      </aside>
-      <div className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-7xl p-8 mx-auto">{children}</div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto">{children}</div>
       </div>
     </main>
   );

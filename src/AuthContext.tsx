@@ -23,7 +23,7 @@ interface AuthContextData {
   user: User | null;
   perfil: any;
   isAuthenticated: boolean;
-  login: (token: string) => void;
+  login: (token: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -35,8 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [perfil, setPerfil] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname(); // Usamos o pathname para detectar mudanças de rota
 
-  // 1. Defina a constante aqui para poder usar nos hooks abaixo
   const isAuthenticated = !!user;
 
   const logout = useCallback(() => {
@@ -48,71 +48,100 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push("/entrar");
   }, [router]);
 
-  const carregarPerfil = useCallback(async () => {
+  // Função isolada para buscar o perfil, assim podemos chamá-la de vários lugares
+  const fetchPerfil = async () => {
     try {
       const { data } = await api.get("/me");
       setPerfil(data);
+      return data;
     } catch (error) {
-      console.error("Erro ao carregar perfil detalhado", error);
-      if (isAuthenticated) logout();
-    }
-  }, [isAuthenticated, logout]);
-
-  useEffect(() => {
-    if (isAuthenticated && !perfil) {
-      carregarPerfil();
-    }
-  }, [isAuthenticated, perfil, carregarPerfil]);
-
-  const login = (token: string) => {
-    const decoded: any = jwtDecode(token);
-
-    const userData: User = {
-      id: decoded.sub,
-      role: decoded.role,
-      is_master: decoded.master,
-      exigir_troca_senha: decoded.exigir_troca_senha,
-    };
-
-    Cookies.set("aci_token", token, { expires: 1, path: "/" });
-    Cookies.set("user_role", userData.role, { expires: 1, path: "/" });
-    Cookies.set("exigir_troca_senha", String(userData.exigir_troca_senha), {
-      expires: 1,
-      path: "/",
-    });
-
-    setUser(userData);
-    if (userData.exigir_troca_senha) {
-      router.push("/trocar-senha");
-    } else {
-      // REDIRECIONAMENTO COM 3 PERFIS AQUI TAMBÉM
-      if (userData.role === "ADM") {
-        router.push("/admin/dashboard");
-      } else if (userData.role === "EMPRESA") {
-        router.push("/empresa/dashboard");
-      } else {
-        router.push("/inicio");
-      }
+      console.error("Erro ao buscar perfil:", error);
+      return null;
     }
   };
 
+  // 1. CARREGAMENTO INICIAL
   useEffect(() => {
-    const token = Cookies.get("aci_token");
-    if (token) {
-      try {
-        const decoded: any = jwtDecode(token);
-        setUser({
-          id: decoded.sub,
-          role: decoded.role,
-          is_master: decoded.master,
-          exigir_troca_senha: decoded.exigir_troca_senha,
-        });
-      } catch {
-        logout();
+    const carregarSessao = async () => {
+      const token = Cookies.get("aci_token");
+
+      if (token) {
+        try {
+          const decoded: any = jwtDecode(token);
+          setUser({
+            id: decoded.sub,
+            role: decoded.role,
+            is_master: decoded.master,
+            exigir_troca_senha: decoded.exigir_troca_senha,
+          });
+
+          await fetchPerfil();
+        } catch (error) {
+          console.error("Token inválido ou sessão expirada", error);
+          Cookies.remove("aci_token");
+          setUser(null);
+          setPerfil(null);
+        }
       }
+      setIsLoading(false);
+    };
+
+    carregarSessao();
+  }, []);
+
+  // 2. O "OUVINTE" DE SEGURANÇA (A Mágica)
+  // Sempre que a rota mudar, se o usuário estiver logado mas o perfil estiver vazio, ele busca!
+  useEffect(() => {
+    if (isAuthenticated && !perfil && !isLoading) {
+      fetchPerfil();
     }
-    setIsLoading(false);
-  }, [logout]);
+  }, [pathname, isAuthenticated, perfil, isLoading]);
+
+  // 3. FLUXO DE LOGIN ASSÍNCRONO
+  const login = async (token: string) => {
+    setIsLoading(true);
+
+    try {
+      const decoded: any = jwtDecode(token);
+
+      const userData: User = {
+        id: decoded.sub,
+        role: decoded.role,
+        is_master: decoded.master,
+        exigir_troca_senha: decoded.exigir_troca_senha,
+      };
+
+      Cookies.set("aci_token", token, { expires: 1, path: "/" });
+      Cookies.set("user_role", userData.role, { expires: 1, path: "/" });
+      Cookies.set("exigir_troca_senha", String(userData.exigir_troca_senha), {
+        expires: 1,
+        path: "/",
+      });
+
+      setUser(userData);
+
+      // Busca o perfil antes de navegar
+      await fetchPerfil();
+
+      setIsLoading(false);
+
+      if (userData.exigir_troca_senha) {
+        router.push("/trocar-senha");
+      } else {
+        if (userData.role === "ADM") {
+          router.push("/admin/dashboard");
+        } else if (userData.role === "EMPRESA") {
+          router.push("/empresa/dashboard");
+        } else {
+          router.push("/inicio");
+        }
+      }
+    } catch (error) {
+      console.error("Erro no fluxo de login:", error);
+      setIsLoading(false);
+      logout();
+    }
+  };
 
   return (
     <AuthContext.Provider

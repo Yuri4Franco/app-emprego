@@ -8,6 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { useAuth } from "@/src/AuthContext";
+
 
 // Componentes e Ícones
 import { Input } from "@/src/components/Input";
@@ -32,6 +34,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
 
   // Estados de UI
   const [showPassword, setShowPassword] = useState(false);
@@ -49,6 +52,8 @@ export default function LoginPage() {
       remember: false,
     },
   });
+
+  
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("@aci:remembered_email");
@@ -76,6 +81,8 @@ export default function LoginPage() {
         localStorage.removeItem("@aci:remembered_email");
       }
 
+      await login(token);
+
       Cookies.set("aci_token", token, { expires: 7, secure: true });
       Cookies.set("user_role", tipo, { expires: 7 });
       Cookies.set("exigir_troca_senha", response.data.data.exigir_troca_senha, {
@@ -100,6 +107,7 @@ export default function LoginPage() {
       }
 
       setErrorMessage(msg);
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }

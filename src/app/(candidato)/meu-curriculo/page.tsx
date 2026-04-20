@@ -795,13 +795,21 @@ export default function MeuCurriculoPage() {
               Perfil Profissional
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Objetivo Profissional (Cargo)"
-                placeholder="Ex: Desenvolvedor Front-end"
-                className={`transition-colors ${getFieldStatus("objetivo_profissional")}`}
-                {...register("objetivo_profissional")}
-                error={errors.objetivo_profissional?.message}
-              />
+              <div className="space-y-1.5">
+                <label className="text-sm font-bold text-gray-700 ml-1">
+                  Objetivo profissional
+                </label>
+                <textarea
+                  {...register("objetivo_profissional")}
+                  className={`w-full p-6 rounded-[32px] h-32 outline-none text-sm focus:ring-4 resize-none transition-colors border ${getFieldStatus("resumo_profissional")}`}
+                  placeholder="Fale sobre cargos desejados, metas, qualidades pessoais, desejo de contribuir com a empresa..."
+                />
+                {errors.objetivo_profissional && (
+                  <p className="text-xs text-red-500 ml-2 font-bold">
+                    {errors.objetivo_profissional.message}
+                  </p>
+                )}
+              </div>
 
               {/* O Bloco Especial da Pretensão Salarial */}
               <div className="space-y-2 p-4 bg-gray-50 rounded-[24px] border border-gray-100">
