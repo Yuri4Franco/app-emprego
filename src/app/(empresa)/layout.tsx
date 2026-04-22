@@ -1,11 +1,11 @@
-import SidebarEmpresa from "@/src/components/empresa/SidebarEmpresa";
+import { Sidebar } from "@/src/components/admin/Sidebar";
 
 
 export default function EmpresaLayout({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex min-h-screen bg-gray-50/50">
             {/* Sidebar fixa na esquerda */}
-            <SidebarEmpresa />
+            <Sidebar/>
 
             {/* Conteúdo da página na direita */}
             <main className="flex-1 overflow-y-auto">

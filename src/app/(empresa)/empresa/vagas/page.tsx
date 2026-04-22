@@ -211,7 +211,7 @@ export default function GestaoVagasPage() {
 
                 {/* Ações */}
                 <div className="flex items-center gap-2">
-                  <Link href={`/empresa/vagas/${vaga.id_vaga}/candidatos`}>
+                  <Link href={`/empresa/vagas/${vaga.id_vaga}/gestao`}>
                     <button className="p-3 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white transition-all shadow-sm">
                       <HiOutlineUsers size={20} />
                     </button>
