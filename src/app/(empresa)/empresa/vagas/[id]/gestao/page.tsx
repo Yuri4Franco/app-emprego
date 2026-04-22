@@ -61,24 +61,35 @@ export default function GestaoVagaPage({
     number | null
   >(null);
 
-  const carregarKanban = useCallback(async () => {
-    setIsLoading(true);
+  const carregarKanban = useCallback(async (isFirstLoad = false) => {
+    if (isFirstLoad) {
+      setIsLoading(true);
+    }
+
     try {
-      const res = await api.get(`/empresa/vagas/${idVaga}/kanban`);
+      // O cache buster continua aqui para garantir!
+      const res = await api.get(`/empresa/vagas/${idVaga}/kanban`, {
+        params: { _t: new Date().getTime() }
+      });
+
       const payload = res.data.data || res.data.dados || res.data;
 
       setVaga(payload.vaga || null);
+
+      // Quando fazemos isso, o React espalha a atualização para o Kanban e para a Lista imediatamente!
       setColunas(payload.colunas || []);
+
     } catch (error: any) {
       console.error(error);
-      toast.error(
-        error.response?.data?.error || "Erro ao carregar a gestão da vaga.",
-      );
-      router.push("/empresa/dashboard"); // Volta se der erro (ex: vaga não é dele)
+      toast.error(error.response?.data?.error || "Erro ao carregar a gestão.");
     } finally {
       setIsLoading(false);
     }
-  }, [idVaga, router]);
+  }, [idVaga]);
+  
+  useEffect(() => {
+    carregarKanban(true);
+  }, [carregarKanban]);
 
   useEffect(() => {
     carregarKanban();
@@ -90,7 +101,6 @@ export default function GestaoVagaPage({
     try {
       await api.post(`/empresa/vagas/${idVaga}/notificar-candidatos`);
       toast.success("Notificações enviadas com sucesso aos candidatos!");
-      // Atualiza os dados para limpar os ícones de pendência visualmente
       carregarKanban();
     } catch (error) {
       toast.error("Erro ao enviar notificações.");
@@ -120,13 +130,13 @@ export default function GestaoVagaPage({
     },
     {
       id: "experiencia_recente",
-      label: "Última Experiência",
-      desc: "Cargo e empresa mais recentes.",
+      label: "Últimas Experiências",
+      desc: "Três últimos cargos.",
     },
     {
       id: "formacao_recente",
-      label: "Última Formação",
-      desc: "Grau acadêmico mais recente.",
+      label: "Últimas Formações",
+      desc: "Grau acadêmico mais recentes.",
     },
     {
       id: "competencias",
@@ -206,11 +216,10 @@ export default function GestaoVagaPage({
                   {vaga?.titulo}
                 </h1>
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                    vaga?.status === "ATIVA"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${vaga?.status === "ATIVA"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-gray-100 text-gray-600"
+                    }`}
                 >
                   {vaga?.status}
                 </span>
@@ -249,22 +258,20 @@ export default function GestaoVagaPage({
               <div className="bg-gray-100 p-1 rounded-xl flex items-center shadow-inner">
                 <button
                   onClick={() => setViewMode("KANBAN")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                    viewMode === "KANBAN"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === "KANBAN"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                    }`}
                 >
                   <HiOutlineViewBoards size={18} />{" "}
                   <span className="hidden md:inline">Kanban</span>
                 </button>
                 <button
                   onClick={() => setViewMode("LISTA")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                    viewMode === "LISTA"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === "LISTA"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                    }`}
                 >
                   <HiOutlineViewList size={18} />{" "}
                   <span className="hidden md:inline">Lista</span>
@@ -337,18 +344,16 @@ export default function GestaoVagaPage({
                   {/* TOGGLE SWITCH ESTILO iOS */}
                   <button
                     onClick={() => toggleCampo(opcao.id)}
-                    className={`relative w-12 h-6 rounded-full transition-colors duration-300 ease-in-out shrink-0 focus:outline-none ${
-                      camposDestaque.includes(opcao.id)
-                        ? "bg-emerald-500"
-                        : "bg-gray-300"
-                    }`}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-300 ease-in-out shrink-0 focus:outline-none ${camposDestaque.includes(opcao.id)
+                      ? "bg-emerald-500"
+                      : "bg-gray-300"
+                      }`}
                   >
                     <div
-                      className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ease-in-out ${
-                        camposDestaque.includes(opcao.id)
-                          ? "translate-x-6"
-                          : "translate-x-0"
-                      }`}
+                      className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ease-in-out ${camposDestaque.includes(opcao.id)
+                        ? "translate-x-6"
+                        : "translate-x-0"
+                        }`}
                     />
                   </button>
                 </div>

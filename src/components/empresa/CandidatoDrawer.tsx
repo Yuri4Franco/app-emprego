@@ -11,10 +11,9 @@ import {
   HiOutlineAcademicCap,
   HiOutlineStar,
   HiOutlineCalendar,
-  HiOutlineChatAlt2,
   HiOutlineLocationMarker,
   HiStar,
-  HiOutlineDocumentText, // ADICIONADO AQUI
+  HiOutlineDocumentText,
 } from "react-icons/hi";
 
 interface CandidatoDrawerProps {
@@ -34,7 +33,6 @@ export function CandidatoDrawer({
     "CURRICULO" | "AVALIACAO" | "AGENDAMENTO"
   >("CURRICULO");
 
-  // Estados para Avaliação
   const [nota, setNota] = useState(0);
   const [obs, setObs] = useState("");
   const [isSalvandoAvaliacao, setIsSalvandoAvaliacao] = useState(false);
@@ -74,8 +72,10 @@ export function CandidatoDrawer({
         pontuacao: nota,
         observacoes_internas: obs,
       });
+      onAtualizar();
       toast.success("Avaliação salva com sucesso!");
-    } catch (error) {
+    }
+    catch (error) {
       toast.error("Erro ao salvar avaliação.");
     } finally {
       setIsSalvandoAvaliacao(false);
@@ -86,13 +86,11 @@ export function CandidatoDrawer({
 
   return (
     <>
-      {/* OVERLAY ESCURO */}
       <div
         className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-40 transition-opacity animate-in fade-in"
         onClick={onClose}
       />
 
-      {/* DRAWER */}
       <div className="fixed top-0 right-0 h-full w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-300">
         {isLoading || !dados ? (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-4">
@@ -101,7 +99,6 @@ export function CandidatoDrawer({
           </div>
         ) : (
           <>
-            {/* HEADER DO DRAWER */}
             <div className="p-8 border-b border-gray-100 bg-gray-50 flex flex-col gap-6">
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-4">
@@ -125,7 +122,23 @@ export function CandidatoDrawer({
                 </button>
               </div>
 
-              {/* ABAS DO DRAWER (Ajustei o texto para Visão Estratégica) */}
+              {dados.resumo_estrategico && (
+                <div className="flex flex-wrap gap-2">
+                  {dados.resumo_estrategico.cidade_bairro && (
+                    <span className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[11px] font-black uppercase text-gray-600">
+                      <HiOutlineLocationMarker size={14} className="text-primary" />
+                      {dados.resumo_estrategico.cidade_bairro}
+                    </span>
+                  )}
+                  {dados.resumo_estrategico.idade && (
+                    <span className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[11px] font-black uppercase text-gray-600">
+                      <HiOutlineUser size={14} className="text-primary" />
+                      {dados.resumo_estrategico.idade} anos
+                    </span>
+                  )}
+                </div>
+              )}
+
               <div className="flex gap-4 border-b border-gray-200">
                 <button
                   onClick={() => setActiveTab("CURRICULO")}
@@ -148,95 +161,93 @@ export function CandidatoDrawer({
               </div>
             </div>
 
-            {/* CONTEÚDO ROLÁVEL */}
             <div className="flex-1 overflow-y-auto p-8">
-              {/* ABA: VISÃO ESTRATÉGICA (Ex-Currículo) */}
+
+              {/* === ABA: VISÃO ESTRATÉGICA === */}
               {activeTab === "CURRICULO" && (
                 <div className="space-y-6 animate-in fade-in">
-                  {/* Cards Dinâmicos com base nas Configurações */}
+
                   {(() => {
-                    const campos = dados.vaga?.configuracao
-                      ?.campos_destaque || [
+                    const campos = dados.vaga?.configuracao?.campos_destaque || [
                       "nome",
                       "experiencia_recente",
-                      "localizacao",
+                      "localizacao"
                     ];
 
                     return (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* CARD: LOCALIZAÇÃO */}
-                        {campos.includes("localizacao") &&
-                          dados.resumo_estrategico?.cidade_bairro && (
-                            <div className="bg-white p-4 border border-gray-200 rounded-2xl shadow-sm">
-                              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1 mb-2">
-                                <HiOutlineLocationMarker /> Localização
-                              </span>
-                              <p className="font-bold text-gray-800">
-                                {dados.resumo_estrategico.cidade_bairro}
-                              </p>
-                            </div>
-                          )}
 
-                        {/* CARD: IDADE */}
-                        {campos.includes("idade") &&
-                          dados.resumo_estrategico?.idade && (
-                            <div className="bg-white p-4 border border-gray-200 rounded-2xl shadow-sm">
-                              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1 mb-2">
-                                <HiOutlineUser /> Idade
-                              </span>
-                              <p className="font-bold text-gray-800">
-                                {dados.resumo_estrategico.idade} anos
-                              </p>
-                            </div>
-                          )}
+                        {campos.includes("localizacao") && dados.resumo_estrategico?.cidade_bairro && (
+                          <div className="bg-white p-4 border border-gray-200 rounded-2xl shadow-sm">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1 mb-2">
+                              <HiOutlineLocationMarker /> Localização
+                            </span>
+                            <p className="font-bold text-gray-800">{dados.resumo_estrategico.cidade_bairro}</p>
+                          </div>
+                        )}
 
-                        {/* CARD: ÚLTIMA EXPERIÊNCIA */}
+                        {campos.includes("idade") && dados.resumo_estrategico?.idade && (
+                          <div className="bg-white p-4 border border-gray-200 rounded-2xl shadow-sm">
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1 mb-2">
+                              <HiOutlineUser /> Idade
+                            </span>
+                            <p className="font-bold text-gray-800">{dados.resumo_estrategico.idade} anos</p>
+                          </div>
+                        )}
+
+                        {/* ATUALIZADO: ATÉ 3 EXPERIÊNCIAS */}
                         {campos.includes("experiencia_recente") && (
                           <div className="bg-white p-4 border border-gray-200 rounded-2xl shadow-sm md:col-span-2 border-l-4 border-l-primary">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1 mb-2">
-                              <HiOutlineBriefcase /> Experiência Mais Recente
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1 mb-3">
+                              <HiOutlineBriefcase /> Experiências Recentes
                             </span>
                             {dados.candidato.experiencias?.length > 0 ? (
-                              <>
-                                <p className="font-bold text-gray-800">
-                                  {dados.candidato.experiencias[0].cargo}
-                                </p>
-                                <p className="text-sm text-primary font-medium">
-                                  {dados.candidato.experiencias[0].empresa}
-                                </p>
-                              </>
+                              <div className="space-y-4">
+                                {dados.candidato.experiencias.slice(0, 3).map((exp: any, index: number) => (
+                                  <div key={exp.id_experiencia || index} className={index !== 0 ? "pt-4 border-t border-gray-100" : ""}>
+                                    <p className="font-bold text-gray-800">{exp.cargo}</p>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mt-1">
+                                      <p className="text-sm text-primary font-medium">{exp.empresa}</p>
+                                      <p className="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-0.5 rounded w-fit">
+                                        {new Date(exp.data_inicio).getFullYear()} - {exp.data_fim ? new Date(exp.data_fim).getFullYear() : "Atual"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             ) : (
-                              <p className="text-sm text-gray-400 italic">
-                                Nenhuma experiência registrada.
-                              </p>
+                              <p className="text-sm text-gray-400 italic">Nenhuma experiência registrada.</p>
                             )}
                           </div>
                         )}
 
-                        {/* CARD: ÚLTIMA FORMAÇÃO */}
+                        {/* ATUALIZADO: ATÉ 3 FORMAÇÕES */}
                         {campos.includes("formacao_recente") && (
                           <div className="bg-white p-4 border border-gray-200 rounded-2xl shadow-sm md:col-span-2">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1 mb-2">
-                              <HiOutlineAcademicCap /> Formação Mais Recente
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1 mb-3">
+                              <HiOutlineAcademicCap /> Formações Recentes
                             </span>
                             {dados.candidato.formacoes?.length > 0 ? (
-                              <>
-                                <p className="font-bold text-gray-800">
-                                  {dados.candidato.formacoes[0].curso}
-                                </p>
-                                <p className="text-sm text-gray-500 font-medium">
-                                  {dados.candidato.formacoes[0].instituicao}
-                                </p>
-                              </>
+                              <div className="space-y-4">
+                                {dados.candidato.formacoes.slice(0, 3).map((form: any, index: number) => (
+                                  <div key={form.id_formacao || index} className={index !== 0 ? "pt-4 border-t border-gray-100" : ""}>
+                                    <p className="font-bold text-gray-800">{form.curso}</p>
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mt-1">
+                                      <p className="text-sm text-gray-500 font-medium">{form.instituicao}</p>
+                                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider bg-gray-50 px-2 py-0.5 rounded w-fit">
+                                        {form.situacao}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             ) : (
-                              <p className="text-sm text-gray-400 italic">
-                                Nenhuma formação registrada.
-                              </p>
+                              <p className="text-sm text-gray-400 italic">Nenhuma formação registrada.</p>
                             )}
                           </div>
                         )}
 
-                        {/* CARD: COMPETÊNCIAS */}
+                        {/* COMPETÊNCIAS */}
                         {campos.includes("competencias") && (
                           <div className="bg-white p-4 border border-gray-200 rounded-2xl shadow-sm md:col-span-2">
                             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1 mb-3">
@@ -244,52 +255,38 @@ export function CandidatoDrawer({
                             </span>
                             {dados.candidato.competencias?.length > 0 ? (
                               <div className="flex flex-wrap gap-2">
-                                {dados.candidato.competencias
-                                  .slice(0, 5)
-                                  .map((comp: any) => (
-                                    <span
-                                      key={comp.id_competencia}
-                                      className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg border border-gray-200"
-                                    >
-                                      {comp.competencia.nome}
-                                    </span>
-                                  ))}
-                                {dados.candidato.competencias.length > 5 && (
-                                  <span className="px-3 py-1 text-gray-400 text-xs font-bold">
-                                    +{dados.candidato.competencias.length - 5}
+                                {dados.candidato.competencias.slice(0, 5).map((comp: any) => (
+                                  <span key={comp.id_competencia} className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg border border-gray-200">
+                                    {comp.competencia.nome}
                                   </span>
+                                ))}
+                                {dados.candidato.competencias.length > 5 && (
+                                  <span className="px-3 py-1 text-gray-400 text-xs font-bold">+{dados.candidato.competencias.length - 5}</span>
                                 )}
                               </div>
                             ) : (
-                              <p className="text-sm text-gray-400 italic">
-                                Nenhuma habilidade informada.
-                              </p>
+                              <p className="text-sm text-gray-400 italic">Nenhuma habilidade informada.</p>
                             )}
                           </div>
                         )}
+
                       </div>
                     );
                   })()}
 
-                  {/* O BOTÃO PARA VER O CURRÍCULO COMPLETO */}
                   <div className="pt-6 mt-6 border-t border-gray-100">
                     <button
-                      // Esta rota vai abrir o CV completo em uma nova guia, você precisará criar a página `/empresa/candidatos/[id]/curriculo` depois
-                      onClick={() =>
-                        window.open(
-                          `/empresa/candidatos/${dados.candidato.id_usuario}/curriculo`,
-                          "_blank",
-                        )
-                      }
+                      onClick={() => window.open(`/empresa/candidatos/${dados.candidato.id_usuario}/curriculo`, "_blank")}
                       className="w-full py-4 border-2 border-primary text-primary hover:bg-blue-50 font-bold rounded-2xl transition-colors flex items-center justify-center gap-2 shadow-sm"
                     >
                       <HiOutlineDocumentText size={20} /> Ver Currículo Completo
                     </button>
                   </div>
+
                 </div>
               )}
 
-              {/* ABA: AVALIAÇÃO INTERNA */}
+              {/* === ABA: AVALIAÇÃO INTERNA === */}
               {activeTab === "AVALIACAO" && (
                 <div className="space-y-6 animate-in fade-in">
                   <div className="bg-amber-50 p-6 rounded-[24px] border border-amber-100">
@@ -297,8 +294,7 @@ export function CandidatoDrawer({
                       Notas do Recrutador
                     </h3>
                     <p className="text-xs text-amber-700/80 mb-6">
-                      Estas informações são confidenciais e não serão vistas
-                      pelo candidato.
+                      Estas informações são confidenciais e não serão vistas pelo candidato.
                     </p>
 
                     <div className="space-y-4">
@@ -316,10 +312,7 @@ export function CandidatoDrawer({
                               {nota >= star ? (
                                 <HiStar size={32} className="text-amber-400" />
                               ) : (
-                                <HiOutlineStar
-                                  size={32}
-                                  className="text-amber-200 hover:text-amber-300"
-                                />
+                                <HiOutlineStar size={32} className="text-amber-200 hover:text-amber-300" />
                               )}
                             </button>
                           ))}
@@ -343,16 +336,14 @@ export function CandidatoDrawer({
                         disabled={isSalvandoAvaliacao}
                         className="w-full py-3.5 font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow-lg shadow-amber-500/30 transition-all disabled:opacity-50"
                       >
-                        {isSalvandoAvaliacao
-                          ? "Salvando..."
-                          : "Salvar Avaliação Interna"}
+                        {isSalvandoAvaliacao ? "Salvando..." : "Salvar Avaliação Interna"}
                       </button>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* ABA: AGENDAMENTO */}
+              {/* === ABA: AGENDAMENTO === */}
               {activeTab === "AGENDAMENTO" && (
                 <div className="space-y-6 animate-in fade-in flex flex-col items-center justify-center py-10 text-center">
                   <div className="w-20 h-20 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-4">
@@ -362,8 +353,7 @@ export function CandidatoDrawer({
                     Agendar Entrevista
                   </h3>
                   <p className="text-sm text-gray-500 max-w-sm">
-                    A integração visual de agendamento pode ser construída aqui,
-                    conectando com a sua rota de <b>POST /agendar</b>.
+                    A integração visual de agendamento pode ser construída aqui, conectando com a sua rota de <b>POST /agendar</b>.
                   </p>
                 </div>
               )}

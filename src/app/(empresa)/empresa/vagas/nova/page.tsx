@@ -43,7 +43,6 @@ const vagaSchema = z.object({
     // NOVO: Schema de Etapas
     etapas: z.array(z.object({
         nome: z.string().min(2, "Nome da etapa é obrigatório"),
-        tipo: z.enum(["INICIAL", "INTERMEDIARIA", "FINAL"]),
         requer_agendamento: z.boolean().default(false)
     })).min(1, "Você precisa ter pelo menos uma etapa no processo.")
 });
@@ -70,13 +69,6 @@ export default function NovaVagaPage() {
             descricao: "", responsabilidades: "", requisitos_obrigatorios: "",
             diferenciais: "", cidade: "Panambi", uf: "RS",
             beneficios_ids: [], perguntas_eliminatorias: [],
-            // Pré-carregamos o funil padrão para facilitar a vida do RH
-            etapas: [
-                { nome: "Inscritos", tipo: "INICIAL", requer_agendamento: false },
-                { nome: "Triagem", tipo: "INTERMEDIARIA", requer_agendamento: false },
-                { nome: "Entrevista", tipo: "INTERMEDIARIA", requer_agendamento: true },
-                { nome: "Finalistas", tipo: "FINAL", requer_agendamento: false },
-            ]
         }
     });
 
@@ -411,17 +403,6 @@ export default function NovaVagaPage() {
                                                 placeholder="Ex: Entrevista com Gestor"
                                             />
                                         </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-bold text-gray-400 uppercase px-2">Classificação</label>
-                                            <select
-                                                {...register(`etapas.${index}.tipo`)}
-                                                className="w-full bg-white border border-transparent focus:border-blue-500 px-4 py-2.5 rounded-xl outline-none text-sm font-medium"
-                                            >
-                                                <option value="INICIAL">Inicial</option>
-                                                <option value="INTERMEDIARIA">Intermediária</option>
-                                                <option value="FINAL">Final</option>
-                                            </select>
-                                        </div>
                                     </div>
 
                                     {/* Opção de Agendamento */}
@@ -445,7 +426,7 @@ export default function NovaVagaPage() {
 
                             <button
                                 type="button"
-                                onClick={() => appendEtapa({ nome: "", tipo: "INTERMEDIARIA", requer_agendamento: false })}
+                                onClick={() => appendEtapa({ nome: "", requer_agendamento: false })}
                                 className="w-full py-4 border-2 border-dashed border-gray-200 rounded-[24px] text-gray-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-50 hover:border-blue-300 hover:text-blue-600 transition-all"
                             >
                                 <HiOutlinePlus size={18} /> Adicionar Nova Etapa
