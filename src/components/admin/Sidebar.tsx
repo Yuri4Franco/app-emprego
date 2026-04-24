@@ -36,7 +36,7 @@ const MENU_CONFIG = {
   EMPRESA: [
     { label: "Dashboard", href: "/empresa/dashboard", icon: <HiOutlineChartBar size={22} /> },
     { label: "Minhas Vagas", href: "/empresa/vagas", icon: <HiOutlineBriefcase size={22} /> },
-    { label: "Banco de Talentos", href: "/empresa/talentos", icon: <HiOutlineUsers size={22} /> },
+    { label: "Banco de Talentos", href: "/empresa/banco-talentos", icon: <HiOutlineUsers size={22} /> },
     { label: "Configurações", href: "/empresa/configuracoes", icon: <HiOutlineCog size={22} /> },
   ],
 };

@@ -12,8 +12,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main className="flex min-h-screen">
+    <main className="flex min-h-screen print:ml-0">
+      <aside className="print:hidden"> 
         <SidebarCandidato />
+      </aside>
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto">{children}</div>
       </div>
