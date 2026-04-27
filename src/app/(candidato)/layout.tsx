@@ -1,3 +1,4 @@
+import { Sidebar } from "@/src/components/Sidebar";
 import SidebarCandidato from "@/src/components/candidato/SidebarCandidato";
 import type { Metadata } from "next";
 
@@ -14,7 +15,7 @@ export default function RootLayout({
   return (
     <main className="flex min-h-screen print:ml-0">
       <aside className="print:hidden"> 
-        <SidebarCandidato />
+        <Sidebar />
       </aside>
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto">{children}</div>

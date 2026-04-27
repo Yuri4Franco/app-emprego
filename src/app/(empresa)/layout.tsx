@@ -1,4 +1,4 @@
-import { Sidebar } from "@/src/components/admin/Sidebar";
+import { Sidebar } from "@/src/components/Sidebar";
 
 
 export default function EmpresaLayout({ children }: { children: React.ReactNode }) {

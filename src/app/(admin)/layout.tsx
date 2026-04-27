@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Sidebar } from "@/src/components/admin/Sidebar";
+import { Sidebar } from "@/src/components/Sidebar";
 //@ts-ignore
 import "../globals.css";
 import { Toaster } from "react-hot-toast";

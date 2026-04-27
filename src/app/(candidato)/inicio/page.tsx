@@ -52,33 +52,33 @@ interface VagaRecomendada {
 
 // Dicionário Visual de Status
 const statusConfig: Record<string, { label: string; cor: string; bg: string }> =
-  {
-    INSCRITO: {
-      label: "Inscrito",
-      cor: "text-blue-700",
-      bg: "bg-blue-50 border-blue-100",
-    },
-    EM_TRIAGEM: {
-      label: "Em Triagem",
-      cor: "text-amber-700",
-      bg: "bg-amber-50 border-amber-100",
-    },
-    ENTREVISTA: {
-      label: "Entrevista Marcada",
-      cor: "text-purple-700",
-      bg: "bg-purple-50 border-purple-100",
-    },
-    APROVADO: {
-      label: "Aprovado!",
-      cor: "text-emerald-700",
-      bg: "bg-emerald-50 border-emerald-100",
-    },
-    REPROVADO: {
-      label: "Não Avançou",
-      cor: "text-gray-500",
-      bg: "bg-gray-100 border-gray-200",
-    },
-  };
+{
+  INSCRITO: {
+    label: "Inscrito",
+    cor: "text-blue-700",
+    bg: "bg-blue-50 border-blue-100",
+  },
+  EM_TRIAGEM: {
+    label: "Em Triagem",
+    cor: "text-amber-700",
+    bg: "bg-amber-50 border-amber-100",
+  },
+  ENTREVISTA: {
+    label: "Entrevista Marcada",
+    cor: "text-purple-700",
+    bg: "bg-purple-50 border-purple-100",
+  },
+  APROVADO: {
+    label: "Aprovado!",
+    cor: "text-emerald-700",
+    bg: "bg-emerald-50 border-emerald-100",
+  },
+  REPROVADO: {
+    label: "Não Avançou",
+    cor: "text-gray-500",
+    bg: "bg-gray-100 border-gray-200",
+  },
+};
 
 export default function DashboardCandidatoPage() {
   const { user, perfil } = useAuth();
@@ -145,7 +145,7 @@ export default function DashboardCandidatoPage() {
             Olá, {primeiroNome}!
           </h1>
           <p className="text-gray-500 max-w-lg leading-relaxed font-medium">
-            Confira como está o seu desempenho na ACI Empregos hoje e explore as
+            Confira como está o seu desempenho na ACI Vagas hoje e explore as
             oportunidades que separamos para você.
           </p>
         </div>
@@ -188,7 +188,7 @@ export default function DashboardCandidatoPage() {
               </h3>
               {metricas.saude_curriculo === 100 ? (
                 <span className="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase px-3 py-1 rounded-md">
-                  Perfil Campeão
+                  Perfil Completo
                 </span>
               ) : (
                 <Link
@@ -226,15 +226,12 @@ export default function DashboardCandidatoPage() {
               <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-4">
                 <HiOutlineEye size={24} />
               </div>
-              <h3 className="text-sm font-bold text-gray-500 mb-1">
-                Visualizações do Perfil
-              </h3>
+              <h3 className="text-sm font-bold text-gray-500 mb-1">Visualizações do Perfil</h3>
               <div className="flex items-end gap-3">
-                <span className="text-4xl font-black text-gray-900">
-                  {metricas.visualizacoes_perfil}
-                </span>
+                <span className="text-4xl font-black text-gray-900">{metricas.visualizacoes_perfil}</span>
+                {/* 👇 AQUI A MUDANÇA: Em vez de "Empresas interessadas", focamos no acesso ao contato */}
                 <span className="text-xs font-bold text-purple-600 mb-1.5 uppercase tracking-widest">
-                  Empresas interessadas
+                  Visualização no Banco de Talentos
                 </span>
               </div>
             </div>
@@ -245,7 +242,7 @@ export default function DashboardCandidatoPage() {
               <HiOutlineSparkles size={24} />
             </div>
             <h3 className="text-sm font-bold text-gray-500 mb-1">
-              Vagas no seu Perfil
+              Vagas na sua area
             </h3>
             <span className="text-4xl font-black text-gray-900">
               {metricas.vagas_compativeis}
@@ -266,7 +263,7 @@ export default function DashboardCandidatoPage() {
               Recentes
             </h2>
             <Link
-              href="/minhas-vagas"
+              href="/candidaturas"
               className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors"
             >
               Ver histórico completo
@@ -390,33 +387,26 @@ export default function DashboardCandidatoPage() {
             )}
           </div>
         </div>
-
         {/* LADO DIREITO: Radar de Vagas */}
         <div className="lg:col-span-1 space-y-6">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-black text-gray-900 flex items-center gap-3">
-              <HiOutlineSparkles className="text-emerald-500" /> Radar de Vagas
+              {/* 👇 AQUI A MUDANÇA 1: Nome mais neutro e claro */}
+              <HiOutlineSparkles className="text-emerald-500" /> Novidades na sua área
             </h2>
           </div>
 
           <div className="bg-gray-50 p-6 rounded-[32px] border border-gray-100 space-y-4">
+            {/* 👇 AQUI A MUDANÇA 2: Tira o "Recomendadas para você" */}
             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest px-2">
-              Recomendadas para você
+              Vagas Recentes
             </p>
 
             {vagas.length === 0 ? (
               <div className="bg-white p-6 rounded-2xl border border-gray-100 text-center">
-                <HiOutlineExclamationCircle
-                  size={24}
-                  className="text-gray-300 mx-auto mb-2"
-                />
-                <p className="text-sm font-medium text-gray-500">
-                  Nenhuma vaga na sua área no momento.
-                </p>
-                <Link
-                  href="/vagas"
-                  className="text-xs font-bold text-blue-600 mt-2 inline-block"
-                >
+                <HiOutlineExclamationCircle size={24} className="text-gray-300 mx-auto mb-2" />
+                <p className="text-sm font-medium text-gray-500">Nenhuma vaga na sua área no momento.</p>
+                <Link href="/vagas" className="text-xs font-bold text-blue-600 mt-2 inline-block">
                   Ver todas as vagas
                 </Link>
               </div>
