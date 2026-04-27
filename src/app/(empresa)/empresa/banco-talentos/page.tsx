@@ -112,7 +112,7 @@ export default function BancoTalentosDashboard() {
 
         {/* Link rápido para a "Gaveta" */}
         <Link
-          href="/empresas/meus-desbloqueados"
+          href="/empresa/meus-desbloqueados"
           className="flex items-center gap-2 px-6 py-4 bg-gray-900 text-white rounded-full text-sm font-bold hover:bg-black transition-all hover:shadow-lg w-full sm:w-auto justify-center"
         >
           <HiOutlineBriefcase size={18} />

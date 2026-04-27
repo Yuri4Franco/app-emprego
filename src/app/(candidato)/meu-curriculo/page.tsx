@@ -442,15 +442,14 @@ export default function MeuCurriculoPage() {
     formData.append("foto", file);
 
     try {
-      const res = await api.patch("/candidato/foto-perfil", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await api.patch("/candidato/foto-perfil", formData);
+
       toast.success("Foto de perfil atualizada!");
-      // Se o backend devolver a URL oficial da nuvem, você atualiza o estado:
       if (res.data?.foto_url) setFotoUrl(res.data.foto_url);
     } catch (error) {
       toast.error("Erro ao enviar a foto.");
-      setFotoUrl(null); // Desfaz em caso de erro
+      setFotoUrl(null);
+
     } finally {
       setIsUploadingFoto(false);
     }
@@ -825,11 +824,10 @@ export default function MeuCurriculoPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-[20px] text-sm font-bold transition-all ${
-              activeTab === tab.id
+            className={`flex items-center gap-2 px-6 py-3 rounded-[20px] text-sm font-bold transition-all ${activeTab === tab.id
                 ? "bg-blue-50 text-blue-600 shadow-sm"
                 : "text-gray-500 hover:bg-gray-50"
-            }`}
+              }`}
           >
             {tab.icon} {tab.label}
           </button>
@@ -869,6 +867,8 @@ export default function MeuCurriculoPage() {
                   </span>
                   <input
                     type="file"
+                    id="foto"
+                    name="foto"
                     accept="image/*"
                     className="hidden"
                     onChange={handleUploadFoto}
@@ -1728,9 +1728,9 @@ export default function MeuCurriculoPage() {
                               {exp.atual
                                 ? "Atual"
                                 : new Date(exp.data_fim).toLocaleDateString(
-                                    "pt-BR",
-                                    { month: "short", year: "numeric" },
-                                  )}
+                                  "pt-BR",
+                                  { month: "short", year: "numeric" },
+                                )}
                             </p>
                           </div>
                           <div className="flex items-center gap-2 mt-4 md:mt-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">

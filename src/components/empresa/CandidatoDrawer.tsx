@@ -16,6 +16,8 @@ import {
   HiOutlineDocumentText,
 } from "react-icons/hi";
 
+import { FaWhatsapp } from "react-icons/fa";
+
 interface CandidatoDrawerProps {
   idCandidatura: number | null;
   onClose: () => void;
@@ -36,6 +38,12 @@ export function CandidatoDrawer({
   const [nota, setNota] = useState(0);
   const [obs, setObs] = useState("");
   const [isSalvandoAvaliacao, setIsSalvandoAvaliacao] = useState(false);
+
+  const [dataEntrevista, setDataEntrevista] = useState("");
+  const [horaEntrevista, setHoraEntrevista] = useState("");
+  const [localEntrevista, setLocalEntrevista] = useState("");
+  const [instrucoesEntrevista, setInstrucoesEntrevista] = useState("");
+  const [isAgendando, setIsAgendando] = useState(false);
 
   useEffect(() => {
     if (!idCandidatura) return;
@@ -83,6 +91,33 @@ export function CandidatoDrawer({
   };
 
   if (!idCandidatura) return null;
+
+  const agendarEntrevista = async () => {
+    if (!dataEntrevista || !horaEntrevista || !localEntrevista) {
+      toast.error("Por favor, preencha Data, Hora e Local.");
+      return;
+    }
+
+    setIsAgendando(true);
+    try {
+      // Formata a data e hora para ISO (ajuste conforme o backend espera)
+      const dataHoraIso = new Date(`${dataEntrevista}T${horaEntrevista}:00`).toISOString();
+
+      await api.post(`/empresa/candidaturas/${idCandidatura}/agendar`, {
+        data_hora: dataHoraIso,
+        local_link: localEntrevista,
+        instrucoes: instrucoesEntrevista,
+      });
+
+      toast.success("Entrevista agendada com sucesso! O candidato será notificado.");
+      onAtualizar(); // Atualiza o Kanban atrás do Drawer
+      onClose(); // Fecha o Drawer
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Erro ao agendar entrevista.");
+    } finally {
+      setIsAgendando(false);
+    }
+  };
 
   return (
     <>
@@ -276,7 +311,7 @@ export function CandidatoDrawer({
 
                   <div className="pt-6 mt-6 border-t border-gray-100">
                     <button
-                      onClick={() => window.open(`/empresa/candidatos/${dados.candidato.id_usuario}/curriculo`, "_blank")}
+                      onClick={() => window.open(`/empresa/candidaturas/${idCandidatura}/curriculo`, "_blank")}
                       className="w-full py-4 border-2 border-primary text-primary hover:bg-blue-50 font-bold rounded-2xl transition-colors flex items-center justify-center gap-2 shadow-sm"
                     >
                       <HiOutlineDocumentText size={20} /> Ver Currículo Completo
@@ -344,17 +379,108 @@ export function CandidatoDrawer({
               )}
 
               {/* === ABA: AGENDAMENTO === */}
+              {/* === ABA: AGENDAMENTO === */}
               {activeTab === "AGENDAMENTO" && (
-                <div className="space-y-6 animate-in fade-in flex flex-col items-center justify-center py-10 text-center">
-                  <div className="w-20 h-20 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-4">
-                    <HiOutlineCalendar size={40} />
+                <div className="space-y-8 animate-in fade-in">
+
+                  {/* Bloco de Contato Rápido */}
+                  <div className="bg-purple-50/50 p-6 rounded-[24px] border border-purple-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h4 className="text-purple-900 font-bold mb-1 flex items-center gap-2">
+                        <HiOutlineCalendar size={20} className="text-purple-600" />
+                        Contato do Candidato
+                      </h4>
+                      <p className="text-xs text-purple-700/80">
+                        Se preferir, combine a agenda diretamente antes de confirmar abaixo.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2 shrink-0">
+                      {dados.candidato.whatsapp && (
+                        <a
+                          href={`https://wa.me/55${dados.candidato.whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-2 text-sm font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-4 py-2 rounded-full transition-colors"
+                        >
+                          <FaWhatsapp size={16} /> {dados.candidato.whatsapp}
+                        </a>
+                      )}
+                      {dados.candidato.usuario.email && (
+                        <a
+                          href={`mailto:${dados.candidato.usuario.email}`}
+                          className="flex items-center gap-2 text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:border-gray-300 px-4 py-2 rounded-full transition-colors"
+                        >
+                          <HiOutlineMail size={16} /> Enviar E-mail
+                        </a>
+                      )}
+                    </div>
                   </div>
-                  <h3 className="text-xl font-black text-gray-800">
-                    Agendar Entrevista
-                  </h3>
-                  <p className="text-sm text-gray-500 max-w-sm">
-                    A integração visual de agendamento pode ser construída aqui, conectando com a sua rota de <b>POST /agendar</b>.
-                  </p>
+
+                  {/* Formulário de Agendamento */}
+                  <div className="space-y-5">
+                    <h3 className="text-lg font-black text-gray-900 border-b border-gray-100 pb-3">
+                      Marcar Entrevista
+                    </h3>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+                          Data
+                        </label>
+                        <input
+                          type="date"
+                          value={dataEntrevista}
+                          onChange={(e) => setDataEntrevista(e.target.value)}
+                          className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+                          Horário
+                        </label>
+                        <input
+                          type="time"
+                          value={horaEntrevista}
+                          onChange={(e) => setHoraEntrevista(e.target.value)}
+                          className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+                        Local ou Link da Reunião
+                      </label>
+                      <input
+                        type="text"
+                        value={localEntrevista}
+                        onChange={(e) => setLocalEntrevista(e.target.value)}
+                        placeholder="Ex: Sala 2 - Sede ACI ou https://meet.google.com/..."
+                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none text-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 block">
+                        Instruções (Opcional)
+                      </label>
+                      <textarea
+                        value={instrucoesEntrevista}
+                        onChange={(e) => setInstrucoesEntrevista(e.target.value)}
+                        placeholder="Ex: Procure pela recepcionista Maria. Traga um documento com foto."
+                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl h-24 outline-none text-sm resize-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                      />
+                    </div>
+
+                    <button
+                      onClick={agendarEntrevista}
+                      disabled={isAgendando}
+                      className="w-full py-4 font-black text-white bg-purple-600 hover:bg-purple-700 rounded-2xl shadow-lg shadow-purple-600/30 transition-all mt-4 disabled:opacity-50"
+                    >
+                      {isAgendando ? "Agendando..." : "Confirmar Agendamento"}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
