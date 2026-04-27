@@ -54,8 +54,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data } = await api.get("/me");
       setPerfil(data);
       return data;
-    } catch (error) {
-      console.error("Erro ao buscar perfil:", error);
+    } catch (error: any) {
+      // Se der erro 401, o nosso interceptor já vai chutar o cara pro /entrar.
+      // O que precisamos fazer aqui é só zerar os estados da memória.
+      if (error.response?.status === 401) {
+        setUser(null);
+        setPerfil(null);
+      }
       return null;
     }
   };
