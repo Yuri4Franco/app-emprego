@@ -217,6 +217,22 @@ export default function MeuCurriculoPage() {
   const [searchTermArea, setSearchTermArea] = useState("");
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
 
+  const ordemAbas: Array<
+    "dados" | "experiencia" | "formacao" | "competencias"
+  > = ["dados", "experiencia", "formacao", "competencias"];
+
+  const navegarParaAba = (direcao: "proximo" | "anterior") => {
+    const currentIndex = ordemAbas.indexOf(activeTab as any);
+
+    if (direcao === "proximo" && currentIndex < ordemAbas.length - 1) {
+      setActiveTab(ordemAbas[currentIndex + 1]);
+    } else if (direcao === "anterior" && currentIndex > 0) {
+      setActiveTab(ordemAbas[currentIndex - 1]);
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleToggleVisibilidade = async () => {
     const novoStatus = !isVisivel;
     setIsVisivel(novoStatus); // Atualização Otimista na tela
@@ -324,6 +340,44 @@ export default function MeuCurriculoPage() {
       uf: "RS",
     },
   });
+  const isDadosBasicosOk = () => {
+    const vals = getValues();
+    const hasAreas = areasSelecionadas.length > 0;
+    const hasEssenciais = !!(
+      vals.cpf &&
+      vals.data_nascimento &&
+      vals.objetivo_profissional &&
+      vals.bairro &&
+      vals.cidade
+    );
+    return hasEssenciais && hasAreas;
+  };
+
+  // Verifica as outras abas
+  const isExperienciaOk = () =>
+    experiencias.length > 0 || watch("primeiro_emprego");
+  const isFormacaoOk = () => formacoes.length > 0;
+  const isCompetenciasOk = () => competencias.length > 0;
+
+  // Objeto que mapeia o status de cada aba
+  const statusAbas = {
+    dados: isDadosBasicosOk(),
+    experiencia: isExperienciaOk(),
+    formacao: isFormacaoOk(),
+    competencias: isCompetenciasOk(),
+  };
+
+  // Calcula a porcentagem geral (cada aba vale 25%)
+  const calcularProgresso = () => {
+    let preenchidos = 0;
+    if (statusAbas.dados) preenchidos++;
+    if (statusAbas.experiencia) preenchidos++;
+    if (statusAbas.formacao) preenchidos++;
+    if (statusAbas.competencias) preenchidos++;
+    return (preenchidos / 4) * 100;
+  };
+
+  const progressoCurriculo = calcularProgresso();
 
   // Função Mágica para Cores Dinâmicas (Verde = Preenchido | Vermelho = Erro)
   const getFieldStatus = (fieldName: keyof DadosGeraisData) => {
@@ -758,78 +812,189 @@ export default function MeuCurriculoPage() {
     );
   };
 
-  return (
-    <div className="max-w-5xl mx-auto pb-20 pt-10 space-y-8 animate-in fade-in duration-700">
-      <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+  const WizardNavegacao = () => {
+    const currentIndex = ordemAbas.indexOf(activeTab as any);
+    const hasAnterior = currentIndex > 0;
+    const hasProximo = currentIndex < ordemAbas.length - 1;
+
+    return (
+      <div className="flex items-center justify-between pt-8 mt-8 border-t border-gray-100 print:hidden">
         <div>
-          <h1 className="text-3xl font-black text-gray-800 tracking-tight">
-            Meu Currículo
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Mantenha seus dados atualizados para aumentar suas chances de
-            contratação.
-          </p>
+          {hasAnterior ? (
+            <button
+              type="button" // Importante ser 'button' pra não submeter form sem querer
+              onClick={() => navegarParaAba("anterior")}
+              className="flex items-center gap-2 px-6 py-3 rounded-full text-gray-500 font-bold hover:bg-gray-100 transition-colors"
+            >
+              <span className="text-xl leading-none">&larr;</span> Etapa
+              Anterior
+            </button>
+          ) : (
+            <div />
+          )}
         </div>
 
-        <Link
-          href="/meu-curriculo/ver"
-          className="flex items-center gap-2.5 px-6 py-4 rounded-[24px] bg-blue-50 text-blue-600 text-sm font-bold hover:bg-blue-100 hover:text-blue-700 transition-colors"
-        >
-          <HiOutlineEye size={20} />
-          Visualizar
-        </Link>
-
-        {/* O CARD DE VISIBILIDADE */}
-        <div className="flex items-center gap-4 bg-white px-6 py-4 rounded-[24px] border border-gray-100 shadow-sm animate-in fade-in duration-500">
-          <div className="flex flex-col text-right">
-            <span className="text-sm font-black text-gray-800">
-              Banco de Talentos
-            </span>
-            <span
-              className={`text-[11px] font-bold ${isVisivel ? "text-emerald-500" : "text-gray-400"}`}
+        <div>
+          {hasProximo && (
+            <button
+              type="button"
+              onClick={() => navegarParaAba("proximo")}
+              className="flex items-center gap-2 px-8 py-3 rounded-full bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 transition-colors group"
             >
-              {isVisivel ? "Empresas podem te encontrar" : "Perfil oculto"}
-            </span>
+              Próxima Etapa
+              <span className="text-xl leading-none group-hover:translate-x-1 transition-transform">
+                &rarr;
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto pb-20 pt-10 space-y-8 animate-in fade-in duration-700">
+      <header className="mb-10 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-black text-gray-800 tracking-tight">
+              Meu Currículo
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">
+              Mantenha seus dados atualizados para aumentar suas chances de
+              contratação.
+            </p>
           </div>
 
-          {/* Botão Switch estilo iOS */}
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              className="sr-only peer"
-              checked={isVisivel}
-              onChange={handleToggleVisibilidade}
-            />
-            <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-          </label>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link
+              href="/meu-curriculo/ver"
+              className="flex items-center gap-2.5 px-6 py-4 rounded-[24px] bg-blue-50 text-blue-600 text-sm font-bold hover:bg-blue-100 hover:text-blue-700 transition-colors"
+            >
+              <HiOutlineEye size={20} />
+              Visualizar
+            </Link>
+
+            {/* O CARD DE VISIBILIDADE */}
+            <div className="flex items-center gap-4 bg-white px-6 py-4 rounded-[24px] border border-gray-100 shadow-sm transition-all duration-500">
+              <div className="flex flex-col text-right">
+                <span className="text-sm font-black text-gray-800">
+                  Banco de Talentos
+                </span>
+                <span
+                  className={`text-[11px] font-bold ${isVisivel ? "text-emerald-500" : "text-gray-400"}`}
+                >
+                  {isVisivel ? "Empresas podem te encontrar" : "Perfil oculto"}
+                </span>
+              </div>
+
+              {/* Botão Switch estilo iOS */}
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={isVisivel}
+                  onChange={handleToggleVisibilidade}
+                />
+                <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* BARRA DE PROGRESSO DO CURRÍCULO */}
+        <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-6">
+          <div className="flex-1 w-full space-y-2">
+            <div className="flex items-center justify-between text-sm font-bold">
+              <span className="text-gray-700">Força do Perfil</span>
+              <span
+                className={
+                  progressoCurriculo === 100
+                    ? "text-emerald-600"
+                    : "text-blue-600"
+                }
+              >
+                {progressoCurriculo}% Concluído
+              </span>
+            </div>
+            {/* A trilha da barra */}
+            <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+              {/* O preenchimento da barra */}
+              <div
+                className={`h-full rounded-full transition-all duration-1000 ease-out ${progressoCurriculo === 100 ? "bg-emerald-500" : "bg-blue-500"}`}
+                style={{ width: `${progressoCurriculo}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {progressoCurriculo === 100 ? (
+            <div className="shrink-0 text-center px-4">
+              <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full mb-1">
+                Perfil Completo
+              </span>
+              <p className="text-xs text-gray-500 font-medium">
+                Muito bem!
+              </p>
+            </div>
+          ) : (
+            <div className="shrink-0 text-center px-4">
+              <p className="text-xs text-gray-500 font-medium max-w-[150px]">
+                Complete todas as seções para destacar seu currículo.
+              </p>
+            </div>
+          )}
         </div>
       </header>
 
       {/* Sistema de Abas */}
-      <div className="flex flex-wrap gap-2 p-1 bg-white border border-gray-100 rounded-[24px] w-fit shadow-sm">
+      <div className="flex flex-wrap gap-2 p-1.5 bg-white border border-gray-100 rounded-[24px] w-fit shadow-sm">
         {[
-          { id: "dados", label: "Dados Básicos", icon: <HiOutlineUser /> },
+          {
+            id: "dados",
+            label: "Dados Básicos",
+            icon: <HiOutlineUser />,
+            isOk: statusAbas.dados,
+          },
           {
             id: "experiencia",
             label: "Experiência",
             icon: <HiOutlineBriefcase />,
+            isOk: statusAbas.experiencia,
           },
-          { id: "formacao", label: "Formação", icon: <HiOutlineAcademicCap /> },
+          {
+            id: "formacao",
+            label: "Formação",
+            icon: <HiOutlineAcademicCap />,
+            isOk: statusAbas.formacao,
+          },
           {
             id: "competencias",
             label: "Habilidades",
             icon: <HiOutlineLightningBolt />,
+            isOk: statusAbas.competencias,
           },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-6 py-3 rounded-[20px] text-sm font-bold transition-all ${activeTab === tab.id
-                ? "bg-blue-50 text-blue-600 shadow-sm"
-                : "text-gray-500 hover:bg-gray-50"
-              }`}
+            className={`relative flex items-center gap-2.5 px-6 py-3.5 rounded-[20px] text-sm font-bold transition-all overflow-hidden ${
+              activeTab === tab.id
+                ? "bg-blue-50 text-blue-700 shadow-sm border-b-2 border-blue-600"
+                : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
+            }`}
           >
-            {tab.icon} {tab.label}
+            {/* O Ícone e Texto */}
+            <span className="flex items-center gap-2 relative z-10">
+              {tab.icon} {tab.label}
+            </span>
+
+            {/* Indicador de Conclusão (Bolinha Verde) */}
+            {tab.isOk && (
+              <span className="flex h-2 w-2 relative z-10">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -842,6 +1007,15 @@ export default function MeuCurriculoPage() {
           onSubmit={handleSubmit(onSubmitDadosGerais)}
           className="space-y-8 animate-in slide-in-from-bottom-4"
         >
+          <div className="flex justify-between items-end mb-6 ml-2">
+            <p className="text-sm text-gray-500 font-medium leading-relaxed">
+              Quanto mais completo seu currículo, maiores as suas chances. Itens
+              com a tag{" "}
+              <span className="font-bold text-gray-400">(opcional)</span> não
+              travam o cadastro, mas enriquecem seu perfil. Não esqueça de
+              clicar em "Salvar" ao terminar!
+            </p>
+          </div>
           {/* BLOCO 1: DADOS PESSOAIS */}
           <div className="bg-white rounded-[40px] shadow-sm border border-gray-100 overflow-hidden">
             {/* CABEÇALHO DO PERFIL (De ponta a ponta) */}
@@ -977,21 +1151,21 @@ export default function MeuCurriculoPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input
-                    label="LinkedIn (URL)"
+                    label="LinkedIn (URL) (opcional)"
                     placeholder="https://linkedin.com/in/..."
                     className={`transition-colors ${getFieldStatus("link_linkedin")}`}
                     {...register("link_linkedin")}
                     error={errors.link_linkedin?.message}
                   />
                   <Input
-                    label="Portfólio/GitHub"
+                    label="Portfólio/GitHub (opcional)"
                     placeholder="https://..."
                     className={`transition-colors ${getFieldStatus("link_portfolio")}`}
                     {...register("link_portfolio")}
                     error={errors.link_portfolio?.message}
                   />
                   <Input
-                    label="Outro Link"
+                    label="Outro Link (opcional)"
                     placeholder="https://..."
                     className={`transition-colors ${getFieldStatus("link_outro")}`}
                     {...register("link_outro")}
@@ -1419,7 +1593,7 @@ export default function MeuCurriculoPage() {
               className="px-10 py-5 rounded-[24px] flex items-center gap-2 shadow-lg shadow-blue-100 text-lg"
             >
               <HiOutlineSave size={24} />
-              {isSaving ? "Salvando Dados..." : "Salvar Currículo Completo"}
+              {isSaving ? "Salvando Dados..." : "Salvar"}
             </ButtonType>
           </div>
         </form>
@@ -1619,7 +1793,6 @@ export default function MeuCurriculoPage() {
         </section>
       )}
 
-      {/* ABA 2: EXPERIÊNCIA PROFISSIONAL */}
       {/* ABA 2: EXPERIÊNCIA PROFISSIONAL */}
       {activeTab === "experiencia" && (
         <section className="space-y-6 animate-in slide-in-from-bottom-4">
@@ -2055,6 +2228,7 @@ export default function MeuCurriculoPage() {
           )}
         </section>
       )}
+      <WizardNavegacao />
     </div>
   );
 }
