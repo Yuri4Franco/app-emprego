@@ -28,16 +28,16 @@ import api from "@/src/services/api";
 // 1. DICIONÁRIO DE MENUS POR TIPO DE USUÁRIO
 const MENU_CONFIG = {
   CANDIDATO: [
-    { label: "Início", href: "/inicio", icon: <HiOutlineHome size={22} /> },
+    { label: "Início", href: "/candidato/inicio", icon: <HiOutlineHome size={22} /> },
     {
       label: "Meu currículo",
-      href: "/meu-curriculo",
+      href: "/candidato/meu-curriculo",
       icon: <HiOutlineDocumentText size={22} />,
     },
-    { label: "Vagas", href: "/vagas", icon: <HiOutlineBriefcase size={22} /> },
+    { label: "Vagas", href: "/candidato/vagas", icon: <HiOutlineBriefcase size={22} /> },
     {
       label: "Minhas candidaturas",
-      href: "/candidaturas",
+      href: "/candidato/candidaturas",
       icon: <HiOutlineClipboardList size={22} />,
     },
   ],

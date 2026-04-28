@@ -252,7 +252,7 @@ export default function DashboardCandidatoPage() {
                       das buscas do RH.
                     </p>
                     <Link
-                      href="/meu-curriculo"
+                      href="/candidato/meu-curriculo"
                       className="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition-colors flex items-center gap-1"
                     >
                       Visualizar ou editar dados <HiOutlineArrowRight />
@@ -265,7 +265,7 @@ export default function DashboardCandidatoPage() {
                       informações que faltam!
                     </p>
                     <Link
-                      href="/meu-curriculo"
+                      href="/candidato/meu-curriculo"
                       className="text-xs font-bold px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-xl transition-colors inline-block text-center"
                     >
                       Preencher meu currículo
@@ -353,7 +353,7 @@ export default function DashboardCandidatoPage() {
               Recentes
             </h2>
             <Link
-              href="/candidaturas"
+              href="/candidato/candidaturas"
               className="text-sm font-bold text-primary hover:text-blue-800 transition-colors"
             >
               Ver histórico completo
@@ -508,7 +508,7 @@ export default function DashboardCandidatoPage() {
                   Nenhuma vaga nova nesta semana.
                 </p>
                 <Link
-                  href="/vagas"
+                  href="/candidato/vagas"
                   className="text-xs font-bold text-primary mt-2 inline-block"
                 >
                   Ir para a busca geral
@@ -518,7 +518,7 @@ export default function DashboardCandidatoPage() {
               vagas.map((vaga) => (
                 <Link
                   key={vaga.id_vaga}
-                  href={`/vagas/${vaga.id_vaga}`}
+                  href={`/candidato/vagas/${vaga.id_vaga}`}
                   className="block group"
                 >
                   <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-emerald-200 hover:shadow-md transition-all">
@@ -543,7 +543,7 @@ export default function DashboardCandidatoPage() {
             )}
 
             <Link
-              href="/vagas"
+              href="/candidato/vagas"
               className="flex items-center justify-center gap-2 w-full py-4 text-sm font-bold text-gray-600 hover:text-primary hover:bg-white rounded-2xl transition-all border border-transparent hover:border-gray-200"
             >
               Explorar o Banco de Vagas <HiOutlineChevronRight />

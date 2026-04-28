@@ -38,15 +38,15 @@ export default function TrocarSenhaPage() {
 
     const onSubmit = async (data: TrocarSenhaFormData) => {
         await toast.promise(
-            api.patch(`/usuarios/${user.id}/trocar-senha`, { nova_senha: data.nova_senha }),
+            // 👇 Alterado para a rota de definição inicial
+            api.patch(`/user/definir-senha-inicial`, { nova_senha: data.nova_senha }),
             {
-                loading: "Salvando nova senha segura...",
+                loading: "Salvando sua nova senha...",
                 success: () => {
-                    logout();
-                    return "Senha atualizada! Por favor, faça login novamente.";
+                    logout(); // Desloga para ele entrar com a senha nova
+                    return "Senha definida! Entre agora com sua nova credencial.";
                 },
-                // Captura o erro específico do Backend ou usa a mensagem padrão
-                error: (err) => err.response?.data?.error || "Erro ao trocar senha."
+                error: (err) => err.response?.data?.error || "Erro ao definir senha."
             }
         );
     };

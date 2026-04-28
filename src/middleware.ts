@@ -6,7 +6,7 @@ import type { NextRequest } from 'next/server';
 const getDashboardPath = (role?: string) => {
   if (role === 'ADM') return '/admin/dashboard';
   if (role === 'EMPRESA') return '/empresa/dashboard';
-  return '/inicio'; // CANDIDATO é o default
+  return '/candidato/inicio'; // CANDIDATO é o default
 };
 
 export function middleware(request: NextRequest) {
@@ -48,9 +48,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(getDashboardPath(role), request.url));
   }
 
-  // Opcional: Garante que apenas candidatos acessem a raiz /dashboard
-  // Se quiser que a empresa também veja /dashboard, basta remover esse 'if'
-  if (pathname.startsWith('/inicio') && role !== 'CANDIDATO') {
+  if (pathname.startsWith('/candidato/inicio') && role !== 'CANDIDATO') {
     return NextResponse.redirect(new URL(getDashboardPath(role), request.url));
   }
 

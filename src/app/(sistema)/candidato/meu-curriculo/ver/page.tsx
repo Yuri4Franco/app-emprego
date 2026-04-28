@@ -84,7 +84,7 @@ export default function VerCurriculoPage() {
       <div className="flex items-center justify-between mb-8 print:hidden">
         {/* Botão Secundário: Voltar */}
         <Link
-          href="/meu-curriculo"
+          href="/candidato/meu-curriculo"
           className="group flex items-center gap-2 text-gray-500 hover:text-primary font-bold transition-all bg-white px-6 py-3 rounded-full border border-gray-200 shadow-sm hover:shadow-md hover:border-primary/30"
         >
           <HiOutlineArrowLeft

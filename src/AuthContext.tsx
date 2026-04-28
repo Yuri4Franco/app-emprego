@@ -138,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (userData.role === "EMPRESA") {
           router.push("/empresa/dashboard");
         } else {
-          router.push("/inicio");
+          router.push("/candidato/inicio");
         }
       }
     } catch (error) {

@@ -901,7 +901,7 @@ export default function MeuCurriculoPage() {
 
           <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 md:gap-4 w-full md:w-auto">
             <Link
-              href="/meu-curriculo/ver"
+              href="/candidato/meu-curriculo/ver"
               className="w-full sm:w-auto flex justify-center items-center gap-2.5 px-6 py-3 md:py-4 rounded-[24px] bg-blue-50 text-primary text-sm font-bold hover:bg-blue-100 hover:text-blue-700 transition-colors"
             >
               <HiOutlineEye size={20} />
