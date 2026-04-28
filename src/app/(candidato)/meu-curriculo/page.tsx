@@ -26,11 +26,11 @@ import Link from "next/link";
 export const maskCPF = (value: string | undefined | null) => {
   if (!value) return "";
   return value
-    .replace(/\D/g, "") // Tira letras
+    .replace(/\D/g, "")
     .replace(/(\d{3})(\d)/, "$1.$2")
     .replace(/(\d{3})(\d)/, "$1.$2")
     .replace(/(\d{3})(\d{1,2})/, "$1-$2")
-    .replace(/(-\d{2})\d+?$/, "$1"); // Limita a 14 caracteres com a máscara
+    .replace(/(-\d{2})\d+?$/, "$1");
 };
 
 const descricoesTurno: Record<string, string> = {
@@ -41,26 +41,25 @@ const descricoesTurno: Record<string, string> = {
   SEGUNDO_TURNO: "Trabalho no 2º turno (geralmente tarde/noite).",
   TERCEIRO_TURNO: "Trabalho no 3º turno (geralmente madrugada).",
 };
-// Remove tudo que não é número e aplica a máscara 00000-000
+
 export const maskCEP = (value: string | undefined | null) => {
   if (!value) return "";
   return value
     .replace(/\D/g, "")
     .replace(/(\d{5})(\d)/, "$1-$2")
-    .replace(/(-\d{3})\d+?$/, "$1"); // Limita a 9 caracteres com a máscara
+    .replace(/(-\d{3})\d+?$/, "$1");
 };
 
-// Remove tudo que não é número e aplica a máscara (00) 00000-0000
 export const maskTelefone = (value: string | undefined | null) => {
   if (!value) return "";
   return value
     .replace(/\D/g, "")
     .replace(/(\d{2})(\d)/, "($1) $2")
     .replace(/(\d{4,5})(\d{4})/, "$1-$2")
-    .replace(/(-\d{4})\d+?$/, "$1"); // Limita a 15 caracteres
+    .replace(/(-\d{4})\d+?$/, "$1");
 };
 
-// 1. Schema dos Dados Gerais (Espelho do Backend)
+// 1. Schema dos Dados Gerais
 const dadosGeraisSchema = z.object({
   cpf: z.string().length(14, "CPF deve ter 11 dígitos").optional().nullable(),
   data_nascimento: z.string().optional().nullable(),
@@ -101,23 +100,29 @@ const dadosGeraisSchema = z.object({
   necessidade: z.string().max(300, "Texto muito longo").optional().nullable(),
   disponibilidade_viagem: z.boolean().default(false),
   disponibilidade_mudanca: z.boolean().default(false),
-  turno_preferido: z
-    .enum([
-      "PRIMEIRO_TURNO",
-      "SEGUNDO_TURNO",
-      "TERCEIRO_TURNO",
-      "HORARIO_COMERCIAL",
-      "QUALQUER_TURNO",
-    ])
+  cnh: z
+    .array(z.enum(["NAO_POSSUO", "A", "B", "C", "D", "E"]))
     .optional()
-    .nullable(),
+    .default(["NAO_POSSUO"]),
+  turno_preferido: z
+    .array(
+      z.enum([
+        "PRIMEIRO_TURNO",
+        "SEGUNDO_TURNO",
+        "TERCEIRO_TURNO",
+        "HORARIO_COMERCIAL",
+        "QUALQUER_TURNO",
+      ]),
+    )
+    .max(3, "Você pode selecionar no máximo 3 turnos")
+    .optional()
+    .default([]),
   tipo_contato: z
     .enum(["WHATSAPP", "EMAIL", "LIGACAO", "QUALQUER_UM"])
     .optional()
     .nullable(),
   primeiro_emprego: z.boolean().default(false),
 
-  // Endereço
   cep: z.string().min(8, "CEP obrigatório").optional().nullable(),
   logradouro: z.string().min(3, "Rua obrigatória").optional().nullable(),
   numero: z.string().min(1, "Nº obrigatório").optional().nullable(),
@@ -129,6 +134,15 @@ const dadosGeraisSchema = z.object({
 
 type DadosGeraisData = z.infer<typeof dadosGeraisSchema>;
 
+const descricoesCnh: Record<string, string> = {
+  NAO_POSSUO: "Não possuo carteira de habilitação no momento.",
+  A: "Moto (Veículos motorizados de 2 ou 3 rodas).",
+  B: "Carro (Veículos de passeio). Exame toxicológico obrigatório.",
+  C: "Caminhão (Veículos de carga acima de 3,5 ton). Exame toxicológico obrigatório.",
+  D: "Ônibus/Vans (Transporte de passageiros). Exame toxicológico obrigatório.",
+  E: "Carretas (Veículos articulados). Exame toxicológico obrigatório.",
+};
+
 // 2. Schema de Experiência
 const experienciaSchema = z
   .object({
@@ -136,7 +150,7 @@ const experienciaSchema = z
     cargo: z.string().min(2, "Cargo é obrigatório"),
     atividades: z
       .string()
-      .max(1000, "Resumo de atividades muito longo")
+      .max(1000, "Resumo muito longo")
       .optional()
       .nullable(),
     data_inicio: z.string().min(6, "Mês/Ano de início obrigatório"),
@@ -156,6 +170,7 @@ const experienciaSchema = z
 
 type ExperienciaData = z.infer<typeof experienciaSchema>;
 
+// Schema de Formação
 const formacaoSchema = z
   .object({
     instituicao: z.string().min(2, "Nome da instituição é obrigatório"),
@@ -229,13 +244,12 @@ export default function MeuCurriculoPage() {
     } else if (direcao === "anterior" && currentIndex > 0) {
       setActiveTab(ordemAbas[currentIndex - 1]);
     }
-
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleToggleVisibilidade = async () => {
     const novoStatus = !isVisivel;
-    setIsVisivel(novoStatus); // Atualização Otimista na tela
+    setIsVisivel(novoStatus);
 
     try {
       await api.patch("/candidato/visibilidade", {
@@ -247,7 +261,7 @@ export default function MeuCurriculoPage() {
           : "Seu perfil foi ocultado para as empresas.",
       );
     } catch (error: any) {
-      setIsVisivel(!novoStatus); // Se der erro, desfaz a animação
+      setIsVisivel(!novoStatus);
       toast.error(
         error.response?.data?.error || "Erro ao alterar visibilidade.",
       );
@@ -327,7 +341,8 @@ export default function MeuCurriculoPage() {
       pcd: false,
       tipo_pcd: "",
       necessidade: "",
-      turno_preferido: "QUALQUER_TURNO",
+      turno_preferido: ["QUALQUER_TURNO"],
+      cnh: ["NAO_POSSUO"],
       primeiro_emprego: false,
       disponibilidade_viagem: false,
       disponibilidade_mudanca: false,
@@ -340,6 +355,7 @@ export default function MeuCurriculoPage() {
       uf: "RS",
     },
   });
+
   const isDadosBasicosOk = () => {
     const vals = getValues();
     const hasAreas = areasSelecionadas.length > 0;
@@ -353,13 +369,11 @@ export default function MeuCurriculoPage() {
     return hasEssenciais && hasAreas;
   };
 
-  // Verifica as outras abas
   const isExperienciaOk = () =>
     experiencias.length > 0 || watch("primeiro_emprego");
   const isFormacaoOk = () => formacoes.length > 0;
   const isCompetenciasOk = () => competencias.length > 0;
 
-  // Objeto que mapeia o status de cada aba
   const statusAbas = {
     dados: isDadosBasicosOk(),
     experiencia: isExperienciaOk(),
@@ -367,7 +381,6 @@ export default function MeuCurriculoPage() {
     competencias: isCompetenciasOk(),
   };
 
-  // Calcula a porcentagem geral (cada aba vale 25%)
   const calcularProgresso = () => {
     let preenchidos = 0;
     if (statusAbas.dados) preenchidos++;
@@ -379,17 +392,13 @@ export default function MeuCurriculoPage() {
 
   const progressoCurriculo = calcularProgresso();
 
-  // Função Mágica para Cores Dinâmicas (Verde = Preenchido | Vermelho = Erro)
   const getFieldStatus = (fieldName: keyof DadosGeraisData) => {
     if (errors[fieldName])
       return "border-red-500 bg-red-50/30 focus:border-red-500 focus:ring-red-500/20";
-
     const value = watch(fieldName);
-    // Se tem valor (e não é falso/vazio), fica verdinho
     if (value && value !== "" && value !== 0)
       return "border-emerald-400 bg-emerald-50/20 focus:border-emerald-500 focus:ring-emerald-500/20";
-
-    return "border-gray-200 bg-gray-50 focus:border-blue-500"; // Padrão
+    return "border-gray-200 bg-gray-50 focus:border-blue-500";
   };
 
   useEffect(() => {
@@ -412,11 +421,7 @@ export default function MeuCurriculoPage() {
         if (Array.isArray(compData)) {
           setListaTaxonomiaCompetencias(compData);
         } else {
-          setListaTaxonomiaCompetencias([]); // Fallback para não quebrar a página
-          console.error(
-            "Taxonomia de competências não retornou um array:",
-            resTaxonomia.data,
-          );
+          setListaTaxonomiaCompetencias([]);
         }
 
         const dados = resCurriculo.data.data;
@@ -456,10 +461,9 @@ export default function MeuCurriculoPage() {
             necessidade: dados.necessidade || "",
             disponibilidade_viagem: dados.disponibilidade_viagem || false,
             disponibilidade_mudanca: dados.disponibilidade_mudanca || false,
-            turno_preferido: dados.turno_preferido || "QUALQUER_TURNO",
+            turno_preferido: dados.turno_preferido || [],
+            cnh: dados.cnh || [],
             primeiro_emprego: dados.primeiro_emprego || false,
-
-            // Endereço aninhado
             cep: maskCEP(dados.endereco?.cep) || "",
             logradouro: dados.endereco?.logradouro || "",
             numero: dados.endereco?.numero || "",
@@ -487,7 +491,6 @@ export default function MeuCurriculoPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Mostra a foto na tela na hora (Truque de UX)
     const previewUrl = URL.createObjectURL(file);
     setFotoUrl(previewUrl);
     setIsUploadingFoto(true);
@@ -497,19 +500,16 @@ export default function MeuCurriculoPage() {
 
     try {
       const res = await api.patch("/candidato/foto-perfil", formData);
-
       toast.success("Foto de perfil atualizada!");
       if (res.data?.foto_url) setFotoUrl(res.data.foto_url);
     } catch (error) {
       toast.error("Erro ao enviar a foto.");
       setFotoUrl(null);
-
     } finally {
       setIsUploadingFoto(false);
     }
   };
 
-  // 3. Atualizar Dados Gerais (PUT /candidato/meu-curriculo)
   const onSubmitDadosGerais = async (data: DadosGeraisData) => {
     setIsSaving(true);
     try {
@@ -531,7 +531,8 @@ export default function MeuCurriculoPage() {
         tipo_contato: data.tipo_contato,
         disponibilidade_viagem: data.disponibilidade_viagem,
         disponibilidade_mudanca: data.disponibilidade_mudanca,
-        turno_preferido: data.turno_preferido || null,
+        turno_preferido: data.turno_preferido,
+        cnh: data.cnh,
         primeiro_emprego: data.primeiro_emprego,
         endereco: {
           cep: data.cep ? data.cep.replace(/\D/g, "") : null,
@@ -557,7 +558,6 @@ export default function MeuCurriculoPage() {
     }
   };
 
-  // 4. Lógica de Competências (Sincronização Pessimista/Otimista)
   const adicionarCompetencia = async (
     id_competencia: number,
     nivel: string,
@@ -566,18 +566,13 @@ export default function MeuCurriculoPage() {
       toast.error("Você já atingiu o limite máximo de 10 competências.");
       return;
     }
-
     if (competencias.find((c) => c.id_competencia === id_competencia)) {
       toast.error("Você já adicionou essa competência.");
       return;
     }
-
     try {
       const payload = { id_competencia, nivel };
-      // 1. POST pro backend
       await api.post("/candidato/competencias", payload);
-
-      // 2. Atualiza estado local na hora
       const compTaxonomia = listaTaxonomiaCompetencias.find(
         (c) => c.id_competencia === id_competencia,
       );
@@ -585,8 +580,6 @@ export default function MeuCurriculoPage() {
         ...prev,
         { ...payload, competencia: compTaxonomia },
       ]);
-
-      // 3. Reseta a busca
       setSearchTermComp("");
       setCompSelecionada(null);
       toast.success("Habilidade adicionada!");
@@ -597,10 +590,7 @@ export default function MeuCurriculoPage() {
 
   const removerCompetencia = async (id_competencia: number) => {
     try {
-      // 1. Remove do backend
       await api.delete(`/candidato/competencias/${id_competencia}`);
-
-      // 2. Tira do estado local instantaneamente
       setCompetencias((prev) =>
         prev.filter((c) => c.id_competencia !== id_competencia),
       );
@@ -654,7 +644,6 @@ export default function MeuCurriculoPage() {
     try {
       const formatarData = (yyyyMM: string) =>
         new Date(`${yyyyMM}-01T12:00:00.000Z`).toISOString();
-
       const payload = {
         ...data,
         data_fim: data.atual ? null : data.data_fim,
@@ -665,7 +654,6 @@ export default function MeuCurriculoPage() {
       };
 
       if (editingExpId) {
-        // UPDATE (PUT)
         const res = await api.put(
           `/candidato/experiencias/${editingExpId}`,
           payload,
@@ -677,7 +665,6 @@ export default function MeuCurriculoPage() {
         );
         toast.success("Experiência atualizada!");
       } else {
-        // CREATE (POST)
         const res = await api.post("/candidato/experiencias", payload);
         setExperiencias((prev) => [...prev, res.data.data]);
         toast.success("Experiência adicionada!");
@@ -710,7 +697,7 @@ export default function MeuCurriculoPage() {
         curso: form.curso,
         status: form.status,
         data_conclusao: form.data_conclusao
-          ? String(form.data_conclusao).substring(0, 7)
+          ? String(form.data_conclusao).substring(0, 4)
           : "",
       });
     } else {
@@ -732,7 +719,7 @@ export default function MeuCurriculoPage() {
       const payload = {
         ...data,
         data_conclusao: data.data_conclusao
-          ? new Date(`${data.data_conclusao}-01T12:00:00.000Z`).toISOString()
+          ? new Date(`${data.data_conclusao}-01-01T12:00:00.000Z`).toISOString()
           : null,
       };
 
@@ -771,16 +758,62 @@ export default function MeuCurriculoPage() {
     }
   };
 
-  const handleTogglePrimeiroEmprego = (
+  const handleTogglePrimeiroEmprego = async (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const isChecked = e.target.checked;
     setValue("primeiro_emprego", isChecked, { shouldDirty: true });
+    const toastId = toast.loading("Salvando preferência...");
 
-    if (isChecked) {
+    try {
+      const data = getValues();
+      const payload = {
+        cpf: data.cpf ? data.cpf.replace(/\D/g, "") : null,
+        data_nascimento: data.data_nascimento,
+        genero: data.genero,
+        telefone: data.telefone ? data.telefone.replace(/\D/g, "") : null,
+        whatsapp: data.whatsapp ? data.whatsapp.replace(/\D/g, "") : null,
+        link_linkedin: data.link_linkedin,
+        link_portfolio: data.link_portfolio,
+        link_outro: data.link_outro,
+        objetivo_profissional: data.objetivo_profissional,
+        resumo_profissional: data.resumo_profissional,
+        pretensao_salarial: data.sem_pretensao ? null : data.pretensao_salarial,
+        pcd: data.pcd,
+        tipo_pcd: data.tipo_pcd,
+        necessidade: data.pcd ? data.necessidade : null,
+        tipo_contato: data.tipo_contato,
+        disponibilidade_viagem: data.disponibilidade_viagem,
+        disponibilidade_mudanca: data.disponibilidade_mudanca,
+        turno_preferido: data.turno_preferido,
+        cnh: data.cnh,
+        primeiro_emprego: isChecked,
+        endereco: {
+          cep: data.cep ? data.cep.replace(/\D/g, "") : null,
+          logradouro: data.logradouro,
+          numero: data.numero,
+          complemento: data.complemento,
+          bairro: data.bairro,
+          cidade: data.cidade,
+          uf: data.uf,
+        },
+      };
+
+      await api.put("/candidato/meu-curriculo", payload);
+      const areas_ids = areasSelecionadas.map((a) => a.id_area || a.id);
+      await api.put("/candidato/areas/sync", { areas_ids });
+
       toast.success(
-        "Legal! Lembre-se de clicar em 'Salvar Currículo Completo' na aba de Dados Básicos.",
-        { icon: "💡", duration: 4000 },
+        isChecked
+          ? "Salvo! Marcado como 1º Emprego."
+          : "Opção de 1º Emprego desmarcada.",
+        { id: toastId },
+      );
+    } catch (error: any) {
+      setValue("primeiro_emprego", !isChecked);
+      toast.error(
+        "Para ativar essa opção, preencha primeiro os Dados Básicos.",
+        { id: toastId },
       );
     }
   };
@@ -798,7 +831,7 @@ export default function MeuCurriculoPage() {
 
   const adicionarArea = (area: any) => {
     if (areasSelecionadas.length >= 3) {
-      toast.error("Você pode selecionar no máximo 3 áreas de atuação.");
+      toast.error("Você pode selecionar no máximo 3 .");
       return;
     }
     setAreasSelecionadas([...areasSelecionadas, area]);
@@ -818,19 +851,19 @@ export default function MeuCurriculoPage() {
     const hasProximo = currentIndex < ordemAbas.length - 1;
 
     return (
-      <div className="flex items-center justify-between pt-8 mt-8 border-t border-gray-100 print:hidden">
+      <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between pt-8 mt-8 gap-4 border-t border-gray-100 print:hidden">
         <div>
           {hasAnterior ? (
             <button
-              type="button" // Importante ser 'button' pra não submeter form sem querer
+              type="button"
               onClick={() => navegarParaAba("anterior")}
-              className="flex items-center gap-2 px-6 py-3 rounded-full text-gray-500 font-bold hover:bg-gray-100 transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-full text-gray-500 font-bold hover:bg-gray-100 transition-colors"
             >
               <span className="text-xl leading-none">&larr;</span> Etapa
               Anterior
             </button>
           ) : (
-            <div />
+            <div className="hidden sm:block" />
           )}
         </div>
 
@@ -839,7 +872,7 @@ export default function MeuCurriculoPage() {
             <button
               type="button"
               onClick={() => navegarParaAba("proximo")}
-              className="flex items-center gap-2 px-8 py-3 rounded-full bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 transition-colors group"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-blue-50 text-primary font-bold hover:bg-blue-100 transition-colors group"
             >
               Próxima Etapa
               <span className="text-xl leading-none group-hover:translate-x-1 transition-transform">
@@ -853,43 +886,42 @@ export default function MeuCurriculoPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto pb-20 pt-10 space-y-8 animate-in fade-in duration-700">
-      <header className="mb-10 space-y-6">
+    <div className="max-w-5xl mx-auto pb-20 pt-6 md:pt-10 space-y-6 md:space-y-8 px-4 md:px-0 animate-in fade-in duration-700">
+      {/* HEADER DA PÁGINA */}
+      <header className="mb-6 md:mb-10 space-y-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
+          <div className="text-center md:text-left">
             <h1 className="text-3xl font-black text-gray-800 tracking-tight">
               Meu Currículo
             </h1>
             <p className="text-gray-500 text-sm mt-1">
-              Mantenha seus dados atualizados para aumentar suas chances de
-              contratação.
+              Mantenha seus dados atualizados para aumentar suas chances.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 md:gap-4 w-full md:w-auto">
             <Link
               href="/meu-curriculo/ver"
-              className="flex items-center gap-2.5 px-6 py-4 rounded-[24px] bg-blue-50 text-blue-600 text-sm font-bold hover:bg-blue-100 hover:text-blue-700 transition-colors"
+              className="w-full sm:w-auto flex justify-center items-center gap-2.5 px-6 py-3 md:py-4 rounded-[24px] bg-blue-50 text-primary text-sm font-bold hover:bg-blue-100 hover:text-blue-700 transition-colors"
             >
               <HiOutlineEye size={20} />
               Visualizar
             </Link>
 
-            {/* O CARD DE VISIBILIDADE */}
-            <div className="flex items-center gap-4 bg-white px-6 py-4 rounded-[24px] border border-gray-100 shadow-sm transition-all duration-500">
-              <div className="flex flex-col text-right">
+            {/* CARD DE VISIBILIDADE */}
+            <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-4 bg-white px-5 md:px-6 py-3 md:py-4 rounded-[24px] border border-gray-100 shadow-sm transition-all duration-500">
+              <div className="flex flex-col text-left sm:text-right">
                 <span className="text-sm font-black text-gray-800">
                   Banco de Talentos
                 </span>
                 <span
                   className={`text-[11px] font-bold ${isVisivel ? "text-emerald-500" : "text-gray-400"}`}
                 >
-                  {isVisivel ? "Empresas podem te encontrar" : "Perfil oculto"}
+                  {isVisivel ? "Visível p/ empresas" : "Perfil oculto"}
                 </span>
               </div>
 
-              {/* Botão Switch estilo iOS */}
-              <label className="relative inline-flex items-center cursor-pointer">
+              <label className="relative inline-flex items-center cursor-pointer shrink-0">
                 <input
                   type="checkbox"
                   className="sr-only peer"
@@ -902,8 +934,8 @@ export default function MeuCurriculoPage() {
           </div>
         </div>
 
-        {/* BARRA DE PROGRESSO DO CURRÍCULO */}
-        <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-6">
+        {/* BARRA DE PROGRESSO */}
+        <div className="bg-white p-5 md:p-6 rounded-[24px] border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-4 md:gap-6">
           <div className="flex-1 w-full space-y-2">
             <div className="flex items-center justify-between text-sm font-bold">
               <span className="text-gray-700">Força do Perfil</span>
@@ -911,15 +943,13 @@ export default function MeuCurriculoPage() {
                 className={
                   progressoCurriculo === 100
                     ? "text-emerald-600"
-                    : "text-blue-600"
+                    : "text-primary"
                 }
               >
                 {progressoCurriculo}% Concluído
               </span>
             </div>
-            {/* A trilha da barra */}
             <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-              {/* O preenchimento da barra */}
               <div
                 className={`h-full rounded-full transition-all duration-1000 ease-out ${progressoCurriculo === 100 ? "bg-emerald-500" : "bg-blue-500"}`}
                 style={{ width: `${progressoCurriculo}%` }}
@@ -927,27 +957,25 @@ export default function MeuCurriculoPage() {
             </div>
           </div>
 
-          {progressoCurriculo === 100 ? (
-            <div className="shrink-0 text-center px-4">
-              <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full mb-1">
-                Perfil Completo
-              </span>
-              <p className="text-xs text-gray-500 font-medium">
-                Muito bem!
-              </p>
-            </div>
-          ) : (
-            <div className="shrink-0 text-center px-4">
-              <p className="text-xs text-gray-500 font-medium max-w-[150px]">
+          <div className="shrink-0 text-center px-2 md:px-4 w-full md:w-auto">
+            {progressoCurriculo === 100 ? (
+              <>
+                <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full mb-1">
+                  Perfil Completo
+                </span>
+                <p className="text-xs text-gray-500 font-medium">Muito bem!</p>
+              </>
+            ) : (
+              <p className="text-xs text-gray-500 font-medium md:max-w-[150px]">
                 Complete todas as seções para destacar seu currículo.
               </p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Sistema de Abas */}
-      <div className="flex flex-wrap gap-2 p-1.5 bg-white border border-gray-100 rounded-[24px] w-fit shadow-sm">
+      {/* TABS DE NAVEGAÇÃO */}
+      <div className="flex flex-wrap sm:flex-nowrap gap-2 p-1.5 bg-white border border-gray-100 rounded-[24px] shadow-sm overflow-x-auto hide-scrollbar w-full md:w-fit">
         {[
           {
             id: "dados",
@@ -977,20 +1005,17 @@ export default function MeuCurriculoPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`relative flex items-center gap-2.5 px-6 py-3.5 rounded-[20px] text-sm font-bold transition-all overflow-hidden ${
+            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${
               activeTab === tab.id
-                ? "bg-blue-50 text-blue-700 shadow-sm border-b-2 border-blue-600"
+                ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
                 : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
             }`}
           >
-            {/* O Ícone e Texto */}
-            <span className="flex items-center gap-2 relative z-10">
+            <span className="flex items-center gap-1.5 md:gap-2 relative z-10">
               {tab.icon} {tab.label}
             </span>
-
-            {/* Indicador de Conclusão (Bolinha Verde) */}
             {tab.isOk && (
-              <span className="flex h-2 w-2 relative z-10">
+              <span className="flex h-2 w-2 relative z-10 ml-1">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
@@ -999,28 +1024,25 @@ export default function MeuCurriculoPage() {
         ))}
       </div>
 
-      {/* CONTEÚDO DAS ABAS */}
-
-      {/* ABA 1: DADOS GERAIS */}
+      {/* CONTEÚDO: DADOS GERAIS */}
       {activeTab === "dados" && (
         <form
           onSubmit={handleSubmit(onSubmitDadosGerais)}
-          className="space-y-8 animate-in slide-in-from-bottom-4"
+          className="space-y-6 md:space-y-8 animate-in slide-in-from-bottom-4"
         >
-          <div className="flex justify-between items-end mb-6 ml-2">
-            <p className="text-sm text-gray-500 font-medium leading-relaxed">
-              Quanto mais completo seu currículo, maiores as suas chances. Itens
-              com a tag{" "}
+          <div className="flex justify-between items-end mb-4 md:mb-6 ml-1 md:ml-2">
+            <p className="text-xs md:text-sm text-gray-500 font-medium leading-relaxed">
+              Itens com a tag{" "}
               <span className="font-bold text-gray-400">(opcional)</span> não
               travam o cadastro, mas enriquecem seu perfil. Não esqueça de
               clicar em "Salvar" ao terminar!
             </p>
           </div>
-          {/* BLOCO 1: DADOS PESSOAIS */}
-          <div className="bg-white rounded-[40px] shadow-sm border border-gray-100 overflow-hidden">
-            {/* CABEÇALHO DO PERFIL (De ponta a ponta) */}
-            <div className="flex flex-col items-center justify-center p-10 bg-gradient-to-b from-blue-50/80 to-white border-b border-gray-50">
-              <div className="relative w-32 h-32 rounded-full bg-blue-100 flex items-center justify-center border-[6px] border-white shadow-xl overflow-hidden group mb-5">
+
+          {/* DADOS PESSOAIS E FOTO */}
+          <div className="bg-white rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 overflow-hidden">
+            <div className="flex flex-col items-center justify-center p-6 md:p-10 bg-gradient-to-b from-blue-50/80 to-white border-b border-gray-50">
+              <div className="relative w-28 h-28 md:w-32 md:h-32 rounded-full bg-blue-100 flex items-center justify-center border-[4px] md:border-[6px] border-white shadow-xl overflow-hidden group mb-4 md:mb-5">
                 {fotoUrl ? (
                   <img
                     src={fotoUrl}
@@ -1028,57 +1050,50 @@ export default function MeuCurriculoPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <HiOutlineUser size={56} className="text-blue-300" />
+                  <HiOutlineUser
+                    size={48}
+                    className="text-blue-300 md:w-14 md:h-14"
+                  />
                 )}
-
-                {/* Overlay que aparece ao passar o mouse */}
                 <label
                   className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white transition-opacity cursor-pointer ${fotoUrl ? "opacity-0 group-hover:opacity-100" : "opacity-100 hover:bg-black/70"}`}
                 >
-                  <HiOutlineCamera size={28} className="mb-1" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-center px-2">
+                  <HiOutlineCamera size={24} className="mb-1" />
+                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-center px-2">
                     {fotoUrl ? "Trocar Foto" : "Adicionar Foto"}
                   </span>
                   <input
                     type="file"
-                    id="foto"
-                    name="foto"
                     accept="image/*"
                     className="hidden"
                     onChange={handleUploadFoto}
                     disabled={isUploadingFoto}
                   />
                 </label>
-
-                {/* Loading state enquanto envia pro backend */}
                 {isUploadingFoto && (
                   <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 )}
               </div>
-
-              <h2 className="text-2xl font-black text-gray-800 tracking-tight text-center">
+              <h2 className="text-xl md:text-2xl font-black text-gray-800 tracking-tight text-center">
                 {nomeCandidato || "Seu Nome Aqui"}
               </h2>
-              <p className="text-xs font-bold text-gray-400 mt-1 text-center max-w-sm">
-                Perfis com foto profissional recebem até 3x mais visualizações
-                das empresas.
+              <p className="text-[11px] md:text-xs font-bold text-gray-400 mt-1 text-center max-w-sm px-4 md:px-0">
+                Perfis com foto profissional recebem até 3x mais visualizações.
               </p>
             </div>
 
-            {/* ÁREA DE INPUTS (Com padding interno) */}
-            <div className="p-8 space-y-10">
-              {/* Seção: Básicos */}
+            <div className="p-5 md:p-8 space-y-8 md:space-y-10">
               <div>
-                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">
+                <h3 className="text-[11px] md:text-xs font-black text-gray-400 uppercase tracking-widest mb-3 md:mb-4 ml-1">
                   Informações Básicas
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input
                     label="CPF"
                     placeholder="000.000.000-00"
-                    className={`transition-colors ${getFieldStatus("cpf")}`}
+                    className={getFieldStatus("cpf")}
                     {...register("cpf", {
                       onChange: (e) => {
                         e.target.value = maskCPF(e.target.value);
@@ -1089,18 +1104,17 @@ export default function MeuCurriculoPage() {
                   <Input
                     label="Nascimento"
                     type="date"
-                    className={`transition-colors ${getFieldStatus("data_nascimento")}`}
+                    className={getFieldStatus("data_nascimento")}
                     {...register("data_nascimento")}
                     error={errors.data_nascimento?.message}
                   />
-
                   <div className="space-y-1.5">
-                    <label className="text-sm font-bold text-gray-700 ml-1">
+                    <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
                       Gênero
                     </label>
                     <select
                       {...register("genero")}
-                      className={`w-full p-4 rounded-[20px] outline-none text-sm transition-colors border ${getFieldStatus("genero")}`}
+                      className={`w-full p-3.5 md:p-4 rounded-[16px] md:rounded-[20px] outline-none text-sm transition-colors border ${getFieldStatus("genero")}`}
                     >
                       <option value="">Selecione...</option>
                       <option value="MASCULINO">Masculino</option>
@@ -1110,7 +1124,7 @@ export default function MeuCurriculoPage() {
                       </option>
                     </select>
                     {errors.genero && (
-                      <p className="text-xs text-red-500 ml-2 font-bold">
+                      <p className="text-[11px] text-red-500 ml-2 font-bold">
                         {errors.genero.message}
                       </p>
                     )}
@@ -1118,28 +1132,26 @@ export default function MeuCurriculoPage() {
                 </div>
               </div>
 
-              {/* Seção: Contatos */}
               <div>
-                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">
+                <h3 className="text-[11px] md:text-xs font-black text-gray-400 uppercase tracking-widest mb-3 md:mb-4 ml-1">
                   Contatos & Redes Sociais
                 </h3>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <Input
                     label="WhatsApp"
                     placeholder="(55) 99999-9999"
-                    className={`transition-colors ${getFieldStatus("whatsapp")}`}
+                    className={getFieldStatus("whatsapp")}
                     {...register("whatsapp", {
                       onChange: (e) => {
                         e.target.value = maskTelefone(e.target.value);
                       },
                     })}
-                    error={errors.whatsapp?.message} // Correção: antes estava errors.telefone
+                    error={errors.whatsapp?.message}
                   />
                   <Input
-                    label="Telefone / Celular"
+                    label="Telefone / Celular(opcional)"
                     placeholder="(55) 9999-9999"
-                    className={`transition-colors ${getFieldStatus("telefone")}`}
+                    className={getFieldStatus("telefone")}
                     {...register("telefone", {
                       onChange: (e) => {
                         e.target.value = maskTelefone(e.target.value);
@@ -1148,26 +1160,25 @@ export default function MeuCurriculoPage() {
                     error={errors.telefone?.message}
                   />
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input
                     label="LinkedIn (URL) (opcional)"
                     placeholder="https://linkedin.com/in/..."
-                    className={`transition-colors ${getFieldStatus("link_linkedin")}`}
+                    className={getFieldStatus("link_linkedin")}
                     {...register("link_linkedin")}
                     error={errors.link_linkedin?.message}
                   />
                   <Input
                     label="Portfólio/GitHub (opcional)"
                     placeholder="https://..."
-                    className={`transition-colors ${getFieldStatus("link_portfolio")}`}
+                    className={getFieldStatus("link_portfolio")}
                     {...register("link_portfolio")}
                     error={errors.link_portfolio?.message}
                   />
                   <Input
                     label="Outro Link (opcional)"
                     placeholder="https://..."
-                    className={`transition-colors ${getFieldStatus("link_outro")}`}
+                    className={getFieldStatus("link_outro")}
                     {...register("link_outro")}
                     error={errors.link_outro?.message}
                   />
@@ -1176,16 +1187,16 @@ export default function MeuCurriculoPage() {
             </div>
           </div>
 
-          {/* BLOCO 2: PERFIL PROFISSIONAL & PRETENSÃO */}
-          <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 space-y-8">
-            <h2 className="text-xl font-black text-gray-800">
+          {/* PERFIL PROFISSIONAL & PRETENSÃO */}
+          <div className="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6 md:space-y-8">
+            <h2 className="text-lg md:text-xl font-black text-gray-800">
               Perfil Profissional
             </h2>
 
             <div className="space-y-6">
               <div className="space-y-3">
                 <div>
-                  <label className="text-sm font-bold text-gray-700 ml-1 flex items-center justify-between">
+                  <label className="text-xs md:text-sm font-bold text-gray-700 ml-1 flex items-center justify-between">
                     Áreas de Atuação
                     <span
                       className={`text-[10px] uppercase tracking-widest font-black ${areasSelecionadas.length === 3 ? "text-red-500" : "text-blue-500"}`}
@@ -1193,12 +1204,11 @@ export default function MeuCurriculoPage() {
                       {areasSelecionadas.length}/3
                     </span>
                   </label>
-                  <p className="text-xs text-gray-500 ml-1 mt-0.5">
-                    Selecione até 3 áreas principais onde você tem experiência
-                    ou deseja trabalhar.
+                  <p className="text-[11px] md:text-xs text-gray-500 ml-1 mt-0.5">
+                    Selecione até 3 áreas principais para seu perfil ser
+                    encontrado em nosso banco de talentos.
                   </p>
                 </div>
-
                 <div className="relative group z-20">
                   <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 z-10" />
                   <input
@@ -1206,10 +1216,10 @@ export default function MeuCurriculoPage() {
                     placeholder={
                       areasSelecionadas.length >= 3
                         ? "Limite de áreas atingido"
-                        : "Buscar área (Ex: TI, Comercial, RH...)"
+                        : "Buscar área (Ex: TI, RH...)"
                     }
                     disabled={areasSelecionadas.length >= 3}
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-[24px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 disabled:opacity-50"
+                    className="w-full pl-12 pr-4 py-3.5 md:py-4 bg-gray-50 border border-gray-100 rounded-[20px] md:rounded-[24px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 disabled:opacity-50"
                     value={searchTermArea}
                     onChange={(e) => {
                       setSearchTermArea(e.target.value);
@@ -1220,8 +1230,6 @@ export default function MeuCurriculoPage() {
                       setTimeout(() => setIsAreaDropdownOpen(false), 200)
                     }
                   />
-
-                  {/* Dropdown de Resultados */}
                   {isAreaDropdownOpen && (
                     <div className="absolute w-full mt-2 bg-white border border-gray-100 rounded-[24px] shadow-2xl z-50 max-h-60 overflow-y-auto p-2 animate-in fade-in zoom-in-95 duration-200">
                       {filteredAreas.length > 0 ? (
@@ -1246,8 +1254,6 @@ export default function MeuCurriculoPage() {
                     </div>
                   )}
                 </div>
-
-                {/* Cards (Pills) das Áreas Selecionadas */}
                 {areasSelecionadas.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-2">
                     {areasSelecionadas.map((a: any) => {
@@ -1255,13 +1261,13 @@ export default function MeuCurriculoPage() {
                       return (
                         <div
                           key={`area-sel-${idReal}`}
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-sm font-bold animate-in zoom-in duration-200"
+                          className="flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-blue-50 text-primary border border-blue-100 rounded-full text-xs md:text-sm font-bold animate-in zoom-in duration-200"
                         >
                           {a.nome}
                           <button
                             type="button"
                             onClick={() => removerArea(idReal)}
-                            className="text-blue-400 hover:text-red-500 hover:bg-red-50 p-1 rounded-full transition-colors"
+                            className="text-primary hover:text-red-500 hover:bg-red-50 p-1 rounded-full transition-colors"
                           >
                             <HiOutlineX size={14} />
                           </button>
@@ -1272,61 +1278,49 @@ export default function MeuCurriculoPage() {
                 )}
               </div>
 
-              {/* Resumo Profissional */}
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700 ml-1">
-                  Resumo Profissional
+                <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
+                  Resumo Profissional (opcional)
                 </label>
-                <p className="text-xs text-gray-500 ml-1 mb-2">
-                  Um breve resumo sobre sua trajetória, experiências e
-                  principais qualidades.
-                </p>
                 <textarea
                   {...register("resumo_profissional")}
-                  className={`w-full p-6 rounded-[32px] h-32 outline-none text-sm focus:ring-4 resize-none transition-colors border ${getFieldStatus("resumo_profissional")}`}
-                  placeholder="Ex: Profissional com 3 anos de experiência em atendimento ao público, focado em resultados e resolução de problemas..."
+                  className={`w-full p-4 md:p-6 rounded-[24px] md:rounded-[32px] h-32 outline-none text-sm focus:ring-4 resize-none transition-colors border ${getFieldStatus("resumo_profissional")}`}
+                  placeholder="Exemplo: Profissional com 3 anos de experiência em atendimento..."
                 />
                 {errors.resumo_profissional && (
-                  <p className="text-xs text-red-500 ml-2 font-bold">
+                  <p className="text-[11px] text-red-500 ml-2 font-bold">
                     {errors.resumo_profissional.message}
                   </p>
                 )}
               </div>
 
-              {/* Objetivos Profissionais */}
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700 ml-1">
-                  Objetivos Profissionais
+                <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
+                  Objetivos Profissionais (opcional)
                 </label>
-                <p className="text-xs text-gray-500 ml-1 mb-2">
-                  Quais são suas ambições? Fale sobre os cargos desejados e onde
-                  você quer chegar na carreira.
-                </p>
                 <textarea
                   {...register("objetivo_profissional")}
-                  className={`w-full p-6 rounded-[32px] h-32 outline-none text-sm focus:ring-4 resize-none transition-colors border ${getFieldStatus("objetivo_profissional")}`}
-                  placeholder="Ex: Busco oportunidades na área administrativa ou comercial para desenvolver minhas habilidades em gestão..."
+                  className={`w-full p-4 md:p-6 rounded-[24px] md:rounded-[32px] h-32 outline-none text-sm focus:ring-4 resize-none transition-colors border ${getFieldStatus("objetivo_profissional")}`}
+                  placeholder="Exemplo: Busco oportunidades na área administrativa..."
                 />
                 {errors.objetivo_profissional && (
-                  <p className="text-xs text-red-500 ml-2 font-bold">
+                  <p className="text-[11px] text-red-500 ml-2 font-bold">
                     {errors.objetivo_profissional.message}
                   </p>
                 )}
               </div>
             </div>
 
-            {/* O Bloco Especial da Pretensão Salarial (Card Horizontal) */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 bg-gray-50 rounded-[32px] border border-gray-100">
+            {/* Pretensão Salarial Horizontal -> Stack on Mobile */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 p-5 md:p-6 bg-gray-50 rounded-[24px] md:rounded-[32px] border border-gray-100">
               <div>
                 <h3 className="text-sm font-bold text-gray-800">
                   Pretensão Salarial
                 </h3>
-                <p className="text-xs text-gray-500 max-w-sm mt-1 leading-relaxed">
-                  Informe um valor médio ou marque a opção ao lado caso prefira
-                  negociar durante a entrevista.
+                <p className="text-[11px] md:text-xs text-gray-500 max-w-sm mt-1 leading-relaxed">
+                  Informe um valor médio ou marque a opção ao lado.
                 </p>
               </div>
-
               <div className="flex-1 w-full max-w-sm space-y-3">
                 <Input
                   label="Valor (R$)"
@@ -1336,13 +1330,13 @@ export default function MeuCurriculoPage() {
                   {...register("pretensao_salarial")}
                   error={errors.pretensao_salarial?.message}
                 />
-                <label className="flex items-center gap-2 cursor-pointer ml-2 group">
+                <label className="flex items-center gap-2 cursor-pointer ml-1 md:ml-2 group">
                   <input
                     type="checkbox"
                     {...register("sem_pretensao")}
-                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-blue-500"
                   />
-                  <span className="text-xs font-bold text-gray-500 group-hover:text-blue-600 transition-colors">
+                  <span className="text-[11px] md:text-xs font-bold text-gray-500 group-hover:text-primary transition-colors">
                     Sem pretensão / Prefiro não responder
                   </span>
                 </label>
@@ -1350,32 +1344,32 @@ export default function MeuCurriculoPage() {
             </div>
           </div>
 
-          {/* MANTÉM OS BLOCOS DE ENDEREÇO E PCD EXATAMENTE COMO ESTAVAM... */}
-          <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 space-y-6">
-            <h2 className="text-xl font-black text-gray-800">Endereço</h2>
+          {/* ENDEREÇO */}
+          <div className="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-5 md:space-y-6">
+            <h2 className="text-lg md:text-xl font-black text-gray-800">
+              Endereço
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Input
                 label="CEP"
                 placeholder="00000-000"
-                className={`transition-colors ${getFieldStatus("cep")}`}
+                className={getFieldStatus("cep")}
                 {...register("cep", {
-                  onChange: (e) => {
-                    e.target.value = maskCEP(e.target.value);
-                  },
+                  onChange: (e) => (e.target.value = maskCEP(e.target.value)),
                 })}
                 error={errors.cep?.message}
               />
               <div className="md:col-span-2">
                 <Input
                   label="Logradouro (Rua)"
-                  className={`transition-colors ${getFieldStatus("logradouro")}`}
+                  className={getFieldStatus("logradouro")}
                   {...register("logradouro")}
                   error={errors.logradouro?.message}
                 />
               </div>
               <Input
                 label="Número"
-                className={`transition-colors ${getFieldStatus("numero")}`}
+                className={getFieldStatus("numero")}
                 {...register("numero")}
                 error={errors.numero?.message}
               />
@@ -1383,68 +1377,67 @@ export default function MeuCurriculoPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Input
                 label="Complemento"
-                className={`transition-colors ${getFieldStatus("complemento")}`}
+                className={getFieldStatus("complemento")}
                 {...register("complemento")}
                 error={errors.complemento?.message}
               />
               <Input
                 label="Bairro"
-                className={`transition-colors ${getFieldStatus("bairro")}`}
+                className={getFieldStatus("bairro")}
                 {...register("bairro")}
                 error={errors.bairro?.message}
               />
               <Input
                 label="Cidade"
-                className={`transition-colors ${getFieldStatus("cidade")}`}
+                className={getFieldStatus("cidade")}
                 {...register("cidade")}
                 error={errors.cidade?.message}
               />
               <Input
                 label="UF"
-                className={`transition-colors ${getFieldStatus("uf")}`}
+                className={getFieldStatus("uf")}
                 {...register("uf")}
                 error={errors.uf?.message}
               />
             </div>
           </div>
 
+          {/* PREFERÊNCIAS & DIVERSIDADE */}
           {/* BLOCO 3: PREFERÊNCIAS & DIVERSIDADE */}
-          <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 space-y-8">
-            <h2 className="text-xl font-black text-gray-800 border-b border-gray-50 pb-4">
+          <div className="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6 md:space-y-8">
+            <h2 className="text-lg md:text-xl font-black text-gray-800 border-b border-gray-50 pb-3 md:pb-4">
               Preferências & Diversidade
             </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* LADO ESQUERDO: CONTATO E DISPONIBILIDADE */}
-              <div className="space-y-8">
-                {/* Contato */}
-                <div className="space-y-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+              {/* === LADO ESQUERDO: CONTATO E LOGÍSTICA === */}
+              <div className="space-y-6 md:space-y-8">
+                {/* 1. Contato Preferido (Card) */}
+                <div className="bg-gray-50 p-4 md:p-6 rounded-[20px] md:rounded-[24px] border border-gray-100 space-y-4">
                   <div>
-                    <label className="text-sm font-black text-gray-800 ml-1">
-                      Canal de Contato Preferido
-                    </label>
-                    <p className="text-[11px] text-gray-500 ml-1">
+                    <h3 className="text-xs md:text-sm font-black text-gray-800">
+                      Canal de Contato
+                    </h3>
+                    <p className="text-[11px] md:text-xs text-gray-500 mt-0.5">
                       Como as empresas devem te procurar?
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+
+                  <div className="grid grid-cols-2 gap-2">
                     {[
                       { id: "WHATSAPP", label: "WhatsApp" },
                       { id: "EMAIL", label: "E-mail" },
                       { id: "LIGACAO", label: "Ligação" },
                       { id: "QUALQUER_UM", label: "Qualquer um" },
                     ].map((metodo) => (
-                      <label
-                        key={metodo.id}
-                        className="cursor-pointer flex-1 min-w-[120px]"
-                      >
+                      <label key={metodo.id} className="cursor-pointer w-full">
                         <input
                           type="radio"
                           value={metodo.id}
                           {...register("tipo_contato")}
                           className="sr-only peer"
                         />
-                        <div className="w-full text-center px-4 py-2.5 rounded-xl border-2 border-gray-100 bg-white text-xs font-bold text-gray-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 peer-checked:border-emerald-200 hover:bg-gray-50 transition-all shadow-sm peer-checked:shadow-sm">
+                        <div className="w-full h-full flex items-center justify-center text-center px-2 py-3 rounded-xl border border-gray-200 bg-white text-[11px] md:text-xs font-bold text-gray-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 peer-checked:border-emerald-300 hover:border-blue-200 transition-all shadow-sm">
                           {metodo.label}
                         </div>
                       </label>
@@ -1452,184 +1445,337 @@ export default function MeuCurriculoPage() {
                   </div>
                 </div>
 
-                {/* Disponibilidade (Toggles menores) */}
-                <div className="bg-gray-50 p-5 rounded-[24px] border border-gray-100 space-y-4">
-                  <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest">
+                {/* 2. Disponibilidade Logística (Card) */}
+                <div className="bg-gray-50 p-4 md:p-6 rounded-[20px] md:rounded-[24px] border border-gray-100 space-y-4">
+                  <h3 className="text-xs md:text-sm font-black text-gray-800">
                     Disponibilidade Logística
                   </h3>
-                  <div className="flex flex-col gap-3">
-                    <label className="flex items-center justify-between cursor-pointer group">
-                      <span className="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                  <div className="flex flex-col gap-4">
+                    <label className="flex items-center justify-between cursor-pointer group bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                      <span className="text-xs md:text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
                         Aceita viagens a trabalho?
                       </span>
                       <input
                         type="checkbox"
                         {...register("disponibilidade_viagem")}
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-blue-500"
                       />
                     </label>
-                    <div className="w-full h-px bg-gray-200/60"></div>
-                    <label className="flex items-center justify-between cursor-pointer group">
-                      <span className="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                    <label className="flex items-center justify-between cursor-pointer group bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                      <span className="text-xs md:text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
                         Toparia mudar de cidade?
                       </span>
                       <input
                         type="checkbox"
                         {...register("disponibilidade_mudanca")}
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-blue-500"
                       />
                     </label>
                   </div>
                 </div>
+
+                {/* 3. Inclusão PCD (Card) */}
+                <div
+                  className={`p-4 md:p-6 rounded-[20px] md:rounded-[24px] border transition-all shadow-sm ${watch("pcd") ? "bg-blue-50/50 border-blue-200" : "bg-gray-50 border-gray-100"}`}
+                >
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      {...register("pcd")}
+                      className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-blue-500"
+                    />
+                    <div>
+                      <span className="block text-xs md:text-sm font-black text-gray-800 group-hover:text-primary transition-colors">
+                        Sou Pessoa com Deficiência (PcD)
+                      </span>
+                      <span className="block text-[10px] md:text-xs text-gray-500 mt-0.5">
+                        Seção opcional de inclusão.
+                      </span>
+                    </div>
+                  </label>
+
+                  {watch("pcd") && (
+                    <div className="mt-5 space-y-4 animate-in slide-in-from-top-4 pt-4 border-t border-blue-100">
+                      <Input
+                        label="Tipo de deficiência"
+                        placeholder="Ex: Física, Visual, Auditiva..."
+                        className={`bg-white shadow-sm ${getFieldStatus("tipo_pcd")}`}
+                        {...register("tipo_pcd")}
+                        error={errors.tipo_pcd?.message}
+                      />
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] md:text-xs font-bold text-gray-700 ml-1">
+                          Necessita adaptação na entrevista?
+                        </label>
+                        <textarea
+                          {...register("necessidade")}
+                          className={`w-full p-3 bg-white shadow-sm rounded-xl h-20 outline-none text-xs focus:ring-4 resize-none transition-colors border ${getFieldStatus("necessidade")}`}
+                          placeholder="Ex: Rampa de acesso, intérprete..."
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* LADO DIREITO: TURNO E PCD */}
-              <div className="space-y-8">
-                {/* Turnos */}
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-black text-gray-800 ml-1">
-                      Turno de Trabalho
-                    </label>
-                    <p className="text-[11px] text-gray-500 ml-1">
-                      Qual o seu horário de preferência?
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { id: "QUALQUER_TURNO", label: "Sem Preferência" },
-                      { id: "HORARIO_COMERCIAL", label: "Horário Comercial" },
-                      { id: "PRIMEIRO_TURNO", label: "1º Turno" },
-                      { id: "SEGUNDO_TURNO", label: "2º Turno" },
-                      { id: "TERCEIRO_TURNO", label: "3º Turno" },
-                    ].map((turno) => (
-                      <label
-                        key={turno.id}
-                        className="cursor-pointer flex-1 min-w-[120px]"
-                      >
-                        <input
-                          type="radio"
-                          value={turno.id}
-                          {...register("turno_preferido")}
-                          className="sr-only peer"
-                        />
-                        <div className="w-full text-center px-4 py-2.5 rounded-xl border-2 border-gray-100 bg-white text-xs font-bold text-gray-500 peer-checked:bg-blue-50 peer-checked:text-blue-700 peer-checked:border-blue-200 hover:bg-gray-50 transition-all shadow-sm peer-checked:shadow-sm">
-                          {turno.label}
-                        </div>
-                      </label>
-                    ))}
+              {/* === LADO DIREITO: TURNOS E CNH === */}
+              <div className="space-y-6 md:space-y-8">
+                {/* 4. Turnos (Card) */}
+                <div className="bg-gray-50 p-4 md:p-6 rounded-[20px] md:rounded-[24px] border border-gray-100 space-y-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="text-xs md:text-sm font-black text-gray-800">
+                        Turno de Trabalho
+                      </h3>
+                      <p className="text-[11px] md:text-xs text-gray-500 mt-0.5">
+                        Selecione até 3 horários.
+                      </p>
+                    </div>
+                    <span
+                      className={`px-2 py-1 bg-white rounded-md border text-[10px] font-black shadow-sm ${(watch("turno_preferido") || []).length > 3 ? "text-red-500 border-red-200" : "text-primary border-blue-100"}`}
+                    >
+                      {(watch("turno_preferido") || []).length}/3
+                    </span>
                   </div>
 
-                  {watch("turno_preferido") &&
-                    descricoesTurno[watch("turno_preferido") as string] && (
-                      <div className="mt-2 px-4 py-2 bg-blue-50/50 rounded-lg animate-in fade-in">
-                        <p className="text-[11px] text-blue-600 font-bold">
-                          💡{" "}
-                          {descricoesTurno[watch("turno_preferido") as string]}
-                        </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {[
+                      {
+                        id: "QUALQUER_TURNO",
+                        label: "Sem Preferência",
+                        colSpan: "col-span-2 sm:col-span-3",
+                      }, // Esse ocupa a linha toda pra destacar
+                      {
+                        id: "HORARIO_COMERCIAL",
+                        label: "Comercial",
+                        colSpan: "",
+                      },
+                      { id: "PRIMEIRO_TURNO", label: "1º Turno", colSpan: "" },
+                      { id: "SEGUNDO_TURNO", label: "2º Turno", colSpan: "" },
+                      { id: "TERCEIRO_TURNO", label: "3º Turno", colSpan: "" },
+                    ].map((turno) => {
+                      const turnosSelecionados = watch("turno_preferido") || [];
+                      const isChecked = turnosSelecionados.includes(
+                        turno.id as any,
+                      );
+                      const isAtMaxLimit =
+                        turnosSelecionados.length >= 3 &&
+                        !isChecked &&
+                        turno.id !== "QUALQUER_TURNO";
+
+                      const handleTurnoChange = (
+                        e: React.ChangeEvent<HTMLInputElement>,
+                      ) => {
+                        const clicouNeste = e.target.checked;
+                        if (clicouNeste) {
+                          if (turno.id === "QUALQUER_TURNO") {
+                            setValue("turno_preferido", ["QUALQUER_TURNO"]);
+                          } else {
+                            const novaLista = turnosSelecionados.filter(
+                              (t) => t !== "QUALQUER_TURNO",
+                            );
+                            setValue("turno_preferido", [
+                              ...novaLista,
+                              turno.id as any,
+                            ]);
+                          }
+                        } else {
+                          const listaAposRemover = turnosSelecionados.filter(
+                            (t) => t !== turno.id,
+                          );
+                          if (listaAposRemover.length === 0) {
+                            setValue("turno_preferido", ["QUALQUER_TURNO"]);
+                          } else {
+                            setValue("turno_preferido", listaAposRemover);
+                          }
+                        }
+                      };
+
+                      return (
+                        <label
+                          key={turno.id}
+                          className={`cursor-pointer w-full ${turno.colSpan} ${isAtMaxLimit ? "opacity-40" : ""}`}
+                        >
+                          <input
+                            type="checkbox"
+                            value={turno.id}
+                            disabled={isAtMaxLimit}
+                            checked={isChecked}
+                            onChange={handleTurnoChange}
+                            className="sr-only peer"
+                          />
+                          <div className="w-full h-full flex items-center justify-center text-center px-2 py-3 rounded-xl border border-gray-200 bg-white text-[11px] md:text-xs font-bold text-gray-500 peer-checked:bg-blue-50 peer-checked:text-primary peer-checked:border-blue-300 hover:border-blue-200 transition-all shadow-sm">
+                            {turno.label}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {(watch("turno_preferido") || []).length > 0 &&
+                    !watch("turno_preferido")?.includes("QUALQUER_TURNO") && (
+                      <div className="mt-3 px-4 py-3 bg-blue-50/50 rounded-xl animate-in fade-in space-y-1.5 border border-blue-100">
+                        {(watch("turno_preferido") || []).map(
+                          (tId) =>
+                            descricoesTurno[tId] && (
+                              <p
+                                key={`dica-${tId}`}
+                                className="text-[10px] md:text-[11px] text-primary font-bold flex items-start gap-1.5"
+                              >
+                                <span className="shrink-0 mt-0.5">💡</span>
+                                {descricoesTurno[tId]}
+                              </p>
+                            ),
+                        )}
                       </div>
                     )}
                   {errors.turno_preferido && (
-                    <p className="text-xs text-red-500 ml-2 font-bold">
+                    <p className="text-[11px] text-red-500 ml-2 font-bold">
                       {errors.turno_preferido.message}
                     </p>
                   )}
                 </div>
 
-                {/* PCD */}
-                <div className="space-y-3">
+                {/* 5. CNH (Card) */}
+                <div className="bg-gray-50 p-4 md:p-6 rounded-[20px] md:rounded-[24px] border border-gray-100 space-y-4">
                   <div>
-                    <label className="text-sm font-black text-gray-800 ml-1">
-                      Inclusão (Opcional)
-                    </label>
+                    <h3 className="text-xs md:text-sm font-black text-gray-800">
+                      Carteira de Habilitação (CNH)
+                    </h3>
+                    <p className="text-[11px] md:text-xs text-gray-500 mt-0.5">
+                      Quais categorias você possui?
+                    </p>
                   </div>
 
-                  <div
-                    className={`p-5 rounded-[24px] border transition-all ${watch("pcd") ? "bg-blue-50/30 border-blue-200" : "bg-white border-gray-100"}`}
-                  >
-                    <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                    {/* Botão Não Possuo ocupando a linha de cima */}
+                    <label className="cursor-pointer w-full col-span-3 sm:col-span-5">
                       <input
                         type="checkbox"
-                        {...register("pcd")}
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        value="NAO_POSSUO"
+                        checked={(watch("cnh") || []).includes("NAO_POSSUO")}
+                        onChange={(e) => {
+                          if (e.target.checked) setValue("cnh", ["NAO_POSSUO"]);
+                        }}
+                        className="sr-only peer"
                       />
-                      <span className="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
-                        Sou Pessoa com Deficiência (PcD)
-                      </span>
+                      <div className="w-full text-center px-2 py-3 rounded-xl border border-gray-200 bg-white text-[11px] md:text-xs font-bold text-gray-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 peer-checked:border-emerald-300 hover:border-emerald-200 transition-all shadow-sm">
+                        Não Possuo
+                      </div>
                     </label>
 
-                    {watch("pcd") && (
-                      <div className="mt-5 space-y-4 animate-in slide-in-from-top-4">
-                        <Input
-                          label="Tipo de deficiência"
-                          placeholder="Ex: Física, Visual, Auditiva..."
-                          className={`bg-white ${getFieldStatus("tipo_pcd")}`}
-                          {...register("tipo_pcd")}
-                          error={errors.tipo_pcd?.message}
-                        />
+                    {/* Letras da CNH menores embaixo */}
+                    {["A", "B", "C", "D", "E"].map((categoria) => {
+                      const cnhSelecionadas = watch("cnh") || [];
+                      const isChecked = cnhSelecionadas.includes(
+                        categoria as any,
+                      );
 
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-gray-700 ml-1">
-                            Necessita de adaptação para entrevista?
-                          </label>
-                          <textarea
-                            {...register("necessidade")}
-                            className={`w-full p-3 bg-white rounded-xl h-20 outline-none text-xs focus:ring-4 resize-none transition-colors border ${getFieldStatus("necessidade")}`}
-                            placeholder="Ex: Rampa de acesso, intérprete..."
+                      const handleCnhChange = (
+                        e: React.ChangeEvent<HTMLInputElement>,
+                      ) => {
+                        const clicou = e.target.checked;
+                        if (clicou) {
+                          const novaLista = cnhSelecionadas.filter(
+                            (c) => c !== "NAO_POSSUO",
+                          );
+                          setValue("cnh", [...novaLista, categoria as any]);
+                        } else {
+                          const listaAposRemover = cnhSelecionadas.filter(
+                            (c) => c !== categoria,
+                          );
+                          if (listaAposRemover.length === 0) {
+                            setValue("cnh", ["NAO_POSSUO"]);
+                          } else {
+                            setValue("cnh", listaAposRemover);
+                          }
+                        }
+                      };
+
+                      return (
+                        <label
+                          key={categoria}
+                          className="cursor-pointer w-full"
+                        >
+                          <input
+                            type="checkbox"
+                            value={categoria}
+                            checked={isChecked}
+                            onChange={handleCnhChange}
+                            className="sr-only peer"
                           />
-                        </div>
+                          <div className="w-full flex items-center justify-center px-1 py-3 rounded-xl border border-gray-200 bg-white text-xs md:text-sm font-black text-gray-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 peer-checked:border-emerald-300 hover:border-emerald-200 transition-all shadow-sm">
+                            {categoria}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {/* Exibição das Dicas da CNH */}
+                  {(watch("cnh") || []).length > 0 &&
+                    !watch("cnh")?.includes("NAO_POSSUO") && (
+                      <div className="mt-3 px-4 py-3 bg-emerald-50/50 rounded-xl animate-in fade-in space-y-1.5 border border-emerald-100">
+                        {(watch("cnh") || []).map(
+                          (cat) =>
+                            descricoesCnh[cat] && (
+                              <p
+                                key={`dica-cnh-${cat}`}
+                                className="text-[10px] md:text-[11px] text-emerald-700 font-bold flex items-start gap-1.5"
+                              >
+                                <span className="shrink-0 mt-0.5">💡</span>
+                                {descricoesCnh[cat]}
+                              </p>
+                            ),
+                        )}
                       </div>
                     )}
-                  </div>
+                  {errors.cnh && (
+                    <p className="text-[11px] text-red-500 ml-2 font-bold">
+                      {errors.cnh.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end pt-8">
+          {/* BOTÃO DE SALVAR CENTRALIZADO NO MOBILE */}
+          <div className="flex flex-col md:flex-row justify-center md:justify-end pt-4 md:pt-8 w-full">
             <ButtonType
               type="submit"
               disabled={isSaving}
-              className="px-10 py-5 rounded-[24px] flex items-center gap-2 shadow-lg shadow-blue-100 text-lg"
+              className="w-full md:w-auto px-6 md:px-10 py-4 md:py-5 rounded-full md:rounded-[24px] flex items-center justify-center gap-2 shadow-lg shadow-blue-100 text-base md:text-lg"
             >
               <HiOutlineSave size={24} />
-              {isSaving ? "Salvando Dados..." : "Salvar"}
+              {isSaving ? "Salvando Dados..." : "Salvar Dados Básicos"}
             </ButtonType>
           </div>
         </form>
       )}
 
-      {/* ABA 4: COMPETÊNCIAS (HABILIDADES) */}
+      {/* ABA 4: COMPETÊNCIAS */}
       {activeTab === "competencias" && (
-        <section className="bg-white p-10 rounded-[48px] shadow-sm border border-gray-100 space-y-8 animate-in slide-in-from-bottom-4">
+        <section className="bg-white p-6 md:p-10 rounded-[24px] md:rounded-[48px] shadow-sm border border-gray-100 space-y-6 md:space-y-8 animate-in slide-in-from-bottom-4">
           <div>
-            <h2 className="text-2xl font-black text-gray-800">
+            <h2 className="text-xl md:text-2xl font-black text-gray-800">
               Suas Habilidades
             </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Adicione até 10 ferramentas, tecnologias ou competências que você
-              domina. (
+            <p className="text-xs md:text-sm text-gray-500 mt-1">
+              Adicione até 10 ferramentas ou tecnologias.
               <span
-                className={
-                  competencias.length === 10
-                    ? "text-red-500 font-bold"
-                    : "text-blue-500 font-bold"
-                }
+                className={`ml-1 font-bold ${competencias.length === 10 ? "text-red-500" : "text-blue-500"}`}
               >
-                {competencias.length}/10
+                ({competencias.length}/10)
               </span>
-              )
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {/* LADO ESQUERDO: BUSCA E SELEÇÃO */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
             <div className="space-y-4">
-              <label className="text-sm font-bold text-gray-700 ml-1">
+              <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
                 Buscar Habilidade
               </label>
-
-              {/* O famoso Combobox de Busca */}
               <div className="relative group">
                 <HiOutlineSearch
                   className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 z-10"
@@ -1637,11 +1783,11 @@ export default function MeuCurriculoPage() {
                 />
                 <input
                   type="text"
-                  placeholder="Ex: Pacote Office, React, Vendas..."
+                  placeholder="Ex: React, Vendas..."
                   disabled={
                     competencias.length >= 10 || compSelecionada !== null
                   }
-                  className="w-full pl-14 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-[24px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 disabled:opacity-50"
+                  className="w-full pl-14 pr-4 py-3.5 md:py-4 bg-gray-50 border border-gray-100 rounded-full md:rounded-[24px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 disabled:opacity-50"
                   value={
                     compSelecionada ? compSelecionada.nome : searchTermComp
                   }
@@ -1650,13 +1796,10 @@ export default function MeuCurriculoPage() {
                     setIsCompDropdownOpen(true);
                   }}
                   onFocus={() => setIsCompDropdownOpen(true)}
-                  // O timeout dá tempo do usuário clicar na lista antes de fechar
                   onBlur={() =>
                     setTimeout(() => setIsCompDropdownOpen(false), 200)
                   }
                 />
-
-                {/* Botão X para cancelar a seleção */}
                 {compSelecionada && (
                   <button
                     type="button"
@@ -1669,20 +1812,18 @@ export default function MeuCurriculoPage() {
                     <HiOutlineX size={14} />
                   </button>
                 )}
-
-                {/* Dropdown de Resultados */}
                 {isCompDropdownOpen &&
                   searchTermComp.length > 0 &&
                   !compSelecionada && (
-                    <div className="absolute w-full mt-2 bg-white border border-gray-100 rounded-[24px] shadow-2xl z-50 max-h-60 overflow-y-auto p-2 animate-in fade-in duration-200">
+                    <div className="absolute w-full mt-2 bg-white border border-gray-100 rounded-[20px] md:rounded-[24px] shadow-2xl z-50 max-h-60 overflow-y-auto p-2 animate-in fade-in duration-200">
                       {filteredCompetencias.length > 0 ? (
                         filteredCompetencias.map((comp: any) => (
                           <button
                             key={`comp-${comp.id_competencia}`}
                             type="button"
                             onClick={() => {
-                              setCompSelecionada(comp); // Trava a skill selecionada
-                              setIsCompDropdownOpen(false); // Fecha a lista
+                              setCompSelecionada(comp);
+                              setIsCompDropdownOpen(false);
                             }}
                             className="w-full text-left px-5 py-3 hover:bg-blue-50 rounded-[16px] text-sm font-bold text-gray-700 hover:text-blue-700 transition-colors"
                           >
@@ -1698,10 +1839,9 @@ export default function MeuCurriculoPage() {
                   )}
               </div>
 
-              {/* SELEÇÃO DO NÍVEL (Aparece só depois de clicar na skill) */}
               {compSelecionada && (
-                <div className="bg-blue-50 p-6 rounded-[32px] border border-blue-100 animate-in slide-in-from-top-2">
-                  <p className="text-xs font-black text-blue-800 uppercase tracking-widest mb-4">
+                <div className="bg-blue-50 p-5 md:p-6 rounded-[24px] md:rounded-[32px] border border-blue-100 animate-in slide-in-from-top-2">
+                  <p className="text-[11px] md:text-xs font-black text-blue-800 uppercase tracking-widest mb-3 md:mb-4">
                     Qual seu nível de domínio?
                   </p>
                   <div className="flex flex-col gap-2">
@@ -1713,7 +1853,7 @@ export default function MeuCurriculoPage() {
                           "BASICO",
                         )
                       }
-                      className="w-full py-3 bg-white text-blue-700 border border-blue-100 hover:bg-blue-600 hover:text-white rounded-[16px] text-sm font-bold transition-colors"
+                      className="w-full py-3 bg-white text-blue-700 border border-blue-100 hover:bg-primary hover:text-white rounded-[16px] text-sm font-bold transition-colors"
                     >
                       Básico (Tenho noções)
                     </button>
@@ -1725,7 +1865,7 @@ export default function MeuCurriculoPage() {
                           "INTERMEDIARIO",
                         )
                       }
-                      className="w-full py-3 bg-white text-blue-700 border border-blue-100 hover:bg-blue-600 hover:text-white rounded-[16px] text-sm font-bold transition-colors"
+                      className="w-full py-3 bg-white text-blue-700 border border-blue-100 hover:bg-primary hover:text-white rounded-[16px] text-sm font-bold transition-colors"
                     >
                       Intermediário (Me viro bem)
                     </button>
@@ -1737,7 +1877,7 @@ export default function MeuCurriculoPage() {
                           "AVANCADO",
                         )
                       }
-                      className="w-full py-3 bg-white text-blue-700 border border-blue-100 hover:bg-blue-600 hover:text-white rounded-[16px] text-sm font-bold transition-colors"
+                      className="w-full py-3 bg-white text-blue-700 border border-blue-100 hover:bg-primary hover:text-white rounded-[16px] text-sm font-bold transition-colors"
                     >
                       Avançado (Domino)
                     </button>
@@ -1746,19 +1886,17 @@ export default function MeuCurriculoPage() {
               )}
             </div>
 
-            {/* LADO DIREITO: AS SKILLS JÁ SALVAS */}
-            <div className="bg-gray-50 border border-gray-100 rounded-[32px] p-6 h-[400px] overflow-y-auto">
-              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 ml-2">
+            <div className="bg-gray-50 border border-gray-100 rounded-[24px] md:rounded-[32px] p-5 md:p-6 h-[300px] md:h-[400px] overflow-y-auto">
+              <h3 className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-widest mb-4 ml-1 md:ml-2">
                 Suas Seleções
               </h3>
-
               {competencias.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
                   <HiOutlineLightningBolt
-                    size={48}
-                    className="text-gray-300 mb-2"
+                    size={40}
+                    className="text-gray-300 mb-2 md:w-12 md:h-12"
                   />
-                  <p className="text-sm font-bold text-gray-400">
+                  <p className="text-xs md:text-sm font-bold text-gray-400">
                     Nenhuma habilidade salva
                   </p>
                 </div>
@@ -1767,20 +1905,18 @@ export default function MeuCurriculoPage() {
                   {competencias.map((c: any) => (
                     <div
                       key={`saved-${c.id_competencia}`}
-                      className="group flex flex-col px-4 py-3 bg-white border border-gray-200 rounded-[20px] shadow-sm hover:border-blue-300 hover:shadow-md transition-all relative w-full md:w-auto"
+                      className="group flex flex-col px-4 py-2 md:py-3 bg-white border border-gray-200 rounded-[16px] md:rounded-[20px] shadow-sm hover:border-blue-300 transition-all relative w-full sm:w-auto"
                     >
-                      <span className="text-sm font-black text-gray-800">
+                      <span className="text-xs md:text-sm font-black text-gray-800">
                         {c.competencia?.nome || "Carregando..."}
                       </span>
-                      <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">
+                      <span className="text-[9px] md:text-[10px] font-bold text-blue-500 uppercase tracking-wider mt-0.5">
                         {c.nivel}
                       </span>
-
-                      {/* Botão de excluir aparece no hover */}
                       <button
                         type="button"
                         onClick={() => removerCompetencia(c.id_competencia)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-gray-50 text-gray-400 p-2 rounded-full md:opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-gray-50 text-gray-400 p-2 rounded-full sm:opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all"
                       >
                         <HiOutlineTrash size={14} />
                       </button>
@@ -1796,23 +1932,19 @@ export default function MeuCurriculoPage() {
       {/* ABA 2: EXPERIÊNCIA PROFISSIONAL */}
       {activeTab === "experiencia" && (
         <section className="space-y-6 animate-in slide-in-from-bottom-4">
-          {/* ESTADO 1: LISTAGEM OU PRIMEIRO EMPREGO */}
           {!showExpForm && (
-            <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 space-y-6">
-              {/* HEADER DA SEÇÃO */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-white p-6 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-black text-gray-800">
+                  <h2 className="text-lg md:text-xl font-black text-gray-800">
                     Histórico Profissional
                   </h2>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs md:text-sm text-gray-500">
                     Adicione suas experiências mais relevantes.
                   </p>
                 </div>
-
-                {/* TOGGLE: PRIMEIRO EMPREGO */}
-                <label className="flex items-center gap-3 cursor-pointer group bg-blue-50/50 px-5 py-3 rounded-[20px] border border-blue-100 hover:bg-blue-50 transition-colors">
-                  <span className="text-sm font-black text-blue-900">
+                <label className="w-full sm:w-auto flex items-center justify-between gap-3 cursor-pointer group bg-blue-50/50 px-4 md:px-5 py-3 rounded-[16px] md:rounded-[20px] border border-blue-100 hover:bg-blue-50 transition-colors">
+                  <span className="text-xs md:text-sm font-black text-blue-900">
                     Busco meu 1º Emprego
                   </span>
                   <div className="relative inline-flex items-center">
@@ -1822,94 +1954,91 @@ export default function MeuCurriculoPage() {
                       checked={watch("primeiro_emprego")}
                       onChange={handleTogglePrimeiroEmprego}
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    <div className="w-10 h-5 md:w-11 md:h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 md:after:h-5 md:after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                   </div>
                 </label>
               </div>
 
-              {/* LÓGICA CONDICIONAL: É PRIMEIRO EMPREGO? */}
               {watch("primeiro_emprego") ? (
-                /* ESTADO A: CARD MOTIVACIONAL DO PRIMEIRO EMPREGO */
-                <div className="p-10 rounded-[32px] bg-gradient-to-br from-emerald-50 to-teal-50/30 border border-emerald-100 text-center animate-in zoom-in-95 duration-300 mt-4">
-                  <div className="w-16 h-16 bg-white text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-emerald-50">
-                    <HiOutlineLightningBolt size={28} />
+                <div className="p-6 md:p-10 rounded-[24px] md:rounded-[32px] bg-gradient-to-br from-emerald-50 to-teal-50/30 border border-emerald-100 text-center animate-in zoom-in-95 duration-300">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-white text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 shadow-sm border border-emerald-50">
+                    <HiOutlineLightningBolt
+                      size={24}
+                      className="md:w-7 md:h-7"
+                    />
                   </div>
-                  <h3 className="text-xl font-black text-emerald-900 mb-2">
+                  <h3 className="text-lg md:text-xl font-black text-emerald-900 mb-2">
                     Todo grande talento tem um começo!
                   </h3>
-                  <p className="text-sm font-medium text-emerald-700/80 max-w-md mx-auto leading-relaxed">
-                    Empresas da ACI estão sempre em busca de novos talentos com
-                    vontade de aprender e crescer. Capriche nas abas de{" "}
-                    <b>Formação</b> e <b>Habilidades</b> para destacar o seu
-                    potencial nas triagens!
+                  <p className="text-xs md:text-sm font-medium text-emerald-700/80 max-w-md mx-auto leading-relaxed">
+                    Empresas estão em busca de pessoas com vontade de aprender.
+                    Capriche nas abas de <b>Formação</b> e <b>Habilidades</b>!
                   </p>
                 </div>
               ) : (
-                /* ESTADO B: LISTAGEM DE EMPREGOS ANTERIORES */
-                <div className="space-y-6">
-                  {/* Botão Adicionar Experiência (Se já tiver alguma salva) */}
+                <div className="space-y-4 md:space-y-6">
                   {experiencias.length > 0 && (
-                    <div className="flex justify-end border-t border-gray-50 pt-4">
+                    <div className="flex justify-center sm:justify-end border-t border-gray-50 pt-4">
                       <button
                         onClick={() => abrirFormExperiencia()}
-                        className="flex items-center gap-2 bg-blue-50 text-blue-600 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-blue-100 transition-colors"
+                        className="w-full sm:w-auto flex justify-center items-center gap-2 bg-blue-50 text-primary px-5 py-3 md:py-2.5 rounded-full text-sm font-bold hover:bg-blue-100 transition-colors"
                       >
                         <HiOutlinePlus size={18} /> Adicionar Experiência
                       </button>
                     </div>
                   )}
 
-                  {/* Verificação: Tem experiências? */}
                   {experiencias.length === 0 ? (
-                    /* PLACEHOLDER VAZIO */
                     <div
                       onClick={() => abrirFormExperiencia()}
-                      className="p-16 rounded-[32px] border-2 border-dashed border-gray-200 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all group"
+                      className="p-10 md:p-16 rounded-[24px] md:rounded-[32px] border-2 border-dashed border-gray-200 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all group"
                     >
-                      <div className="w-16 h-16 bg-gray-50 text-gray-400 group-hover:text-blue-500 group-hover:bg-blue-100 transition-colors rounded-full flex items-center justify-center mx-auto mb-4">
-                        <HiOutlineBriefcase size={28} />
+                      <div className="w-14 h-14 md:w-16 md:h-16 bg-gray-50 text-gray-400 group-hover:text-blue-500 group-hover:bg-blue-100 transition-colors rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                        <HiOutlineBriefcase
+                          size={24}
+                          className="md:w-7 md:h-7"
+                        />
                       </div>
-                      <h3 className="text-lg font-bold text-gray-700">
+                      <h3 className="text-base md:text-lg font-bold text-gray-700">
                         Nenhuma experiência cadastrada
                       </h3>
-                      <p className="text-gray-400 text-sm mt-1">
+                      <p className="text-xs md:text-sm text-gray-400 mt-1">
                         Clique aqui para adicionar seu emprego anterior ou
                         atual.
                       </p>
                     </div>
                   ) : (
-                    /* LISTAGEM DE CARDS DE EXPERIÊNCIA */
-                    <div className="space-y-4">
+                    <div className="space-y-3 md:space-y-4">
                       {experiencias.map((exp: any) => (
                         <div
                           key={exp.id_experiencia}
-                          className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-gray-50 border border-gray-100 rounded-[24px] group hover:border-blue-200 transition-colors"
+                          className="flex flex-col md:flex-row md:items-center justify-between p-5 md:p-6 bg-gray-50 border border-gray-100 rounded-[20px] md:rounded-[24px] group hover:border-blue-200 transition-colors"
                         >
                           <div className="space-y-1">
-                            <h4 className="font-bold text-gray-800 text-lg leading-tight">
+                            <h4 className="font-bold text-gray-800 text-base md:text-lg leading-tight">
                               {exp.cargo}
                             </h4>
-                            <p className="text-sm font-medium text-blue-600">
+                            <p className="text-xs md:text-sm font-medium text-primary">
                               {exp.empresa}
                             </p>
-                            <p className="text-xs text-gray-400 font-medium">
+                            <p className="text-[11px] md:text-xs text-gray-400 font-medium">
                               {new Date(exp.data_inicio).toLocaleDateString(
                                 "pt-BR",
                                 { month: "short", year: "numeric" },
-                              )}
-                              {" - "}
+                              )}{" "}
+                              -{" "}
                               {exp.atual
                                 ? "Atual"
                                 : new Date(exp.data_fim).toLocaleDateString(
-                                  "pt-BR",
-                                  { month: "short", year: "numeric" },
-                                )}
+                                    "pt-BR",
+                                    { month: "short", year: "numeric" },
+                                  )}
                             </p>
                           </div>
-                          <div className="flex items-center gap-2 mt-4 md:mt-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center gap-2 mt-4 md:mt-0 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => abrirFormExperiencia(exp)}
-                              className="px-4 py-2 text-xs font-bold text-gray-600 bg-white border border-gray-200 hover:border-blue-300 hover:text-blue-600 rounded-full transition-colors"
+                              className="flex-1 sm:flex-none justify-center flex px-4 py-2 text-xs font-bold text-gray-600 bg-white border border-gray-200 hover:border-blue-300 hover:text-primary rounded-full transition-colors"
                             >
                               Editar
                             </button>
@@ -1917,7 +2046,7 @@ export default function MeuCurriculoPage() {
                               onClick={() =>
                                 excluirExperiencia(exp.id_experiencia)
                               }
-                              className="p-2 text-gray-400 bg-white border border-gray-200 hover:border-red-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                              className="p-2 flex items-center justify-center bg-white border border-gray-200 hover:border-red-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
                             >
                               <HiOutlineTrash size={16} />
                             </button>
@@ -1931,16 +2060,14 @@ export default function MeuCurriculoPage() {
             </div>
           )}
 
-          {/* ESTADO 2: FORMULÁRIO DE INCLUSÃO/EDIÇÃO */}
           {showExpForm && (
             <form
               onSubmit={handleSubmitExp(salvarExperiencia)}
-              className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 space-y-6"
+              className="bg-white p-6 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6"
             >
-              <h2 className="text-xl font-black text-gray-800 border-b border-gray-100 pb-4">
+              <h2 className="text-lg md:text-xl font-black text-gray-800 border-b border-gray-100 pb-3 md:pb-4">
                 {editingExpId ? "Editar Experiência" : "Nova Experiência"}
               </h2>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label="Empresa"
@@ -1955,7 +2082,6 @@ export default function MeuCurriculoPage() {
                   error={errorsExp.cargo?.message}
                 />
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 <Input
                   label="Data de Início"
@@ -1963,7 +2089,6 @@ export default function MeuCurriculoPage() {
                   {...registerExp("data_inicio")}
                   error={errorsExp.data_inicio?.message}
                 />
-
                 <div className="space-y-2">
                   <Input
                     label="Data de Fim"
@@ -1983,44 +2108,42 @@ export default function MeuCurriculoPage() {
                         setValueExp("atual", e.target.checked);
                         if (e.target.checked) setValueExp("data_fim", "");
                       }}
-                      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-blue-500"
                     />
-                    <span className="text-xs font-bold text-gray-500 group-hover:text-blue-600 transition-colors">
+                    <span className="text-[11px] md:text-xs font-bold text-gray-500 group-hover:text-primary transition-colors">
                       Trabalho atualmente neste cargo
                     </span>
                   </label>
                 </div>
               </div>
-
               <div className="space-y-1.5">
-                <label className="text-sm font-bold text-gray-700 ml-1">
+                <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
                   Atividades e Conquistas
                 </label>
                 <textarea
                   {...registerExp("atividades")}
-                  className="w-full p-6 bg-gray-50 border border-gray-100 rounded-[32px] h-32 outline-none text-sm focus:ring-4 focus:ring-blue-500/5 resize-none"
-                  placeholder="Descreva suas responsabilidades, tecnologias utilizadas e resultados alcançados..."
+                  className="w-full p-4 md:p-6 bg-gray-50 border border-gray-100 rounded-[20px] md:rounded-[32px] h-32 outline-none text-sm focus:ring-4 focus:ring-blue-500/5 resize-none"
+                  placeholder="Descreva suas responsabilidades e resultados..."
                 />
                 {errorsExp.atividades && (
-                  <p className="text-xs text-red-500 ml-2 font-bold">
+                  <p className="text-[11px] md:text-xs text-red-500 ml-2 font-bold">
                     {errorsExp.atividades.message}
                   </p>
                 )}
               </div>
-
-              <div className="flex flex-col-reverse md:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
+              <div className="flex flex-col-reverse md:flex-row justify-center md:justify-end gap-3 pt-6 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={fecharFormExperiencia}
                   disabled={isSavingExp}
-                  className="px-8 py-4 rounded-[24px] font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+                  className="w-full md:w-auto px-8 py-3.5 md:py-4 rounded-full md:rounded-[24px] font-bold text-gray-500 hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
                 >
                   Cancelar
                 </button>
                 <ButtonType
                   type="submit"
                   disabled={isSavingExp}
-                  className="px-10 py-4 rounded-[24px] flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
+                  className="w-full md:w-auto px-10 py-3.5 md:py-4 rounded-full md:rounded-[24px] flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
                 >
                   <HiOutlineSave size={20} />{" "}
                   {isSavingExp ? "Salvando..." : "Salvar Experiência"}
@@ -2031,23 +2154,24 @@ export default function MeuCurriculoPage() {
         </section>
       )}
 
+      {/* ABA 3: FORMAÇÃO ACADÊMICA */}
       {activeTab === "formacao" && (
         <section className="space-y-6 animate-in slide-in-from-bottom-4">
           {!showFormFormacao && (
-            <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 space-y-6">
-              <div className="flex items-center justify-between">
+            <div className="bg-white p-6 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-black text-gray-800">
+                  <h2 className="text-lg md:text-xl font-black text-gray-800">
                     Sua Formação
                   </h2>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs md:text-sm text-gray-500 mt-0.5">
                     Liste seus cursos, graduações e especializações.
                   </p>
                 </div>
                 {formacoes.length > 0 && (
                   <button
                     onClick={() => abrirFormFormacao()}
-                    className="flex items-center gap-2 bg-blue-50 text-blue-600 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-blue-100 transition-colors"
+                    className="w-full sm:w-auto flex justify-center items-center gap-2 bg-blue-50 text-primary px-5 py-3 md:py-2.5 rounded-full text-sm font-bold hover:bg-blue-100 transition-colors"
                   >
                     <HiOutlinePlus size={18} /> Adicionar
                   </button>
@@ -2057,50 +2181,50 @@ export default function MeuCurriculoPage() {
               {formacoes.length === 0 ? (
                 <div
                   onClick={() => abrirFormFormacao()}
-                  className="p-16 rounded-[32px] border-2 border-dashed border-gray-200 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all group"
+                  className="p-10 md:p-16 rounded-[24px] md:rounded-[32px] border-2 border-dashed border-gray-200 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all group"
                 >
-                  <div className="w-16 h-16 bg-gray-50 text-gray-400 group-hover:text-blue-500 group-hover:bg-blue-100 transition-colors rounded-full flex items-center justify-center mx-auto mb-4">
-                    <HiOutlineAcademicCap size={28} />
+                  <div className="w-14 h-14 md:w-16 md:h-16 bg-gray-50 text-gray-400 group-hover:text-blue-500 group-hover:bg-blue-100 transition-colors rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                    <HiOutlineAcademicCap size={24} className="md:w-7 md:h-7" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-700">
+                  <h3 className="text-base md:text-lg font-bold text-gray-700">
                     Nenhuma formação cadastrada
                   </h3>
-                  <p className="text-gray-400 text-sm mt-1">
-                    Adicione cursos técnicos, graduações ou pós-graduações.
+                  <p className="text-xs md:text-sm text-gray-400 mt-1">
+                    Adicione cursos técnicos ou graduações.
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-3 md:gap-4">
                   {formacoes.map((f: any) => (
                     <div
                       key={f.id_formacao}
-                      className="flex flex-col md:flex-row md:items-center justify-between p-6 bg-gray-50 border border-gray-100 rounded-[24px] group hover:border-blue-200 transition-colors"
+                      className="flex flex-col md:flex-row md:items-center justify-between p-5 md:p-6 bg-gray-50 border border-gray-100 rounded-[20px] md:rounded-[24px] group hover:border-blue-200 transition-colors"
                     >
                       <div className="space-y-1">
-                        <h4 className="font-bold text-gray-800 text-lg leading-tight">
+                        <h4 className="font-bold text-gray-800 text-base md:text-lg leading-tight">
                           {f.curso}
                         </h4>
-                        <p className="text-sm font-medium text-blue-600">
+                        <p className="text-xs md:text-sm font-medium text-primary">
                           {f.instituicao} • {f.nivel}
                         </p>
                         <span
-                          className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase ${f.status === "CONCLUÍDO" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+                          className={`inline-block px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase mt-1 ${f.status === "CONCLUÍDO" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
                         >
                           {f.status}{" "}
                           {f.data_conclusao &&
                             `em ${new Date(f.data_conclusao).getFullYear()}`}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 mt-4 md:mt-0 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-2 mt-4 md:mt-0 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => abrirFormFormacao(f)}
-                          className="px-4 py-2 text-xs font-bold text-gray-600 bg-white border border-gray-200 hover:border-blue-300 hover:text-blue-600 rounded-full"
+                          className="flex-1 sm:flex-none justify-center flex px-4 py-2 text-xs font-bold text-gray-600 bg-white border border-gray-200 hover:border-blue-300 hover:text-primary rounded-full"
                         >
                           Editar
                         </button>
                         <button
                           onClick={() => excluirFormacao(f.id_formacao)}
-                          className="p-2 text-gray-400 bg-white border border-gray-200 hover:border-red-300 hover:text-red-500 rounded-full"
+                          className="p-2 flex items-center justify-center bg-white border border-gray-200 hover:border-red-300 hover:text-red-500 rounded-full"
                         >
                           <HiOutlineTrash size={16} />
                         </button>
@@ -2115,12 +2239,11 @@ export default function MeuCurriculoPage() {
           {showFormFormacao && (
             <form
               onSubmit={handleSubmitForm(salvarFormacao)}
-              className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 space-y-6"
+              className="bg-white p-6 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6"
             >
-              <h2 className="text-xl font-black text-gray-800 border-b border-gray-100 pb-4">
+              <h2 className="text-lg md:text-xl font-black text-gray-800 border-b border-gray-100 pb-3 md:pb-4">
                 {editingFormId ? "Editar Formação" : "Nova Formação"}
               </h2>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label="Instituição"
@@ -2130,20 +2253,19 @@ export default function MeuCurriculoPage() {
                 />
                 <Input
                   label="Curso"
-                  placeholder="Ex: Administração, Técnico em Informática..."
+                  placeholder="Ex: Administração..."
                   {...registerForm("curso")}
                   error={errorsForm.curso?.message}
                 />
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-bold text-gray-700 ml-1">
+                  <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
                     Nível
                   </label>
                   <select
                     {...registerForm("nivel")}
-                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-[20px] outline-none text-sm focus:border-blue-500"
+                    className="w-full p-3.5 md:p-4 bg-gray-50 border border-gray-100 rounded-[16px] md:rounded-[20px] outline-none text-sm focus:border-blue-500"
                   >
                     <option value="">Selecione...</option>
                     <option value="Ensino Fundamental">
@@ -2168,19 +2290,18 @@ export default function MeuCurriculoPage() {
                     </option>
                   </select>
                   {errorsForm.nivel && (
-                    <p className="text-xs text-red-500 ml-2">
+                    <p className="text-[11px] text-red-500 ml-2">
                       {errorsForm.nivel.message}
                     </p>
                   )}
                 </div>
-
                 <div className="space-y-1.5">
-                  <label className="text-sm font-bold text-gray-700 ml-1">
+                  <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
                     Status
                   </label>
                   <select
                     {...registerForm("status")}
-                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-[20px] outline-none text-sm focus:border-blue-500"
+                    className="w-full p-3.5 md:p-4 bg-gray-50 border border-gray-100 rounded-[16px] md:rounded-[20px] outline-none text-sm focus:border-blue-500"
                   >
                     <option value="">Selecione...</option>
                     <option value="CURSANDO">Cursando</option>
@@ -2190,15 +2311,17 @@ export default function MeuCurriculoPage() {
                     </option>
                   </select>
                   {errorsForm.status && (
-                    <p className="text-xs text-red-500 ml-2">
+                    <p className="text-[11px] text-red-500 ml-2">
                       {errorsForm.status.message}
                     </p>
                   )}
                 </div>
-
                 <Input
-                  label="Mês/Ano de Conclusão"
-                  type="month"
+                  label="Ano de Conclusão"
+                  type="number"
+                  placeholder="Exemplo: 2024"
+                  min="1950"
+                  max="2050"
                   disabled={watchForm("status") !== "CONCLUÍDO"}
                   className={
                     watchForm("status") !== "CONCLUÍDO" ? "opacity-50" : ""
@@ -2207,19 +2330,18 @@ export default function MeuCurriculoPage() {
                   error={errorsForm.data_conclusao?.message}
                 />
               </div>
-
-              <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
+              <div className="flex flex-col-reverse md:flex-row justify-center md:justify-end gap-3 pt-6 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setShowFormFormacao(false)}
-                  className="px-8 py-4 font-bold text-gray-500 hover:bg-gray-50 rounded-[24px]"
+                  className="w-full md:w-auto px-8 py-3.5 md:py-4 font-bold text-gray-500 hover:bg-gray-50 rounded-full md:rounded-[24px] border border-transparent hover:border-gray-200"
                 >
                   Cancelar
                 </button>
                 <ButtonType
                   type="submit"
                   disabled={isSavingForm}
-                  className="px-10 py-4 rounded-[24px] shadow-lg shadow-blue-100"
+                  className="w-full md:w-auto px-10 py-3.5 md:py-4 rounded-full md:rounded-[24px] shadow-lg shadow-blue-100 flex justify-center"
                 >
                   {isSavingForm ? "Salvando..." : "Salvar Formação"}
                 </ButtonType>
@@ -2228,7 +2350,6 @@ export default function MeuCurriculoPage() {
           )}
         </section>
       )}
-      <WizardNavegacao />
     </div>
   );
 }

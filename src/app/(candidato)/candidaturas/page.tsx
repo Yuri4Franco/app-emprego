@@ -113,7 +113,7 @@ export default function MinhasCandidaturasPage() {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-gray-400 font-bold animate-pulse">
-                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                <div className="w-12 h-12 border-4 border-blue-200 border-t-primary rounded-full animate-spin mb-4"></div>
                 Buscando seu histórico...
             </div>
         );
@@ -126,7 +126,7 @@ export default function MinhasCandidaturasPage() {
             <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between gap-6 items-center">
                 <div>
                     <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-                        <HiOutlineBriefcase className="text-blue-600" /> Minhas candidaturas
+                        <HiOutlineBriefcase className="text-primary" /> Minhas candidaturas
                     </h1>
                     <p className="text-gray-500 font-medium mt-1">Acompanhe o status dos seus processos seletivos.</p>
                 </div>
@@ -141,7 +141,7 @@ export default function MinhasCandidaturasPage() {
                         <button
                             key={tab.id}
                             onClick={() => setFiltroAba(tab.id as any)}
-                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-[20px] text-sm font-bold transition-all ${filtroAba === tab.id ? "bg-white text-blue-600 shadow-sm border border-gray-100" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"}`}
+                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-[20px] text-sm font-bold transition-all ${filtroAba === tab.id ? "bg-white text-primary shadow-sm border border-gray-100" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"}`}
                         >
                             {tab.label}
                         </button>
@@ -174,7 +174,7 @@ export default function MinhasCandidaturasPage() {
                                     <div className="pt-3 border-t border-purple-100/50">
                                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Local ou Link</p>
                                         {ag.local_link.startsWith("http") ? (
-                                            <a href={ag.local_link} target="_blank" rel="noreferrer" className="text-sm font-bold text-blue-600 hover:underline">Acessar Sala Virtual</a>
+                                            <a href={ag.local_link} target="_blank" rel="noreferrer" className="text-sm font-bold text-primary hover:underline">Acessar Sala Virtual</a>
                                         ) : (
                                             <p className="text-sm font-bold text-gray-700">{ag.local_link}</p>
                                         )}
@@ -197,7 +197,7 @@ export default function MinhasCandidaturasPage() {
                             {filtroAba === "TODAS" ? "Você ainda não se candidatou a nenhuma vaga." : `Nenhuma candidatura na aba ${filtroAba.toLowerCase()}.`}
                         </h3>
                         <p className="text-gray-500 mt-2">Acesse o Banco de Vagas e encontre sua próxima oportunidade.</p>
-                        <Link href="/vagas" className="inline-block mt-6 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-colors shadow-lg shadow-blue-200">
+                        <Link href="/vagas" className="inline-block mt-6 px-8 py-4 bg-primary hover:bg-blue-700 text-white font-bold rounded-full transition-colors shadow-lg shadow-blue-200">
                             Explorar Vagas
                         </Link>
                     </div>

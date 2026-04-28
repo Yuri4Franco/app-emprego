@@ -418,12 +418,17 @@ export default function VerCurriculoPage() {
                     {dados.disponibilidade_mudanca ? "Sim" : "Não"}
                   </span>
                 </li>
-                <li className="flex justify-between items-center">
+                <li className="flex justify-between items-center border-b border-gray-200/60 print:border-none pb-2 print:pb-0">
                   <span className="text-gray-500 print:text-gray-600">
                     Turno Preferido:
                   </span>
-                  <span className="font-bold text-gray-900">
-                    {turnoLabels[dados.turno_preferido] || "Sem Preferência"}
+                  <span className="font-bold text-gray-900 text-right max-w-[200px] leading-tight">
+                    {Array.isArray(dados.turno_preferido) &&
+                    dados.turno_preferido.length > 0
+                      ? dados.turno_preferido
+                          .map((t: string) => turnoLabels[t] || t)
+                          .join(", ")
+                      : "Sem Preferência"}
                   </span>
                 </li>
               </ul>
