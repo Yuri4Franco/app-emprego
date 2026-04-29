@@ -35,6 +35,7 @@ export default function RootLayout({
   return (
     <div>
       <Header />
+      <div className="h-24 md:h-28" />
       {children}
       <Footer />
     </div>

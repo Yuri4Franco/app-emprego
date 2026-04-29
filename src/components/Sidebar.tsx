@@ -28,13 +28,21 @@ import api from "@/src/services/api";
 // 1. DICIONÁRIO DE MENUS POR TIPO DE USUÁRIO
 const MENU_CONFIG = {
   CANDIDATO: [
-    { label: "Início", href: "/candidato/inicio", icon: <HiOutlineHome size={22} /> },
+    {
+      label: "Início",
+      href: "/candidato/inicio",
+      icon: <HiOutlineHome size={22} />,
+    },
     {
       label: "Meu currículo",
       href: "/candidato/meu-curriculo",
       icon: <HiOutlineDocumentText size={22} />,
     },
-    { label: "Vagas", href: "/candidato/vagas", icon: <HiOutlineBriefcase size={22} /> },
+    {
+      label: "Vagas",
+      href: "/candidato/vagas",
+      icon: <HiOutlineBriefcase size={22} />,
+    },
     {
       label: "Minhas candidaturas",
       href: "/candidato/candidaturas",
@@ -77,6 +85,11 @@ const MENU_CONFIG = {
     {
       label: "Banco de Talentos",
       href: "/empresa/banco-talentos",
+      icon: <HiOutlineUsers size={22} />,
+    },
+    {
+      label: "Minhas Informações",
+      href: "/empresa/minhas-informacoes",
       icon: <HiOutlineUsers size={22} />,
     },
   ],
@@ -270,7 +283,10 @@ export function Sidebar() {
             </p>
             <div className="space-y-1 pr-6">
               <h4 className="text-sm font-bold text-white leading-tight line-clamp-1">
-                {perfil?.nome || perfil?.nome_fantasia || "Carregando..."}
+                {/* Usamos o ?. para evitar o crash se for null */}
+                {perfil?.empresa?.nome_fantasia ||
+                  perfil?.nome ||
+                  "Carregando..."}
               </h4>
               <p className="text-[11px] text-white/50 font-medium truncate">
                 {perfil?.email || "Aguarde..."}

@@ -45,6 +45,42 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.rich-text ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Garante que o OL tenha os números visíveis */
+.rich-text ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.rich-text li {
+  display: list-item !important; /* Força o comportamento de lista */
+  margin-bottom: 0.25rem;
+}
+
+/* O PULO DO GATO: Ajusta o <p> que o editor coloca dentro do <li> */
+.rich-text li p {
+  display: inline; /* Faz o parágrafo não quebrar a linha dentro da bolinha */
+  margin: 0 !important;
+}
+
+/* Estilo para o strong e parágrafos normais */
+.rich-text strong {
+  font-weight: 800;
+}
+
+.rich-text p {
+  margin-bottom: 1rem;
+  display: block;
+}
+
 @layer base {
   /* Remove a borda azul padrão feia dos inputs no Chrome/Edge */
   input:focus,
@@ -54,3 +90,4 @@ body {
     outline-offset: 2px;
   }
 }
+

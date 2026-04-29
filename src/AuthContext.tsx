@@ -19,9 +19,25 @@ interface User {
   exigir_troca_senha: boolean;
 }
 
+interface EmpresaPerfil {
+  id_empresa: number;
+  nome_fantasia: string;
+  status: string;
+  creditos_vagas: number;
+  creditos_curriculos: number;
+}
+
+interface PerfilCompleto {
+  id_usuario: number;
+  nome: string;
+  email: string;
+  tipo_usuario: string;
+  empresa?: EmpresaPerfil; // Opcional pois candidatos não têm empresa
+}
+
 interface AuthContextData {
   user: User | null;
-  perfil: any;
+  perfil: PerfilCompleto | null;
   isAuthenticated: boolean;
   login: (token: string) => Promise<void>;
   logout: () => void;

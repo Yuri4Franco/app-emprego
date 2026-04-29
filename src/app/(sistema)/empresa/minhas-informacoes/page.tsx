@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import api from "@/src/services/api";
@@ -22,6 +22,7 @@ import {
 import { FaInstagram, FaLinkedin, FaFacebook } from "react-icons/fa";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
+import Editor from "@/src/components/Editor";
 
 // 1. Schema de Validação
 const perfilSchema = z.object({
@@ -65,6 +66,7 @@ export default function MinhasInformacoesPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     reset,
   } = useForm<PerfilFormData>({
@@ -288,10 +290,12 @@ export default function MinhasInformacoesPage() {
                   <label className="text-sm font-bold text-gray-700 ml-1">
                     Quem Somos
                   </label>
-                  <textarea
-                    {...register("quem_somos")}
-                    className={`w-full p-6 bg-gray-50 border border-gray-100 rounded-[32px] h-52 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 outline-none transition-all text-gray-600 leading-relaxed resize-none ${errors.quem_somos ? "border-red-500" : ""}`}
-                    placeholder="Descreva a cultura, missão e o ambiente de trabalho da sua empresa..."
+                  <Controller
+                    name="quem_somos"
+                    control={control}
+                    render={({ field }) => (
+                      <Editor content={field.value} onChange={field.onChange} />
+                    )}
                   />
                   {errors.quem_somos && (
                     <p className="text-xs text-red-500 ml-2">

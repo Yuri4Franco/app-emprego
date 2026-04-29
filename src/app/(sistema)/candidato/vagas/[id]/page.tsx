@@ -150,9 +150,10 @@ export default async function DetalhesVagaPage({ params }: PageProps) {
             <h2 className="text-2xl font-black text-gray-800 border-b border-gray-100 pb-4">
               Descrição da Vaga
             </h2>
-            <div className="prose prose-lg prose-gray max-w-none whitespace-pre-wrap text-gray-600 leading-relaxed">
-              {vaga.descricao}
-            </div>
+            <div
+              className="rich-text text-gray-600 leading-relaxed text-lg"
+              dangerouslySetInnerHTML={{ __html: vaga.descricao }}
+            />
           </section>
 
           {/* RESPONSABILIDADES */}
@@ -210,8 +211,16 @@ export default async function DetalhesVagaPage({ params }: PageProps) {
                     key={`ben-${item.id_beneficio}`}
                     className="flex items-center gap-2 px-5 py-3 bg-emerald-50/50 text-emerald-700 border border-emerald-100 rounded-2xl text-sm font-bold shadow-sm"
                   >
-                    <svg className="w-5 h-5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <svg
+                      className="w-5 h-5 text-emerald-500 shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     {item.beneficio.descricao}
                   </span>
@@ -231,10 +240,10 @@ export default async function DetalhesVagaPage({ params }: PageProps) {
 
               {!isConfidencial && empresa ? (
                 <div className="space-y-8">
-                  <p className="text-gray-300 text-lg leading-relaxed max-w-3xl">
-                    {empresa.quem_somos ||
-                      "Nossa missão é conectar talentos incríveis a oportunidades transformadoras na região. Junte-se ao nosso time!"}
-                  </p>
+                  <div
+                    className="rich-text text-gray-300 leading-relaxed text-lg max-w-3xl"
+                    dangerouslySetInnerHTML={{ __html: empresa.quem_somos }}
+                  />
 
                   {/* Redes Sociais Bonitas */}
                   <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-700/50">

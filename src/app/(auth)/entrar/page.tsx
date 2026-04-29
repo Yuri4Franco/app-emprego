@@ -94,7 +94,7 @@ export default function LoginPage() {
       } else if (tipo === "EMPRESA") {
         router.push("/empresa/dashboard");
       } else {
-        router.push("/inicio"); // CANDIDATO
+        router.push("/candidato/inicio"); // CANDIDATO
       }
     } catch (error: any) {
       const msg = error.response?.data?.error || "E-mail ou senha incorretos.";
