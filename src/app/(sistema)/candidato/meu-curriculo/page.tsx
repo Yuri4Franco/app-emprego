@@ -886,7 +886,7 @@ export default function MeuCurriculoPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto pb-20 pt-6 md:pt-10 space-y-6 md:space-y-8 px-4 md:px-0 animate-in fade-in duration-700">
+    <div className="max-w-5xl mx-auto pb-20 pt-6 md:pt-10 md:px-8 space-y-6 md:space-y-8 px-8 md:px-0 animate-in fade-in duration-700">
       {/* HEADER DA PÁGINA */}
       <header className="mb-6 md:mb-10 space-y-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -975,7 +975,7 @@ export default function MeuCurriculoPage() {
       </header>
 
       {/* TABS DE NAVEGAÇÃO */}
-      <div className="flex flex-wrap sm:flex-nowrap gap-2 p-1.5 bg-white border border-gray-100 rounded-[24px] shadow-sm overflow-x-auto hide-scrollbar w-full md:w-fit">
+      <div className="flex flex-wrap gap-2 p-1.5 bg-white border border-gray-100 rounded-[24px] shadow-sm overflow-x-auto hide-scrollbar w-full md:w-fit">
         {[
           {
             id: "dados",

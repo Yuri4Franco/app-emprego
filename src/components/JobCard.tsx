@@ -25,7 +25,7 @@ export interface JobProps {
   datePosted: string;
 }
 
-export function JobCard({ job }: { job: JobProps }) {
+export function JobCard({ job, urlPrefix = "" }: { job: JobProps, urlPrefix?: string }) {
   let borderClass = "border-l-4 border-l-gray-300";
 
   if (job.isNew) {
@@ -37,7 +37,7 @@ export function JobCard({ job }: { job: JobProps }) {
   return (
     // 1. O card inteiro agora é um Link! Usamos 'block' para ele se comportar como uma div.
     <Link
-      href={`/ver-vagas/${job.id}`}
+      href={`${urlPrefix}/vagas/${job.id}`}
       className={`
         group block relative bg-white rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between h-full
         border border-y-gray-200 border-r-gray-200 hover:shadow-xl hover:-translate-y-1 cursor-pointer
