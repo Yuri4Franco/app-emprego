@@ -17,11 +17,15 @@ const TRADUCAO_NIVEL: Record<string, string> = {
 };
 
 const TRADUCAO_CONTRATO: Record<string, string> = {
-  CLT_EFETIVO: "CLT Efetivo",
-  CLT_TEMPORARIO: "CLT Temporário",
-  PJ: "PJ (Pejotinha)",
-  FREELANCER: "Freelancer",
-  ESTAGIO: "Estágio",
+  EFETIVO: "EFETIVO",
+  ESTAGIO: "ESTÁGIO",
+  JOVEM_APRENDIZ: "JOVEM APRENDIZ",
+  TEMPORARIO: "TEMPORÁRIO",
+  INTERMITENTE: "INTERMITENTE",
+  PJ: "PJ",
+  FREELANCER: "FREELANCER",
+  AUTONOMO: "AUTÔNOMO",
+
 };
 
 export const formatarTempo = (dataISO: string) => {
@@ -33,8 +37,6 @@ export const formatarTempo = (dataISO: string) => {
   if (dias < 30) return `${Math.floor(dias / 7)} sem`;
   return `${Math.floor(dias / 30)} mês(es)`;
 };
-
-
 
 export const formatarSalario = (vaga: any) => {
   if (vaga.ocultar_salario) return undefined;
@@ -52,13 +54,30 @@ export const mapearVagaBackendParaFrontend = (vagaBackend: any): JobProps => {
     company: vagaBackend.empresa_confidencial
       ? "Empresa Confidencial"
       : vagaBackend.empresa?.nome_fantasia || "Empresa Confidencial",
+
+    // NOVO: Pegando a logo direto do JSON
+    logoUrl: vagaBackend.empresa_confidencial
+      ? null
+      : vagaBackend.empresa?.logotipo_url,
+
+    // NOVO: Mapeando o PCD com base no campo "tipo_diversidade" do backend
+    pcdType:
+      vagaBackend.tipo_diversidade === "NAO_SE_APLICA"
+        ? null
+        : vagaBackend.tipo_diversidade,
+
     title: vagaBackend.titulo,
-    location: vagaBackend.cidade || "Panambi",
+    location: vagaBackend.endereco?.cidade || "PANAMBI",
+    uf: vagaBackend.endereco?.uf || "RS",
     type: vagaBackend.modelo_trabalho,
-    contract: TRADUCAO_CONTRATO[vagaBackend.tipo_contrato] || vagaBackend.tipo_contrato.replace('_', ' '),
-    nivel: vagaBackend.nivel_hierarquico !== "NAO_SE_APLICA" 
-           ? (TRADUCAO_NIVEL[vagaBackend.nivel_hierarquico] || vagaBackend.nivel_hierarquico) 
-           : undefined,
+    contract:
+      TRADUCAO_CONTRATO[vagaBackend.tipo_contrato] ||
+      vagaBackend.tipo_contrato.replace("_", " "),
+    nivel:
+      vagaBackend.nivel_hierarquico !== "NAO_SE_APLICA"
+        ? TRADUCAO_NIVEL[vagaBackend.nivel_hierarquico] ||
+          vagaBackend.nivel_hierarquico
+        : undefined,
     salary: formatarSalario(vagaBackend),
     datePosted: formatarTempo(vagaBackend.data_publicacao),
     isNew:
@@ -67,7 +86,6 @@ export const mapearVagaBackendParaFrontend = (vagaBackend: any): JobProps => {
           new Date(vagaBackend.data_publicacao).getTime()) /
           (1000 * 3600 * 24),
       ) <= 3,
-    isMember: true,
-    pcdType: null,
+    isMember: vagaBackend.empresa?.vinculo_aci === "ASSOCIADA",
   };
 };

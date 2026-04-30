@@ -398,9 +398,9 @@ export default function NovaVagaPage() {
                   className="w-full p-4 bg-gray-50 border border-gray-100 rounded-[20px] outline-none text-sm cursor-pointer"
                 >
                   <optgroup label="Vínculo Empregatício (CLT)">
-                    <option value="CLT_EFETIVO">CLT (Efetivo)</option>
-                    <option value="CLT_TEMPORARIO">CLT (Temporário)</option>
-                    <option value="CLT_INTERMITENTE">CLT (Intermitente)</option>
+                    <option value="EFETIVO">Efetivo</option>
+                    <option value="TEMPORARIO">Temporário</option>
+                    <option value="INTERMITENTE">Intermitente</option>
                   </optgroup>
                   <optgroup label="Prestação de Serviços">
                     <option value="PJ">Prestador de Serviços (PJ)</option>

@@ -5,6 +5,7 @@ import { JobCard, JobProps } from "@/src/components/JobCard";
 import { ButtonType } from "@/src/components/ButtonType";
 import { FilterSelect } from "@/src/components/FilterSelect";
 import { AdvancedFilterModal } from "@/src/components/AdvancedFilterModal";
+import { AdvancedFilterData } from "@/src/components/AdvancedFilterModal";
 import {
     BiSearchAlt,
     BiSliderAlt,
@@ -12,8 +13,9 @@ import {
     BiUpArrowAlt,
 } from "react-icons/bi";
 import { IoClose } from "react-icons/io5";
-import api from "@/src/services/api"; // Importando sua API
+import api from "@/src/services/api";
 import { mapearVagaBackendParaFrontend } from "@/src/utils/vaga-adapter";
+import { JobFilters } from "../JobFilter";
 
 const JobCardSkeleton = () => (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 h-full flex flex-col justify-between animate-pulse">
@@ -36,27 +38,6 @@ const JobCardSkeleton = () => (
     </div>
 );
 
-// --- FUNÇÕES UTILITÁRIAS PARA O CARD ---
-const formatarTempo = (dataISO: string) => {
-    if (!dataISO) return "Recentemente";
-    const dias = Math.floor(
-        (new Date().getTime() - new Date(dataISO).getTime()) / (1000 * 3600 * 24),
-    );
-    if (dias < 7) return `${dias} dias`;
-    if (dias < 30) return `${Math.floor(dias / 7)} sem`;
-    return `${Math.floor(dias / 30)} mês(es)`;
-};
-
-const formatarSalario = (vaga: any) => {
-    if (vaga.ocultar_salario) return undefined;
-    if (vaga.salario_a_combinar) return "A combinar";
-    if (vaga.faixa_salarial_de && vaga.faixa_salarial_ate) {
-        return `R$ ${vaga.faixa_salarial_de} - R$ ${vaga.faixa_salarial_ate}`;
-    }
-    if (vaga.faixa_salarial_de) return `A partir de R$ ${vaga.faixa_salarial_de}`;
-    return undefined;
-};
-
 interface VagasListagemProps {
     initialJobs: JobProps[];
     initialTotal: number;
@@ -76,15 +57,17 @@ export default function VagasListagemContent({
     const [totalVagas, setTotalVagas] = useState(initialTotal);
     const [totalPaginas, setTotalPaginas] = useState(initialTotalPages);
     const [isLoading, setIsLoading] = useState(false);
-    const [activeFilters, setActiveFilters] = useState<string[]>([]);
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
     const [isFetchingMore, setIsFetchingMore] = useState(false);
     const [paginaAtual, setPaginaAtual] = useState(1);
+    const [filtrosAvancados, setFiltrosAvancados] = useState<AdvancedFilterData | null>(null);
 
-    // Busca
+    // Estados de Filtro
+    const [activeFilters, setActiveFilters] = useState<string[]>([]);
+    const [pcdOnly, setPcdOnly] = useState(false);
     const [busca, setBusca] = useState("");
-    const [termoBuscado, setTermoBuscado] = useState(""); // Usado para disparar a API só quando clicar em buscar
+    const [termoBuscado, setTermoBuscado] = useState("");
 
     const loaderRef = useRef(null);
 
@@ -95,17 +78,35 @@ export default function VagasListagemContent({
             else setIsFetchingMore(true);
 
             try {
-                const cidadeFiltro =
-                    activeFilters.find((f) => f.includes(" - RS"))?.split(" - ")[0] ||
-                    undefined;
+                // 1. Lendo os filtros da barra rápida (Adicionado o modeloFiltro que faltava!)
+                const cidadeFiltro = activeFilters.find((f) => f.includes(" - RS"))?.split(" - ")[0];
+                const contratoFiltro = activeFilters.find((f) => ["CLT", "PJ", "Estágio", "Temporário"].includes(f));
+                const modeloFiltro = activeFilters.find((f) => ["Presencial", "Híbrido", "Remoto"].includes(f));
 
+                // 2. Montando o pacote de dados unindo a Barra Rápida + Gaveta Avançada
+                const paramsParaEnviar: any = {
+                    pagina,
+                    limite: 9,
+                    busca: termoBuscado || undefined,
+
+                    // Dados da barra rápida
+                    cidade: cidadeFiltro || undefined,
+                    tipo_contrato: contratoFiltro ? contratoFiltro.toUpperCase() : undefined,
+                    modelo_trabalho: modeloFiltro ? modeloFiltro.toUpperCase() : undefined,
+                    somente_pcd: pcdOnly ? true : undefined,
+
+                    // Dados da Gaveta Avançada
+                    nivel_hierarquico: filtrosAvancados?.niveis?.join(',') || undefined,
+                    // Se o usuário marcou modelo na gaveta, sobrescreve o da barra rápida (ou você pode juntar os dois depois)
+                    ...(filtrosAvancados?.modelos?.length ? { modelo_trabalho: filtrosAvancados.modelos.join(',') } : {}),
+                    salario_min: filtrosAvancados?.salarioMin || undefined,
+                    salario_max: filtrosAvancados?.salarioMax || undefined,
+                    tipo_pcd: filtrosAvancados?.pcd !== "TODAS" ? filtrosAvancados?.pcd : undefined,
+                };
+
+                // 3. Usa o objeto perfeito que acabamos de montar
                 const response = await api.get("/vagas", {
-                    params: {
-                        pagina,
-                        limite: 9,
-                        busca: termoBuscado || undefined,
-                        cidade: cidadeFiltro,
-                    },
+                    params: paramsParaEnviar,
                 });
 
                 const { dados, paginacao } = response.data;
@@ -124,15 +125,14 @@ export default function VagasListagemContent({
                 setIsFetchingMore(false);
             }
         },
-        [termoBuscado, activeFilters],
+        [termoBuscado, activeFilters, pcdOnly], // pcdOnly adicionado nas dependências
     );
 
-    // Carrega a página 1 sempre que o termo buscado ou os filtros mudarem
+    // Carrega a página 1 sempre que buscar, mudar filtro ou clicar no botão PCD
     useEffect(() => {
         carregarVagas(1, true);
-    }, [termoBuscado, activeFilters, carregarVagas]);
+    }, [termoBuscado, activeFilters, pcdOnly, carregarVagas]);
 
-    // Dispara a busca ao pressionar ENTER ou clicar no botão
     const handleBusca = () => {
         setTermoBuscado(busca);
     };
@@ -177,85 +177,17 @@ export default function VagasListagemContent({
     return (
         <div className="w-full bg-gray-50 min-h-screen pb-20">
             {/* CABEÇALHO */}
-            <div className="bg-white border-b border-gray-200 pb-8 md:px-8 shadow-sm">
-                <div className="max-w-7xl mx-auto space-y-6 p-8">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-                            {isLoading
-                                ? "Buscando vagas..."
-                                : `${totalVagas} Vagas encontradas`}
-                        </h1>
-                        <p className="text-gray-500 text-sm">Atualizado em tempo real</p>
-                    </div>
 
-                    {/* BARRA DE PESQUISA */}
-                    <div className="flex gap-3 w-full">
-                        <div className="flex-1 flex items-center px-4 bg-gray-100 rounded-full border border-transparent focus-within:bg-white focus-within:border-primary focus-within:ring-2 focus-within:ring-blue-50 transition-all h-12">
-                            <BiSearchAlt className="text-gray-400 text-xl mr-3" />
-                            <input
-                                type="text"
-                                placeholder="Cargo, empresa ou palavra-chave..."
-                                value={busca}
-                                onChange={(e) => setBusca(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleBusca()}
-                                className="w-full bg-transparent outline-none text-gray-700 placeholder-gray-500"
-                            />
-                        </div>
-
-                        <button
-                            onClick={() => setIsFilterModalOpen(true)}
-                            className="h-12 w-12 shrink-0 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-primary hover:border-primary transition-all bg-white"
-                            title="Filtros Avançados"
-                        >
-                            <BiSliderAlt className="text-xl" />
-                        </button>
-
-                        <ButtonType
-                            onClick={handleBusca}
-                            className="h-12 px-8 rounded-full hidden md:flex"
-                        >
-                            Buscar
-                        </ButtonType>
-                    </div>
-
-                    {/* FILTROS RÁPIDOS */}
-                    <div className="flex flex-wrap items-center gap-3">
-                        <FilterSelect
-                            label="Localização"
-                            options={["Panambi - RS", "Condor - RS", "Ijuí - RS", "Remoto"]}
-                            activeFilters={activeFilters}
-                            onToggle={handleFilterToggle}
-                        />
-                        <FilterSelect
-                            label="Modelo"
-                            options={["Presencial", "Híbrido", "Remoto"]}
-                            activeFilters={activeFilters}
-                            onToggle={handleFilterToggle}
-                        />
-                        <FilterSelect
-                            label="Contrato"
-                            options={["CLT", "PJ", "Estágio", "Temporário"]}
-                            activeFilters={activeFilters}
-                            onToggle={handleFilterToggle}
-                        />
-
-                        <label className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-300 bg-white cursor-pointer hover:border-gray-400 select-none transition-colors">
-                            <input
-                                type="checkbox"
-                                className="w-4 h-4 rounded text-primary focus:ring-primary border-gray-300"
-                            />
-                            <span className="text-sm font-medium text-gray-600">
-                                Vaga PCD
-                            </span>
-                        </label>
-                    </div>
-                </div>
-            </div>
+            <JobFilters onFilterChange={(filtros) => {
+                // Aqui você pode transformar os filtros avançados em filtros rápidos ou apenas guardar o que veio da gaveta e deixar o useEffect cuidar do resto
+                setFiltrosAvancados(filtros);
+            }} />
 
             {/* --- CONTEÚDO PRINCIPAL --- */}
             <div className="max-w-7xl mx-auto px-4 md:px-8 mt-8">
+
                 {/* ÁREA DE FILTROS ATIVOS + BOTÃO LIXEIRA */}
-                {activeFilters.length > 0 && (
+                {(activeFilters.length > 0 || pcdOnly) && (
                     <div className="flex flex-wrap items-center gap-2 mb-6 animate-in fade-in">
                         {activeFilters.map((filter) => (
                             <span
@@ -272,11 +204,24 @@ export default function VagasListagemContent({
                             </span>
                         ))}
 
+                        {pcdOnly && (
+                            <span className="inline-flex items-center gap-1 pl-3 pr-2 py-1.5 rounded-lg bg-white border border-purple-200 text-purple-700 text-sm font-medium shadow-sm">
+                                Vagas PCD
+                                <button
+                                    onClick={() => setPcdOnly(false)}
+                                    className="hover:bg-purple-50 rounded-md p-0.5 transition-colors"
+                                >
+                                    <IoClose className="text-gray-400 hover:text-red-500 text-lg" />
+                                </button>
+                            </span>
+                        )}
+
                         <div className="h-full border-l border-gray-300 mx-2 w-px h-6"></div>
 
                         <button
                             onClick={() => {
                                 setActiveFilters([]);
+                                setPcdOnly(false);
                                 setTermoBuscado("");
                                 setBusca("");
                             }}
@@ -291,7 +236,6 @@ export default function VagasListagemContent({
 
                 {/* LISTA DE VAGAS */}
                 <div className={`grid gap-6 ${gridCols}`}>
-                    {/* Exibe skeletons se for o primeiro carregamento */}
                     {isLoading ? (
                         <>
                             <JobCardSkeleton />
@@ -314,7 +258,6 @@ export default function VagasListagemContent({
                         </div>
                     )}
 
-                    {/* Exibe skeletons adicionais no fim do grid se estiver buscando a PRÓXIMA página */}
                     {isFetchingMore && (
                         <>
                             <JobCardSkeleton />
@@ -324,7 +267,7 @@ export default function VagasListagemContent({
                     )}
                 </div>
 
-                {/* LOADER INFINITO: Essa div vazia invisível fica vigiando quando o usuário rola a tela até o fim */}
+                {/* LOADER INFINITO */}
                 {!isLoading && paginaAtual < totalPaginas && (
                     <div
                         ref={loaderRef}
@@ -344,7 +287,7 @@ export default function VagasListagemContent({
                     )}
             </div>
 
-            {/* --- BOTÃO FLUTUANTE VOLTAR AO TOPO --- */}
+            {/* BOTÃO FLUTUANTE VOLTAR AO TOPO */}
             <button
                 onClick={scrollToTop}
                 className={`
@@ -361,10 +304,12 @@ export default function VagasListagemContent({
                 isOpen={isFilterModalOpen}
                 onClose={() => setIsFilterModalOpen(false)}
                 onApply={(filters) => {
-                    console.log("Filtros aplicados (Integração Futura):", filters);
-                    setIsFilterModalOpen(false);
+                    setFiltrosAvancados(filters); // Salva o que a gaveta enviou
+                    setIsFilterModalOpen(false);  // Fecha a gaveta
+                    // O useEffect que você já tem vai notar a mudança e chamar a API sozinho!
                 }}
             />
+
         </div>
     );
 }
