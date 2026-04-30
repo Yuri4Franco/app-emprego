@@ -13,6 +13,7 @@ import {
 } from "react-icons/bi";
 import { IoClose } from "react-icons/io5";
 import api from "@/src/services/api"; // Importando sua API
+import { mapearVagaBackendParaFrontend } from "@/src/utils/vaga-adapter";
 
 const JobCardSkeleton = () => (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 h-full flex flex-col justify-between animate-pulse">
@@ -56,30 +57,6 @@ const formatarSalario = (vaga: any) => {
     return undefined;
 };
 
-// Função para mapear os dados sujos do Backend para a tipagem limpa do Frontend
-const mapearVagaBackendParaFrontend = (vagaBackend: any): JobProps => {
-    return {
-        id: vagaBackend.id_vaga,
-        company: vagaBackend.empresa_confidencial
-            ? "Empresa Confidencial"
-            : vagaBackend.empresa?.nome_fantasia || "Empresa Confidencial",
-        title: vagaBackend.titulo,
-        location: vagaBackend.cidade || "Panambi",
-        type: vagaBackend.modelo_trabalho,
-        contract: vagaBackend.tipo_contrato,
-        salary: formatarSalario(vagaBackend),
-        datePosted: formatarTempo(vagaBackend.data_publicacao),
-        isNew:
-            Math.floor(
-                (new Date().getTime() -
-                    new Date(vagaBackend.data_publicacao).getTime()) /
-                (1000 * 3600 * 24),
-            ) <= 3,
-        isMember: true, // Aqui você pode depois cruzar com o vinculo_aci da empresa
-        pcdType: null, // Ajuste caso seu backend comece a filtrar vagas afirmativas
-    };
-};
-
 interface VagasListagemProps {
     initialJobs: JobProps[];
     initialTotal: number;
@@ -95,7 +72,6 @@ export default function VagasListagemContent({
     initialTotalPages,
     gridCols = "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
 }: VagasListagemProps) {
-    // Agora o initialJobs já vem tipado como JobProps[] do servidor
     const [jobs, setJobs] = useState<JobProps[]>(initialJobs);
     const [totalVagas, setTotalVagas] = useState(initialTotal);
     const [totalPaginas, setTotalPaginas] = useState(initialTotalPages);

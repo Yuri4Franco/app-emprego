@@ -1,6 +1,29 @@
 // src/utils/vaga-adapter.ts
 import { JobProps } from "@/src/components/JobCard";
 
+const TRADUCAO_NIVEL: Record<string, string> = {
+  JOVEM_APRENDIZ: "Jovem Aprendiz",
+  ESTAGIO: "Estágio",
+  TRAINEE: "Trainee",
+  OPERACIONAL: "Operacional / Auxiliar",
+  ASSISTENTE: "Assistente",
+  JUNIOR: "Júnior",
+  PLENO: "Pleno",
+  SENIOR: "Sênior",
+  ESPECIALISTA: "Especialista",
+  SUPERVISAO: "Supervisão / Coordenação",
+  GERENCIA: "Gerência",
+  DIRETORIA: "Diretoria",
+};
+
+const TRADUCAO_CONTRATO: Record<string, string> = {
+  CLT_EFETIVO: "CLT Efetivo",
+  CLT_TEMPORARIO: "CLT Temporário",
+  PJ: "PJ (Pejotinha)",
+  FREELANCER: "Freelancer",
+  ESTAGIO: "Estágio",
+};
+
 export const formatarTempo = (dataISO: string) => {
   if (!dataISO) return "Recentemente";
   const dias = Math.floor(
@@ -10,6 +33,8 @@ export const formatarTempo = (dataISO: string) => {
   if (dias < 30) return `${Math.floor(dias / 7)} sem`;
   return `${Math.floor(dias / 30)} mês(es)`;
 };
+
+
 
 export const formatarSalario = (vaga: any) => {
   if (vaga.ocultar_salario) return undefined;
@@ -30,7 +55,10 @@ export const mapearVagaBackendParaFrontend = (vagaBackend: any): JobProps => {
     title: vagaBackend.titulo,
     location: vagaBackend.cidade || "Panambi",
     type: vagaBackend.modelo_trabalho,
-    contract: vagaBackend.tipo_contrato,
+    contract: TRADUCAO_CONTRATO[vagaBackend.tipo_contrato] || vagaBackend.tipo_contrato.replace('_', ' '),
+    nivel: vagaBackend.nivel_hierarquico !== "NAO_SE_APLICA" 
+           ? (TRADUCAO_NIVEL[vagaBackend.nivel_hierarquico] || vagaBackend.nivel_hierarquico) 
+           : undefined,
     salary: formatarSalario(vagaBackend),
     datePosted: formatarTempo(vagaBackend.data_publicacao),
     isNew:
