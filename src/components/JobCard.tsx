@@ -14,7 +14,7 @@ import { HiOutlineLocationMarker, HiShieldCheck, HiOutlineOfficeBuilding } from 
 export interface JobProps {
   id: string | number;
   company: string;
-  logoUrl?: string | null; // Novo campo para a logo
+  logoUrl?: string | null; 
   isMember?: boolean;
   title: string;
   location: string;
