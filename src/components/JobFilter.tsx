@@ -1,190 +1,328 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
+import { BiSearchAlt, BiSliderAlt, BiTrash } from "react-icons/bi";
+import { IoClose } from "react-icons/io5";
+import { ButtonType } from "@/src/components/ButtonType";
+import { FilterSelect } from "@/src/components/FilterSelect";
+import {
+  AdvancedFilterModal,
+  AdvancedFilterData,
+} from "@/src/components/AdvancedFilterModal";
 import api from "@/src/services/api";
-import { HiOutlineFilter, HiOutlineLocationMarker, HiOutlineBriefcase, HiOutlineDocumentText } from "react-icons/hi";
 
-interface JobFiltersProps {
-    onFilterChange: (filtros: any) => void;
+// O formato exato que a API de listagem espera receber
+export interface JobFilterPayload {
+  busca?: string;
+  cidade?: string;
+  modelo_trabalho?: string;
+  tipo_contrato?: string;
+  somente_pcd?: boolean;
+  nivel_hierarquico?: string;
+  salario_min?: string;
+  salario_max?: string;
+  tipo_pcd?: string;
+  id_area_atuacao?: string;
 }
 
-export function JobFilters({ onFilterChange }: JobFiltersProps) {
-    const [metadata, setMetadata] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+interface JobFilterProps {
+  totalVagas: number;
+  isLoading: boolean;
+  onFilterChange: (filtros: JobFilterPayload) => void;
+}
 
-    // Novo estado para controlar qual Estado (UF) está ativo na visualização
-    const [ufAtiva, setUfAtiva] = useState<string>("");
+// --- FUNÇÕES DE TRADUÇÃO (FRONT <-> BACK) ---
+const mapModeloFront = (backendStr: string) => {
+  if (backendStr === "HIBRIDO") return "Híbrido";
+  if (backendStr === "NAO_SE_APLICA") return "Não se Aplica";
+  return backendStr.charAt(0) + backendStr.slice(1).toLowerCase();
+};
 
-    // Estado interno do que está marcado
-    const [selecionados, setSelecionados] = useState({
-        cidades: [] as string[],
-        modelos: [] as string[],
-        contratos: [] as string[],
-        pcd: false
-    });
+const mapModeloBack = (frontStr: string) => {
+  if (frontStr === "Híbrido") return "HIBRIDO";
+  if (frontStr === "Não se Aplica") return "NAO_SE_APLICA";
+  return frontStr.toUpperCase();
+};
 
-    // 1. Busca as opções reais do backend
-    useEffect(() => {
-        async function loadMetadata() {
-            try {
-                const res = await api.get("/vagas/filtros-disponiveis");
-                // Adapte aqui dependendo se seu controller retorna direto ou dentro de um "data"
-                const dados = res.data.data || res.data;
+const mapContratoFront = (backendStr: string) => {
+  if (backendStr === "CLT_EFETIVO") return "CLT Efetivo";
+  if (backendStr === "JOVEM_APRENDIZ") return "Jovem Aprendiz";
+  if (backendStr === "ESTAGIO") return "Estágio";
+  if (backendStr === "TEMPORARIO") return "Temporário";
+  return backendStr.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+};
 
-                if (dados) {
-                    setMetadata(dados);
-                    // Se veio locais, já deixa o primeiro Estado (ex: RS) clicado por padrão
-                    if (dados.locais && dados.locais.length > 0) {
-                        setUfAtiva(dados.locais[0].uf);
-                    }
-                }
-            } catch (err) {
-                console.error("Erro ao carregar metadados do filtro", err);
-            } finally {
-                setLoading(false);
-            }
+const mapContratoBack = (frontStr: string) => {
+  if (frontStr === "CLT Efetivo") return "CLT_EFETIVO";
+  if (frontStr === "Jovem Aprendiz") return "JOVEM_APRENDIZ";
+  if (frontStr === "Estágio") return "ESTAGIO";
+  if (frontStr === "Temporário") return "TEMPORARIO";
+  return frontStr.toUpperCase().replace(/ /g, "_");
+};
+
+export function JobFilter({
+  totalVagas,
+  isLoading,
+  onFilterChange,
+}: JobFilterProps) {
+  // Estados do usuário
+  const [busca, setBusca] = useState("");
+  const [termoBuscado, setTermoBuscado] = useState("");
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const [pcdOnly, setPcdOnly] = useState(false);
+  const [opcoesAreas, setOpcoesAreas] = useState<any[]>([]);
+  const [filtrosAvancados, setFiltrosAvancados] =
+    useState<AdvancedFilterData | null>(null);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  // Estados alimentados dinamicamente pelo Backend
+  const [opcoesCidades, setOpcoesCidades] = useState<string[]>([]);
+  const [opcoesModelos, setOpcoesModelos] = useState<string[]>([]);
+  const [opcoesContratos, setOpcoesContratos] = useState<string[]>([]);
+
+  // 1. BUSCA OS FILTROS REAIS DISPONÍVEIS ASSIM QUE A TELA CARREGA
+  useEffect(() => {
+    async function fetchOpcoesDinamicas() {
+      try {
+        const res = await api.get("/vagas/filtros-disponiveis");
+        const dados = res.data.data || res.data; // Ajuste se seu backend retornar { success, data: {} }
+
+        if (dados) {
+          // Achata as cidades no formato "Panambi - RS" para a barra rápida
+          const cidadesFmt: string[] = [];
+          dados.locais?.forEach((local: any) => {
+            local.cidades.forEach((cid: string) => {
+              cidadesFmt.push(`${cid} - ${local.uf}`);
+            });
+          });
+          setOpcoesCidades(cidadesFmt);
+
+          // Mapeia e embeleza as strings para o usuário ler
+          setOpcoesModelos((dados.modelos || []).map(mapModeloFront));
+          setOpcoesContratos((dados.contratos || []).map(mapContratoFront));
+
+          if (dados.areas) {
+            setOpcoesAreas(dados.areas);
+          }
         }
-        loadMetadata();
-    }, []);
+      } catch (err) {
+        console.error("Erro ao carregar filtros dinâmicos", err);
+      }
+    }
+    fetchOpcoesDinamicas();
+  }, []);
 
-    // 2. Notifica o componente pai sempre que algo mudar
-    useEffect(() => {
-        onFilterChange(selecionados);
-    }, [selecionados, onFilterChange]);
+  // 2. MONTA O PACOTE E ENVIA PARA A LISTAGEM QUANDO ALGO MUDA
+  useEffect(() => {
+    // Encontra o que o usuário marcou e extrai apenas a cidade
+    const cidadeFiltro = activeFilters
+      .find((f) => opcoesCidades.includes(f))
+      ?.split(" - ")[0];
 
-    const handleToggle = (categoria: keyof typeof selecionados, valor: string) => {
-        setSelecionados(prev => {
-            const lista = prev[categoria] as string[];
-            const novaLista = lista.includes(valor)
-                ? lista.filter((i: string) => i !== valor)
-                : [...lista, valor];
-            return { ...prev, [categoria]: novaLista };
-        });
-    };
-
-    if (loading) return <div className="w-full h-96 bg-gray-100 animate-pulse rounded-[32px]" />;
-
-    return (
-        <aside className="w-full bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm space-y-8 sticky top-6">
-            <div className="flex items-center gap-2 border-b border-gray-50 pb-4">
-                <HiOutlineFilter className="text-primary text-xl" />
-                <h2 className="font-black text-gray-800 tracking-tight">FILTRAR POR</h2>
-            </div>
-
-            {/* --- NOVO FILTRO DE LOCALIZAÇÃO (CASCATA) --- */}
-            <div className="space-y-4">
-                <h3 className="flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest">
-                    <HiOutlineLocationMarker /> Localização
-                </h3>
-
-                {/* 1. Botões dos Estados (UFs) */}
-                <div className="flex flex-wrap gap-2">
-                    {metadata?.locais?.map((local: any) => (
-                        <button
-                            key={local.uf}
-                            onClick={() => setUfAtiva(local.uf)}
-                            className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${ufAtiva === local.uf
-                                    ? 'bg-primary text-white shadow-sm ring-2 ring-primary/20'
-                                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-200'
-                                }`}
-                        >
-                            {local.uf}
-                        </button>
-                    ))}
-                </div>
-
-                {/* 2. Checkboxes das Cidades (Muda conforme o botão acima) */}
-                <div className="space-y-2.5 pt-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
-                    {metadata?.locais?.find((l: any) => l.uf === ufAtiva)?.cidades.map((cidade: string) => {
-                        // Salvamos no formato "Panambi - RS" para não quebrar a lógica da sua API!
-                        const valorCompleto = `${cidade} - ${ufAtiva}`;
-                        const isChecked = selecionados.cidades.includes(valorCompleto);
-
-                        return (
-                            <label key={cidade} className="flex items-center gap-3 cursor-pointer group">
-                                <input
-                                    type="checkbox"
-                                    className="w-5 h-5 rounded-[6px] border-gray-200 text-primary focus:ring-primary/20 transition-all cursor-pointer shrink-0"
-                                    checked={isChecked}
-                                    onChange={() => handleToggle('cidades', valorCompleto)}
-                                />
-                                <span className={`text-sm font-medium transition-colors line-clamp-1 ${isChecked ? 'text-primary font-bold' : 'text-gray-600 group-hover:text-primary'}`}>
-                                    {cidade}
-                                </span>
-                            </label>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* --- MODELO DE TRABALHO --- */}
-            <FilterGroup
-                title="Modelo"
-                icon={<HiOutlineBriefcase />}
-                options={metadata?.modelos}
-                selected={selecionados.modelos}
-                onChange={(val: string) => handleToggle('modelos', val)}
-                isEnum
-            />
-
-            {/* --- TIPO DE CONTRATO --- */}
-            <FilterGroup
-                title="Tipo de Contrato"
-                icon={<HiOutlineDocumentText />}
-                options={metadata?.contratos}
-                selected={selecionados.contratos}
-                onChange={(val: string) => handleToggle('contratos', val)}
-                isEnum
-            />
-
-            {/* --- SWITCH PCD --- */}
-            <div className="pt-4 border-t border-gray-50">
-                <label className="flex items-center justify-between cursor-pointer group">
-                    <span className="text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">Apenas PCD</span>
-                    <div className="relative inline-flex items-center">
-                        <input
-                            type="checkbox"
-                            className="sr-only peer"
-                            checked={selecionados.pcd}
-                            onChange={() => setSelecionados(prev => ({ ...prev, pcd: !prev.pcd }))}
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                    </div>
-                </label>
-            </div>
-        </aside>
+    // Acha o modelo/contrato clicado na interface
+    const contratoSelecionado = activeFilters.find((f) =>
+      opcoesContratos.includes(f),
     );
-}
+    const modeloSelecionado = activeFilters.find((f) =>
+      opcoesModelos.includes(f),
+    );
 
-// Componente Interno Auxiliar
-function FilterGroup({ title, options, selected, onChange, icon, isEnum }: any) {
-    if (!options || options.length === 0) return null;
+    const payload: JobFilterPayload = {
+      busca: termoBuscado || undefined,
+      cidade: cidadeFiltro || undefined,
 
-    const formatText = (text: string) => {
-        if (!isEnum) return text;
-        return text.split('_').map((word: string) => word.charAt(0) + word.slice(1).toLowerCase()).join(' ');
+      // Usa as funções de tradução reversa para enviar o ENUM certinho pro Prisma
+      tipo_contrato: contratoSelecionado
+        ? mapContratoBack(contratoSelecionado)
+        : undefined,
+      modelo_trabalho: modeloSelecionado
+        ? mapModeloBack(modeloSelecionado)
+        : undefined,
+
+      somente_pcd: pcdOnly ? true : undefined,
+
+      // Adiciona filtros avançados se a gaveta foi usada
+      nivel_hierarquico: filtrosAvancados?.niveis?.join(",") || undefined,
+      ...(filtrosAvancados?.modelos?.length
+        ? { modelo_trabalho: filtrosAvancados.modelos.join(",") }
+        : {}),
+      salario_min: filtrosAvancados?.salarioMin || undefined,
+      salario_max: filtrosAvancados?.salarioMax || undefined,
+      tipo_pcd:
+        filtrosAvancados?.pcd !== "TODAS" ? filtrosAvancados?.pcd : undefined,
+      id_area_atuacao: filtrosAvancados?.id_area || undefined,
     };
 
-    return (
-        <div className="space-y-4">
-            <h3 className="flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest">
-                {icon} {title}
-            </h3>
-            <div className="space-y-2.5 max-h-48 overflow-y-auto custom-scrollbar pr-2">
-                {options.map((opt: string) => (
-                    <label key={opt} className="flex items-center gap-3 cursor-pointer group">
-                        <input
-                            type="checkbox"
-                            className="w-5 h-5 rounded-[6px] border-gray-200 text-primary focus:ring-primary/20 transition-all cursor-pointer shrink-0"
-                            checked={selected.includes(opt)}
-                            onChange={() => onChange(opt)}
-                        />
-                        <span className={`text-sm font-medium transition-colors line-clamp-1 ${selected.includes(opt) ? 'text-primary font-bold' : 'text-gray-600 group-hover:text-primary'}`} title={formatText(opt)}>
-                            {formatText(opt)}
-                        </span>
-                    </label>
-                ))}
-            </div>
+    // Passa a bola pro VagasListagemContent
+    onFilterChange(payload);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [termoBuscado, activeFilters, pcdOnly, filtrosAvancados]);
+
+  const handleBusca = () => {
+    setTermoBuscado(busca);
+  };
+
+  const handleFilterToggle = (value: string) => {
+    setActiveFilters((prev) => {
+      if (prev.includes(value)) return prev.filter((item) => item !== value);
+      return [...prev, value];
+    });
+  };
+
+  const handleLimparTodosFiltros = () => {
+    setActiveFilters([]);
+    setPcdOnly(false);
+    setFiltrosAvancados(null);
+    setTermoBuscado("");
+    setBusca("");
+  };
+
+  return (
+    <div className="bg-white border-b border-gray-200 pb-8 md:px-8 shadow-sm relative z-20">
+      <div className="max-w-7xl mx-auto space-y-6 p-8">
+        {/* --- HEADER TÍTULO --- */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+            {isLoading
+              ? "Buscando vagas..."
+              : `${totalVagas} Vagas encontradas`}
+          </h1>
+          <p className="text-gray-500 text-sm">Atualizado em tempo real</p>
         </div>
-    );
+
+        {/* --- BARRA DE PESQUISA --- */}
+        <div className="flex gap-3 w-full">
+          <div className="flex-1 flex items-center px-4 bg-gray-100 rounded-full border border-transparent focus-within:bg-white focus-within:border-primary focus-within:ring-2 focus-within:ring-blue-50 transition-all h-12">
+            <BiSearchAlt className="text-gray-400 text-xl mr-3" />
+            <input
+              type="text"
+              placeholder="Cargo, empresa ou palavra-chave..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleBusca()}
+              className="w-full bg-transparent outline-none text-gray-700 placeholder-gray-500"
+            />
+          </div>
+
+          <button
+            onClick={() => setIsFilterModalOpen(true)}
+            className="h-12 w-12 shrink-0 flex items-center justify-center rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-primary hover:border-primary transition-all bg-white relative"
+            title="Filtros Avançados"
+          >
+            <BiSliderAlt className="text-xl" />
+            {filtrosAvancados && (
+              <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+            )}
+          </button>
+
+          <ButtonType
+            onClick={handleBusca}
+            className="h-12 px-8 rounded-full hidden md:flex"
+          >
+            Buscar
+          </ButtonType>
+        </div>
+
+        {/* --- FILTROS RÁPIDOS (Agora Dinâmicos!) --- */}
+        <div className="flex flex-wrap items-center gap-3">
+          <FilterSelect
+            label="Localização"
+            options={opcoesCidades}
+            activeFilters={activeFilters}
+            onToggle={handleFilterToggle}
+          />
+          <FilterSelect
+            label="Modelo"
+            options={opcoesModelos}
+            activeFilters={activeFilters}
+            onToggle={handleFilterToggle}
+          />
+          <FilterSelect
+            label="Contrato"
+            options={opcoesContratos}
+            activeFilters={activeFilters}
+            onToggle={handleFilterToggle}
+          />
+
+          <label
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-full border cursor-pointer select-none transition-colors duration-200 ${pcdOnly ? "bg-blue-50 border-primary text-primary" : "bg-white border-gray-300 text-gray-600 hover:border-gray-400"}`}
+          >
+            <input
+              type="checkbox"
+              checked={pcdOnly}
+              onChange={() => setPcdOnly(!pcdOnly)}
+              className="w-4 h-4 rounded text-primary focus:ring-primary border-gray-300 cursor-pointer"
+            />
+            <span className="text-sm font-bold">Vaga PCD</span>
+          </label>
+        </div>
+
+        {/* --- CHIPS DE FILTROS ATIVOS --- */}
+        {(activeFilters.length > 0 || pcdOnly || filtrosAvancados) && (
+          <div className="flex flex-wrap items-center gap-2 pt-2 animate-in fade-in">
+            {activeFilters.map((filter) => (
+              <span
+                key={filter}
+                className="inline-flex items-center gap-1 pl-3 pr-2 py-1.5 rounded-lg bg-white border border-blue-100 text-primary text-sm font-medium shadow-sm"
+              >
+                {filter}
+                <button
+                  onClick={() => handleFilterToggle(filter)}
+                  className="hover:bg-blue-50 rounded-md p-0.5 transition-colors"
+                >
+                  <IoClose className="text-gray-400 hover:text-red-500 text-lg" />
+                </button>
+              </span>
+            ))}
+
+            {pcdOnly && (
+              <span className="inline-flex items-center gap-1 pl-3 pr-2 py-1.5 rounded-lg bg-white border border-purple-200 text-purple-700 text-sm font-medium shadow-sm">
+                Vagas PCD
+                <button
+                  onClick={() => setPcdOnly(false)}
+                  className="hover:bg-purple-50 rounded-md p-0.5 transition-colors"
+                >
+                  <IoClose className="text-gray-400 hover:text-red-500 text-lg" />
+                </button>
+              </span>
+            )}
+
+            {filtrosAvancados && (
+              <span className="inline-flex items-center gap-1 pl-3 pr-2 py-1.5 rounded-lg bg-white border border-orange-200 text-orange-700 text-sm font-medium shadow-sm">
+                Filtros Avançados Ativos
+                <button
+                  onClick={() => setFiltrosAvancados(null)}
+                  className="hover:bg-orange-50 rounded-md p-0.5 transition-colors"
+                >
+                  <IoClose className="text-gray-400 hover:text-red-500 text-lg" />
+                </button>
+              </span>
+            )}
+
+            <div className="h-6 border-l border-gray-300 mx-2 w-px"></div>
+
+            <button
+              onClick={handleLimparTodosFiltros}
+              className="group flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-100 text-red-600 transition-colors text-sm font-medium"
+            >
+              <BiTrash className="text-lg group-hover:scale-110 transition-transform" />
+              <span>Limpar Tudo</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* O MODAL FICA AQUI DENTRO, ISOLADO! */}
+      <AdvancedFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApply={(filters) => {
+          setFiltrosAvancados(filters);
+          setIsFilterModalOpen(false);
+        }}
+        opcoesAreas={opcoesAreas}
+      />
+    </div>
+  );
 }
