@@ -17,7 +17,7 @@ export interface AdvancedFilterData {
 }
 
 interface AreaAtuacao {
-  id_area_atuacao: number;
+  id_area: number; // MUDOU DE id_area_atuacao PARA id_area
   nome: string;
 }
 
@@ -26,7 +26,7 @@ interface AdvancedFilterModalProps {
   onClose: () => void;
   onApply: (filters: AdvancedFilterData) => void;
   opcoesAreas?: AreaAtuacao[];
-  opcoesNiveis?: string[]; // <-- ADICIONAMOS AQUI
+  opcoesNiveis?: string[];
 }
 
 const ESTADO_INICIAL: AdvancedFilterData = {
@@ -54,11 +54,12 @@ export function AdvancedFilterModal({
   onClose,
   onApply,
   opcoesAreas = [],
-  opcoesNiveis = [], // <-- ADICIONAMOS AQUI
+  opcoesNiveis = [],
 }: AdvancedFilterModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [filtros, setFiltros] = useState<AdvancedFilterData>(ESTADO_INICIAL);
 
+  // Animação de entrada/saída e trava de scroll
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
@@ -93,11 +94,13 @@ export function AdvancedFilterModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
+      {/* OVERLAY ESCURO */}
       <div
         className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0"}`}
         onClick={onClose}
       />
 
+      {/* GAVETA LATERAL */}
       <div
         className={`
             relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col transition-transform duration-300 ease-out
@@ -117,7 +120,8 @@ export function AdvancedFilterModal({
 
         {/* --- CORPO COM SCROLL --- */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
-          {/* 1. Área e Categoria */}
+
+          {/* 1. Área de Atuação */}
           <section>
             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">
               Área de Atuação
@@ -133,9 +137,8 @@ export function AdvancedFilterModal({
                 <option value="">Selecione uma Área...</option>
                 {opcoesAreas.map((area, index) => (
                   <option
-                    // Se o id_area_atuacao for undefined, ele usa 'area-0', 'area-1', etc.
-                    key={area.id_area_atuacao || `area-${index}`}
-                    value={area.id_area_atuacao} // Tenta pegar 'id' caso o nome real do banco seja esse
+                    key={area.id_area || `area-${index}`} // CORRIGIDO AQUI
+                    value={area.id_area}                  // CORRIGIDO AQUI
                   >
                     {area.nome}
                   </option>
@@ -146,29 +149,30 @@ export function AdvancedFilterModal({
 
           <hr className="border-gray-100" />
 
-          {/* 2. Detalhes da Vaga (Grid) */}
+          {/* 2. Detalhes da Vaga */}
           <section>
             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">
               Detalhes
             </h3>
-            <div className="space-y-4">
-              {/* Senioridade (AGORA DINÂMICO!) */}
+            <div className="space-y-6">
+
+              {/* Senioridade Dinâmica */}
               <div>
-                <label className="text-xs text-gray-500 font-medium mb-1.5 block">
+                <label className="text-xs text-gray-500 font-medium mb-2.5 block">
                   Nível de Experiência
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {opcoesNiveis.map((level) => {
                     const labelFormatada = formatarNivel(level);
                     return (
-                      <label key={level} className="cursor-pointer">
+                      <label key={level} className="cursor-pointer group">
                         <input
                           type="checkbox"
                           className="peer sr-only"
                           checked={filtros.niveis.includes(level)}
                           onChange={() => handleArrayToggle("niveis", level)}
                         />
-                        <span className="inline-block px-3 py-1.5 rounded-full border border-gray-200 text-sm text-gray-600 peer-checked:bg-blue-50 peer-checked:text-primary peer-checked:border-primary transition-all select-none">
+                        <span className="inline-block px-3 py-1.5 rounded-full border border-gray-200 text-sm text-gray-600 peer-checked:bg-blue-50 peer-checked:text-primary peer-checked:border-primary transition-all select-none group-hover:border-blue-300">
                           {labelFormatada}
                         </span>
                       </label>
@@ -179,7 +183,7 @@ export function AdvancedFilterModal({
 
               {/* Modalidade */}
               <div>
-                <label className="text-xs text-gray-500 font-medium mb-1.5 block">
+                <label className="text-xs text-gray-500 font-medium mb-2.5 block">
                   Modalidade
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -189,14 +193,14 @@ export function AdvancedFilterModal({
                         ? "Híbrido"
                         : mode.charAt(0) + mode.slice(1).toLowerCase();
                     return (
-                      <label key={mode} className="cursor-pointer">
+                      <label key={mode} className="cursor-pointer group">
                         <input
                           type="checkbox"
                           className="peer sr-only"
                           checked={filtros.modelos.includes(mode)}
                           onChange={() => handleArrayToggle("modelos", mode)}
                         />
-                        <span className="inline-block px-3 py-1.5 rounded-full border border-gray-200 text-sm text-gray-600 peer-checked:bg-blue-50 peer-checked:text-primary peer-checked:border-primary transition-all select-none">
+                        <span className="inline-block px-3 py-1.5 rounded-full border border-gray-200 text-sm text-gray-600 peer-checked:bg-blue-50 peer-checked:text-primary peer-checked:border-primary transition-all select-none group-hover:border-blue-300">
                           {labelFormatada}
                         </span>
                       </label>
@@ -216,7 +220,7 @@ export function AdvancedFilterModal({
             </h3>
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">
                   R$
                 </span>
                 <input
@@ -226,12 +230,12 @@ export function AdvancedFilterModal({
                   onChange={(e) =>
                     setFiltros({ ...filtros, salarioMin: e.target.value })
                   }
-                  className="w-full pl-9 p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-primary"
+                  className="w-full pl-9 p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-primary focus:bg-white transition-all"
                 />
               </div>
-              <span className="text-gray-400">-</span>
+              <span className="text-gray-400 font-medium">-</span>
               <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">
                   R$
                 </span>
                 <input
@@ -241,7 +245,7 @@ export function AdvancedFilterModal({
                   onChange={(e) =>
                     setFiltros({ ...filtros, salarioMax: e.target.value })
                   }
-                  className="w-full pl-9 p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-primary"
+                  className="w-full pl-9 p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-primary focus:bg-white transition-all"
                 />
               </div>
             </div>
@@ -250,60 +254,59 @@ export function AdvancedFilterModal({
           <hr className="border-gray-100" />
 
           {/* 4. Inclusão (PCD) */}
-          <section className="bg-purple-50 p-4 rounded-xl border border-purple-100">
+          <section className="bg-purple-50 p-5 rounded-xl border border-purple-100">
             <h3 className="text-sm font-bold text-purple-900 uppercase tracking-wider mb-3 flex items-center gap-2">
               Inclusão Social
             </h3>
-            <div className="space-y-2">
-              <label className="flex items-center gap-3 cursor-pointer">
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 cursor-pointer group">
                 <input
                   type="radio"
                   name="pcd"
                   checked={filtros.pcd === "TODAS"}
                   onChange={() => setFiltros({ ...filtros, pcd: "TODAS" })}
-                  className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                  className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-800 group-hover:text-purple-800 transition-colors">
                   Mostrar todas as vagas
                 </span>
               </label>
-              <label className="flex items-center gap-3 cursor-pointer">
+              <label className="flex items-center gap-3 cursor-pointer group">
                 <input
                   type="radio"
                   name="pcd"
                   checked={filtros.pcd === "AFIRMATIVAS"}
-                  onChange={() =>
-                    setFiltros({ ...filtros, pcd: "AFIRMATIVAS" })
-                  }
-                  className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                  onChange={() => setFiltros({ ...filtros, pcd: "AFIRMATIVAS" })}
+                  className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-800 group-hover:text-purple-800 transition-colors">
                   Vagas inclusivas (PCD)
                 </span>
               </label>
-              <label className="flex items-center gap-3 cursor-pointer">
+              <label className="flex items-center gap-3 cursor-pointer group">
                 <input
                   type="radio"
                   name="pcd"
                   checked={filtros.pcd === "EXCLUSIVAS"}
                   onChange={() => setFiltros({ ...filtros, pcd: "EXCLUSIVAS" })}
-                  className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                  className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-800 group-hover:text-purple-800 transition-colors">
                   Vagas Exclusivas para PCD
                 </span>
               </label>
             </div>
           </section>
 
-          <div className="h-20"></div>
+          {/* Espaçamento extra no fim do scroll */}
+          <div className="h-8"></div>
         </div>
 
         {/* --- RODAPÉ STICKY --- */}
         <div className="border-t border-gray-100 p-6 bg-white flex items-center gap-4">
           <button
             onClick={handleLimpar}
-            className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors font-medium text-sm"
+            className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors font-medium text-sm px-2"
           >
             <BiTrash size={18} /> Limpar
           </button>
