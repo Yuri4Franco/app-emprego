@@ -252,7 +252,7 @@ export function JobFilter({
           setIsFilterModalOpen(false);
         }}
         opcoesAreas={opcoesAreas}
-        opcoesNiveis={opcoesNiveis} // <-- PASSANDO PARA O MODAL
+        opcoesNiveis={opcoesNiveis}
       />
     </div>
   );

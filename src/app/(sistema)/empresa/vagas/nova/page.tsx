@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import api from "@/src/services/api";
@@ -12,8 +12,6 @@ import {
   HiOutlineMap,
   HiOutlineGift,
   HiOutlineClipboardList,
-  HiOutlineChevronRight,
-  HiOutlineChevronLeft,
   HiOutlineSave,
   HiOutlineUpload,
   HiOutlineX,
@@ -22,14 +20,15 @@ import {
   HiOutlineViewList,
   HiOutlineTrash,
   HiOutlinePlus,
-  HiOutlineCalendar,
   HiOutlineInformationCircle,
   HiOutlineCheckCircle,
+  HiOutlineExclamationCircle,
 } from "react-icons/hi";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
+import Editor from "@/src/components/Editor";
 
-// 1. Schema
+// --- SCHEMA DE VALIDAÇÃO ---
 const vagaSchema = z.object({
   titulo: z.string().min(5, "Título muito curto"),
   id_area_atuacao: z.coerce.number().min(1, "Selecione uma área profissional"),
@@ -45,18 +44,9 @@ const vagaSchema = z.object({
   requisitos_obrigatorios: z.string().min(10, "Informe os requisitos"),
   diferenciais: z.string().optional().default(""),
   cidade: z.string().min(2, "Cidade obrigatória").default("Panambi"),
-  uf: z.string().min(2, "UF obrigatória").default("RS"),
+  uf: z.string().length(2, "UF obrigatória").default("RS"),
   beneficios_ids: z.array(z.number()).default([]),
   tipo_diversidade: z.string().default("AMPLA_CONCORRENCIA"),
-  perguntas_eliminatorias: z
-    .array(
-      z.object({
-        id_pergunta: z.number(),
-        resposta_esperada: z.boolean(),
-      }),
-    )
-    .default([]),
-  // ETAPAS INTERMEDIÁRIAS
   etapas: z.array(
     z.object({
       nome: z.string().min(2, "Nome da etapa é obrigatório"),
@@ -67,14 +57,57 @@ const vagaSchema = z.object({
 
 type VagaFormData = z.infer<typeof vagaSchema>;
 
+const ESTADOS_BRASIL = [
+  "AC",
+  "AL",
+  "AP",
+  "AM",
+  "BA",
+  "CE",
+  "DF",
+  "ES",
+  "GO",
+  "MA",
+  "MT",
+  "MS",
+  "MG",
+  "PA",
+  "PB",
+  "PR",
+  "PE",
+  "PI",
+  "RJ",
+  "RN",
+  "RS",
+  "RO",
+  "RR",
+  "SC",
+  "SP",
+  "SE",
+  "TO",
+];
+
 export default function NovaVagaPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
+
+  // Controle de Abas
+  const [activeTab, setActiveTab] = useState<
+    "principal" | "descricao" | "beneficios" | "etapas" | "revisao"
+  >("principal");
+  const ordemAbas: Array<
+    "principal" | "descricao" | "beneficios" | "etapas" | "revisao"
+  > = ["principal", "descricao", "beneficios", "etapas", "revisao"];
+
+  // Estados de Dados Auxiliares
   const [areas, setAreas] = useState([]);
   const [searchTermArea, setSearchTermArea] = useState("");
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
   const [beneficiosTaxonomia, setBeneficiosTaxonomia] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+
+  // Loading & Salvamento
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const {
     register,
@@ -82,20 +115,19 @@ export default function NovaVagaPage() {
     watch,
     setValue,
     getValues,
-    trigger,
     control,
-    formState: { errors },
+    trigger,
+    formState: { errors, isValid },
   } = useForm<VagaFormData>({
     resolver: zodResolver(vagaSchema) as any,
+    mode: "onChange", // Validação em tempo real
     defaultValues: {
       titulo: "",
       id_area_atuacao: 0,
       nivel_hierarquico: "JUNIOR",
       modelo_trabalho: "PRESENCIAL",
-      tipo_contrato: "CLT",
+      tipo_contrato: "CLT_EFETIVO",
       tipo_salario: "OCULTO",
-      salario_de: "" as any,
-      salario_ate: "" as any,
       empresa_confidencial: false,
       descricao: "",
       responsabilidades: "",
@@ -104,9 +136,7 @@ export default function NovaVagaPage() {
       cidade: "Panambi",
       uf: "RS",
       beneficios_ids: [],
-      perguntas_eliminatorias: [],
       tipo_diversidade: "AMPLA_CONCORRENCIA",
-      // Deixamos duas etapas intermediárias como padrão de sugestão
       etapas: [
         { nome: "Triagem", requer_agendamento: false },
         { nome: "Entrevistas", requer_agendamento: true },
@@ -123,6 +153,8 @@ export default function NovaVagaPage() {
     name: "etapas",
   });
 
+  const valoresAtuais = watch();
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -135,150 +167,323 @@ export default function NovaVagaPage() {
         setAreas(resAreas.data);
         setBeneficiosTaxonomia(resBen.data);
 
-        const idAtual = getValues("id_area_atuacao");
-        if (idAtual > 0) {
-          const areaEncontrada = resAreas.data.find(
-            (a: any) => a.id_area_atuacao === idAtual,
-          );
-          if (areaEncontrada) setSearchTermArea(areaEncontrada.nome);
-        }
-
         const beneficiosPadrao = resPadrao.data.data || resPadrao.data;
-
         if (Array.isArray(beneficiosPadrao) && beneficiosPadrao.length > 0) {
           const idsPadrao = beneficiosPadrao.map((b: any) =>
             Number(b.id_beneficio),
           );
-          setValue("beneficios_ids", idsPadrao, {
-            shouldValidate: true,
-            shouldDirty: true,
-          });
+          setValue("beneficios_ids", idsPadrao);
         }
       } catch (error) {
-        console.error("Erro ao carregar dados auxiliares", error);
+        toast.error("Erro ao carregar configurações.");
+      } finally {
+        setIsLoading(false);
       }
     };
-
     loadData();
-  }, [setValue, getValues]);
+  }, [setValue]);
 
-  const selectedBeneficios = watch("beneficios_ids");
-  const tipoSalarioSelecionado = watch("tipo_salario");
-
-  const filteredAreas = areas.filter((a: any) =>
-    a.nome.toLowerCase().includes(searchTermArea.toLowerCase()),
-  );
-
-  const handleFormSubmit = (enviarParaAprovacao: boolean) => {
-    return handleSubmit(
-      async (data: VagaFormData) => {
-        setIsLoading(true);
-        try {
-          // A MÁGICA ACONTECE AQUI: Montamos o array completo blindado!
-          const etapasCompletas = [
-            { nome: "Inscritos", requer_agendamento: false }, // Fixo no início
-            ...data.etapas, // O que a empresa digitou
-            { nome: "Aprovados", requer_agendamento: false }, // Fixo no final
-          ].map((etapa, idx) => ({
-            ...etapa,
-            ordem: idx,
-          }));
-
-          const payload = {
-            ...data,
-            etapas: etapasCompletas,
-            salario_a_combinar: data.tipo_salario === "COMBINAR",
-            ocultar_salario: data.tipo_salario === "OCULTO",
-            enviar_para_aprovacao: enviarParaAprovacao,
-          };
-
-          await api.post("/vagas", payload);
-          toast.success(
-            enviarParaAprovacao
-              ? "Vaga enviada para aprovação!"
-              : "Rascunho salvo!",
-          );
-          router.push("/empresa/vagas");
-        } catch (error: any) {
-          toast.error(error.response?.data?.error || "Erro ao criar vaga");
-        } finally {
-          setIsLoading(false);
-        }
-      },
-      (err) => {
-        console.log("Erro de validação final:", err);
-        toast.error("Preencha todos os campos obrigatórios antes de enviar.");
-      },
+  // --- LÓGICA DE PROGRESSO E STATUS DAS ABAS ---
+  const checkPrincipal = () =>
+    !!(valoresAtuais.titulo?.length > 4 && valoresAtuais.id_area_atuacao > 0);
+  const checkDescricao = () =>
+    !!(
+      (valoresAtuais.descricao || "").length > 15 &&
+      (valoresAtuais.responsabilidades || "").length > 10 &&
+      (valoresAtuais.requisitos_obrigatorios || "").length > 10 &&
+      valoresAtuais.cidade
     );
+  const checkBeneficios = () => true; // Opcional
+  const checkEtapas = () =>
+    valoresAtuais.etapas?.every((e) => e.nome.length > 1);
+
+  const statusAbas = {
+    principal: checkPrincipal(),
+    descricao: checkDescricao(),
+    beneficios: checkBeneficios(),
+    etapas: checkEtapas(),
+    revisao: isValid, // Só fica verde se tudo estiver OK
   };
 
-  const nextStep = () => setStep((s) => s + 1);
-  const prevStep = () => setStep((s) => s - 1);
+  const progressoVaga = () => {
+    let pts = 0;
+    if (statusAbas.principal) pts += 25;
+    if (statusAbas.descricao) pts += 25;
+    if (statusAbas.etapas) pts += 25;
+    if (valoresAtuais.beneficios_ids?.length > 0) pts += 25;
+    return pts;
+  };
 
-  const handleNext = async () => {
-    const fieldsToValidate: any = {
-      1: [
+  const getFieldStatus = (fieldName: keyof VagaFormData) => {
+    if (errors[fieldName])
+      return "border-red-500 bg-red-50/30 focus:border-red-500 focus:ring-red-500/20";
+    const value = watch(fieldName);
+    if (value && value !== "" && value !== 0)
+      return "border-emerald-400 bg-emerald-50/20 focus:border-emerald-500 focus:ring-emerald-500/20";
+    return "border-gray-200 bg-gray-50 focus:border-blue-500";
+  };
+
+  // --- NAVEGAÇÃO LIVRE ---
+  const navegarParaAba = async (direcao: "proximo" | "anterior") => {
+    const currentIndex = ordemAbas.indexOf(activeTab);
+
+    // Dispara a validação da aba atual antes de avançar para mostrar os erros
+    const camposParaValidar: any = {
+      principal: [
         "titulo",
         "id_area_atuacao",
         "nivel_hierarquico",
         "modelo_trabalho",
         "tipo_contrato",
       ],
-      2: [
+      descricao: [
         "descricao",
         "responsabilidades",
         "requisitos_obrigatorios",
         "cidade",
         "uf",
       ],
-      3: ["beneficios_ids"],
-      4: ["etapas"],
+      etapas: ["etapas"],
     };
 
-    const isValid = await trigger(fieldsToValidate[step]);
+    if (direcao === "proximo") {
+      await trigger(camposParaValidar[activeTab]);
+    }
 
-    if (isValid) {
-      nextStep();
-    } else {
-      toast.error("Por favor, preencha os campos corretamente para avançar.");
+    if (direcao === "proximo" && currentIndex < ordemAbas.length - 1) {
+      setActiveTab(ordemAbas[currentIndex + 1]);
+    } else if (direcao === "anterior" && currentIndex > 0) {
+      setActiveTab(ordemAbas[currentIndex - 1]);
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // --- SUBMISSÃO ---
+  const submitData = async (data: VagaFormData, isDraft: boolean) => {
+    if (isDraft) setIsSavingDraft(true);
+    else setIsPublishing(true);
+
+    try {
+      const etapasCompletas = [
+        { nome: "Inscritos", requer_agendamento: false },
+        ...data.etapas,
+        { nome: "Aprovados", requer_agendamento: false },
+      ].map((etapa, idx) => ({ ...etapa, ordem: idx }));
+
+      let payload: any = {
+        ...data,
+        etapas: etapasCompletas,
+        salario_a_combinar: data.tipo_salario === "COMBINAR",
+        ocultar_salario: data.tipo_salario === "OCULTO",
+        enviar_para_aprovacao: !isDraft,
+      };
+
+      // ✨ A FAXINA DO RASCUNHO ✨
+      // Se for rascunho, removemos os campos vazios para o Zod do Backend não chiar
+      if (isDraft) {
+        Object.keys(payload).forEach((key) => {
+          // Se for string vazia ou o número 0 dos salários, nós removemos do JSON
+          if (
+            payload[key] === "" ||
+            payload[key] === "0" ||
+            payload[key] === 0
+          ) {
+            delete payload[key];
+          }
+        });
+      } else {
+        // Se for submissão oficial, garante que os salários cheguem como Número
+        // (porque inputs do tipo number no HTML costumam enviar strings)
+        payload.salario_de = payload.salario_de
+          ? Number(payload.salario_de)
+          : null;
+        payload.salario_ate = payload.salario_ate
+          ? Number(payload.salario_ate)
+          : null;
+      }
+
+      await api.post("/vagas", payload);
+      toast.success(
+        isDraft
+          ? "Rascunho salvo com sucesso!"
+          : "Vaga enviada para aprovação!",
+      );
+      router.push("/empresa/vagas");
+    } catch (error: any) {
+      // Printa no console os detalhes exatos que o Zod reclamou para ajudar no debug
+      console.error("Erro da API:", error.response?.data);
+
+      toast.error(error.response?.data?.error || "Erro ao processar vaga.");
+    } finally {
+      setIsSavingDraft(false);
+      setIsPublishing(false);
     }
   };
 
+  const handleSaveDraft = async () => {
+    submitData(getValues(), true);
+  };
+
+  const filteredAreas = areas.filter((a: any) =>
+    a.nome.toLowerCase().includes(searchTermArea.toLowerCase()),
+  );
+
+  if (isLoading)
+    return (
+      <div className="p-20 text-center animate-pulse font-bold text-gray-400">
+        Preparando ambiente...
+      </div>
+    );
+
   return (
-    <div className="max-w-4xl mx-auto pb-20 animate-in fade-in duration-700">
-      {/* Header Stepper com 5 Passos */}
-      <div className="flex items-center justify-between mb-12 bg-white p-6 rounded-[32px] shadow-sm border border-gray-100">
-        {[
-          { s: 1, label: "Vaga", icon: <HiOutlineBriefcase /> },
-          { s: 2, label: "Detalhes", icon: <HiOutlineMap /> },
-          { s: 3, label: "Benefícios", icon: <HiOutlineGift /> },
-          { s: 4, label: "Etapas", icon: <HiOutlineViewList /> },
-          { s: 5, label: "Revisão", icon: <HiOutlineClipboardList /> },
-        ].map((item) => (
-          <div
-            key={`step-${item.s}`}
-            className={`flex items-center gap-2 ${step >= item.s ? "text-blue-600" : "text-gray-300"}`}
-          >
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${step >= item.s ? "border-blue-600 bg-blue-50" : "border-gray-100"} transition-all`}
-            >
-              {item.icon}
-            </div>
-            <span className="hidden md:block text-[10px] font-black uppercase">
-              {item.label}
-            </span>
+    <div className="max-w-5xl mx-auto pb-20 pt-6 md:pt-10 md:px-8 space-y-6 md:space-y-8 px-4 md:px-0 animate-in fade-in duration-700">
+      {/* HEADER DA PÁGINA */}
+      <header className="mb-6 md:mb-10 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="text-center md:text-left">
+            <h1 className="text-3xl font-black text-gray-800 tracking-tight">
+              Criar Nova Vaga
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">
+              Preencha os detalhes para encontrar o candidato ideal.
+            </p>
           </div>
+          <div className="flex w-full md:w-auto">
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={isSavingDraft}
+              className="w-full sm:w-auto flex justify-center items-center gap-2.5 px-6 py-3 md:py-4 rounded-[24px] bg-amber-50 text-amber-700 border border-amber-200 text-sm font-bold hover:bg-amber-100 transition-colors shadow-sm"
+            >
+              <HiOutlineSave size={20} />
+              {isSavingDraft ? "Salvando..." : "Salvar Rascunho Seguro"}
+            </button>
+          </div>
+        </div>
+
+        {/* BARRA DE PROGRESSO */}
+        <div className="bg-white p-5 md:p-6 rounded-[24px] border border-gray-100 shadow-sm flex flex-col md:flex-row items-center gap-4 md:gap-6">
+          <div className="flex-1 w-full space-y-2">
+            <div className="flex items-center justify-between text-sm font-bold">
+              <span className="text-gray-700">Qualidade da Vaga</span>
+              <span
+                className={
+                  progressoVaga() >= 100 ? "text-emerald-600" : "text-primary"
+                }
+              >
+                {progressoVaga()}% Preenchida
+              </span>
+            </div>
+            <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-1000 ease-out ${progressoVaga() >= 100 ? "bg-emerald-500" : "bg-blue-500"}`}
+                style={{ width: `${progressoVaga()}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* TABS DE NAVEGAÇÃO */}
+      <div className="flex flex-wrap gap-2 p-1.5 bg-white border border-gray-100 rounded-[24px] shadow-sm overflow-x-auto hide-scrollbar w-full md:w-fit">
+        {[
+          {
+            id: "principal",
+            label: "Principal",
+            icon: <HiOutlineBriefcase />,
+            isOk: statusAbas.principal,
+            hasError: Object.keys(errors).some((k) =>
+              [
+                "titulo",
+                "id_area_atuacao",
+                "nivel_hierarquico",
+                "modelo_trabalho",
+                "tipo_contrato",
+              ].includes(k),
+            ),
+          },
+          {
+            id: "descricao",
+            label: "Detalhes",
+            icon: <HiOutlineMap />,
+            isOk: statusAbas.descricao,
+            hasError: Object.keys(errors).some((k) =>
+              [
+                "descricao",
+                "responsabilidades",
+                "requisitos_obrigatorios",
+                "cidade",
+                "uf",
+              ].includes(k),
+            ),
+          },
+          {
+            id: "beneficios",
+            label: "Benefícios",
+            icon: <HiOutlineGift />,
+            isOk: statusAbas.beneficios,
+            hasError: false,
+          },
+          {
+            id: "etapas",
+            label: "Etapas",
+            icon: <HiOutlineViewList />,
+            isOk: statusAbas.etapas,
+            hasError: !!errors.etapas,
+          },
+          {
+            id: "revisao",
+            label: "Revisão",
+            icon: <HiOutlineClipboardList />,
+            isOk: isValid,
+            hasError: !isValid,
+          },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${
+              activeTab === tab.id
+                ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
+                : tab.hasError
+                  ? "text-red-500 hover:bg-red-50 border-b-2 border-transparent"
+                  : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
+            }`}
+          >
+            <span className="flex items-center gap-1.5 md:gap-2 relative z-10">
+              {tab.icon} {tab.label}
+            </span>
+            {tab.isOk && !tab.hasError && (
+              <span className="flex h-2 w-2 relative z-10 ml-1">
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+            )}
+            {tab.hasError && (
+              <span className="flex h-2 w-2 relative z-10 ml-1">
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+            )}
+          </button>
         ))}
       </div>
 
-      <form className="space-y-8">
-        {step === 1 && (
-          <section className="bg-white p-10 rounded-[48px] border border-gray-100 shadow-sm space-y-6 animate-in slide-in-from-right-4">
-            <h2 className="text-2xl font-black text-gray-800">
+      {/* FORMULÁRIO GERAL */}
+      <form
+        onSubmit={handleSubmit((d) => submitData(d, false))}
+        className="space-y-8"
+      >
+        {/* ABA 1: PRINCIPAL */}
+        {activeTab === "principal" && (
+          <section className="bg-white p-6 md:p-10 rounded-[32px] md:rounded-[48px] border border-gray-100 shadow-sm space-y-6 animate-in slide-in-from-bottom-4">
+            <h2 className="text-xl md:text-2xl font-black text-gray-800">
               Informações Principais
             </h2>
+
             <Input
               label="Título da Vaga"
+              placeholder="Ex: Desenvolvedor Front-end Pleno"
+              className={getFieldStatus("titulo")}
               {...register("titulo")}
               error={errors.titulo?.message}
             />
@@ -291,8 +496,8 @@ export default function NovaVagaPage() {
                 <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 z-10" />
                 <input
                   type="text"
-                  placeholder="Digite para buscar área (Ex: TI, Comercial...)"
-                  className={`w-full pl-12 pr-4 py-4 bg-gray-50 border rounded-[20px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 ${errors.id_area_atuacao ? "border-red-500" : "border-gray-100 focus:border-blue-500"}`}
+                  placeholder="Buscar área (Ex: TI, Comercial...)"
+                  className={`w-full pl-12 pr-4 py-4 bg-gray-50 border rounded-[20px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 ${errors.id_area_atuacao ? "border-red-500 bg-red-50/30" : "border-gray-100 focus:border-blue-500"}`}
                   value={searchTermArea}
                   onChange={(e) => {
                     setSearchTermArea(e.target.value);
@@ -304,28 +509,27 @@ export default function NovaVagaPage() {
                     setTimeout(() => setIsAreaDropdownOpen(false), 200)
                   }
                 />
-
                 {isAreaDropdownOpen && (
-                  <div className="absolute w-full mt-2 bg-white border border-gray-100 rounded-[24px] shadow-2xl z-50 max-h-60 overflow-y-auto p-2 animate-in fade-in zoom-in-95 duration-200">
+                  <div className="absolute w-full mt-2 bg-white border border-gray-100 rounded-[24px] shadow-2xl z-50 max-h-60 overflow-y-auto p-2">
                     {filteredAreas.length > 0 ? (
-                      filteredAreas.map((a: any) => {
-                        const idReal = a.id_area_atuacao || a.id_area || a.id;
-                        return (
-                          <button
-                            key={`area-${idReal}`}
-                            type="button"
-                            onClick={() => {
-                              setValue("id_area_atuacao", Number(idReal));
-                              setSearchTermArea(a.nome);
-                              setIsAreaDropdownOpen(false);
-                              trigger("id_area_atuacao");
-                            }}
-                            className="w-full text-left px-4 py-3 hover:bg-blue-50 rounded-[16px] text-sm font-medium text-gray-600 hover:text-blue-700 transition-colors"
-                          >
-                            {a.nome}
-                          </button>
-                        );
-                      })
+                      filteredAreas.map((a: any) => (
+                        <button
+                          key={a.id_area || a.id}
+                          type="button"
+                          onClick={() => {
+                            setValue(
+                              "id_area_atuacao",
+                              Number(a.id_area || a.id),
+                            );
+                            setSearchTermArea(a.nome);
+                            setIsAreaDropdownOpen(false);
+                            trigger("id_area_atuacao");
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-blue-50 rounded-[16px] text-sm font-medium text-gray-600 hover:text-blue-700"
+                        >
+                          {a.nome}
+                        </button>
+                      ))
                     ) : (
                       <div className="px-4 py-3 text-sm text-gray-400 italic">
                         Nenhuma área encontrada...
@@ -333,16 +537,14 @@ export default function NovaVagaPage() {
                     )}
                   </div>
                 )}
-
                 {watch("id_area_atuacao") > 0 && (
                   <button
                     type="button"
                     onClick={() => {
                       setValue("id_area_atuacao", 0);
                       setSearchTermArea("");
-                      setIsAreaDropdownOpen(true);
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-emerald-100 text-emerald-600 p-1 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors z-10"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-emerald-100 text-emerald-600 p-1 rounded-full hover:bg-red-100 hover:text-red-600 z-10"
                   >
                     <HiOutlineX size={16} />
                   </button>
@@ -357,81 +559,65 @@ export default function NovaVagaPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-1.5">
-                <label className="text-sm font-bold text-gray-700">
+                <label className="text-sm font-bold text-gray-700 ml-1">
                   Nível Hierárquico
                 </label>
                 <select
                   {...register("nivel_hierarquico")}
-                  className="w-full p-4 bg-gray-50 border border-gray-100 rounded-[20px] outline-none text-sm cursor-pointer"
+                  className={`w-full p-4 rounded-[20px] outline-none text-sm transition-colors border ${getFieldStatus("nivel_hierarquico")}`}
                 >
-                  <optgroup label="Entrada e Aprendizagem">
-                    <option value="JOVEM_APRENDIZ">Jovem Aprendiz</option>
-                    <option value="ESTAGIO">Estágio</option>
-                    <option value="TRAINEE">Trainee</option>
-                  </optgroup>
-                  <optgroup label="Operacional e Suporte">
-                    <option value="OPERACIONAL">Operacional / Auxiliar</option>
-                    <option value="ASSISTENTE">Assistente</option>
-                  </optgroup>
-                  <optgroup label="Nível Técnico e Especialista">
-                    <option value="JUNIOR">Júnior</option>
-                    <option value="PLENO">Pleno</option>
-                    <option value="SENIOR">Sênior</option>
-                    <option value="ESPECIALISTA">Especialista</option>
-                  </optgroup>
-                  <optgroup label="Gestão e Liderança">
-                    <option value="SUPERVISAO">Supervisão / Coordenação</option>
-                    <option value="GERENCIA">Gerência</option>
-                    <option value="DIRETORIA">Diretoria</option>
-                  </optgroup>
-                  <optgroup label="Geral">
-                    <option value="NAO_SE_APLICA">Não se aplica</option>
-                  </optgroup>
+                  <option value="ESTAGIO">Estágio</option>
+                  <option value="JUNIOR">Júnior</option>
+                  <option value="PLENO">Pleno</option>
+                  <option value="SENIOR">Sênior</option>
+                  <option value="GERENCIA">Gerência</option>
+                  <option value="DIRETORIA">Diretoria</option>
                 </select>
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-bold text-gray-700">
+                <label className="text-sm font-bold text-gray-700 ml-1">
                   Tipo de Contrato
                 </label>
                 <select
                   {...register("tipo_contrato")}
-                  className="w-full p-4 bg-gray-50 border border-gray-100 rounded-[20px] outline-none text-sm cursor-pointer"
+                  className={`w-full p-4 rounded-[20px] outline-none text-sm transition-colors border ${getFieldStatus("tipo_contrato")}`}
                 >
                   <optgroup label="Vínculo Empregatício (CLT)">
-                    <option value="EFETIVO">Efetivo</option>
-                    <option value="TEMPORARIO">Temporário</option>
-                    <option value="INTERMITENTE">Intermitente</option>
+                    <option value="CLT_EFETIVO">Efetivo</option>
+
+                    <option value=" CLT_TEMPORARIO">Temporário</option>
+
+                    <option value=" CLT_INTERMITENTE">Intermitente</option>
                   </optgroup>
+
                   <optgroup label="Prestação de Serviços">
                     <option value="PJ">Prestador de Serviços (PJ)</option>
+
                     <option value="AUTONOMO">Autônomo (RPA)</option>
+
                     <option value="FREELANCE">Freelancer / Eventual</option>
                   </optgroup>
+
                   <optgroup label="Formação e Aprendizado">
                     <option value="ESTAGIO">Estágio</option>
+
                     <option value="JOVEM_APRENDIZ">Jovem Aprendiz</option>
                   </optgroup>
+
                   <optgroup label="Outros Modelos">
                     <option value="COOPERADO">Cooperado</option>
+
                     <option value="OUTROS">Outros</option>
                   </optgroup>
                 </select>
-                {errors.tipo_contrato && (
-                  <p className="text-[10px] text-red-500 font-bold uppercase ml-4">
-                    {errors.tipo_contrato.message}
-                  </p>
-                )}
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-1.5">
-                <label className="text-sm font-bold text-gray-700">
+                <label className="text-sm font-bold text-gray-700 ml-1">
                   Modelo de Trabalho
                 </label>
                 <select
                   {...register("modelo_trabalho")}
-                  className="w-full p-4 bg-gray-50 border border-gray-100 rounded-[20px] outline-none text-sm"
+                  className={`w-full p-4 rounded-[20px] outline-none text-sm transition-colors border ${getFieldStatus("modelo_trabalho")}`}
                 >
                   <option value="PRESENCIAL">Presencial</option>
                   <option value="HIBRIDO">Híbrido</option>
@@ -440,6 +626,7 @@ export default function NovaVagaPage() {
               </div>
             </div>
 
+            {/* DIVERSIDADE E INCLUSÃO (CARDS DETALHADOS) */}
             <div className="space-y-4 pt-6 border-t border-gray-100 mt-6">
               <div>
                 <h3 className="text-sm font-bold text-gray-800 ml-1">
@@ -548,109 +735,75 @@ export default function NovaVagaPage() {
           </section>
         )}
 
-        {/* STEP 2: DESCRIÇÃO E ENDEREÇO */}
-        {step === 2 && (
-          <section className="bg-white p-10 rounded-[48px] border border-gray-100 shadow-sm space-y-8 animate-in slide-in-from-right-4">
-            <h2 className="text-2xl font-black text-gray-800">
-              Descrição e Localização
+        {/* ABA 2: DETALHES */}
+        {activeTab === "descricao" && (
+          <section className="bg-white p-6 md:p-10 rounded-[32px] md:rounded-[48px] border border-gray-100 shadow-sm space-y-8 animate-in slide-in-from-bottom-4">
+            <h2 className="text-xl md:text-2xl font-black text-gray-800">
+              Localização e Descrição
             </h2>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Cidade"
+                className={getFieldStatus("cidade")}
                 {...register("cidade")}
                 error={errors.cidade?.message}
               />
-              <Input
-                label="UF"
-                {...register("uf")}
-                error={errors.uf?.message}
-              />
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-sm font-bold text-gray-700 ml-2">
+                  UF
+                </label>
+                <select
+                  {...register("uf")}
+                  className={`w-full h-[52px] px-4 rounded-[20px] outline-none text-sm transition-all border ${getFieldStatus("uf")}`}
+                >
+                  {ESTADOS_BRASIL.map((uf) => (
+                    <option key={uf} value={uf}>
+                      {uf}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            {/* NOVO BLOCO DE SALÁRIO INTELIGENTE */}
-            <div className="space-y-4">
-              <label className="text-sm font-bold text-gray-700 ml-1">
+            {/* Salário */}
+            <div className="p-5 md:p-6 bg-gray-50 rounded-[24px] border border-gray-100 space-y-4">
+              <label className="text-sm font-bold text-gray-800 ml-1">
                 Visibilidade do Salário
               </label>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* OPÇÃO 1: FAIXA */}
-                <label
-                  className={`cursor-pointer p-4 border-2 rounded-[20px] flex items-center gap-3 transition-all ${tipoSalarioSelecionado === "FAIXA" ? "bg-blue-50 border-blue-500" : "bg-white border-gray-100 hover:border-blue-200"}`}
-                >
-                  <input
-                    type="radio"
-                    value="FAIXA"
-                    {...register("tipo_salario")}
-                    className="hidden"
-                  />
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${tipoSalarioSelecionado === "FAIXA" ? "border-blue-600" : "border-gray-300"}`}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {[
+                  { id: "FAIXA", label: "Faixa Salarial" },
+                  { id: "COMBINAR", label: "A Combinar" },
+                  { id: "OCULTO", label: "Ocultar" },
+                ].map((opt) => (
+                  <label
+                    key={opt.id}
+                    className={`cursor-pointer p-4 border-2 rounded-[20px] flex items-center gap-3 transition-all ${watch("tipo_salario") === opt.id ? "bg-white border-blue-500 shadow-sm" : "bg-white border-transparent hover:border-blue-200"}`}
                   >
-                    {tipoSalarioSelecionado === "FAIXA" && (
-                      <div className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-in zoom-in" />
-                    )}
-                  </div>
-                  <span
-                    className={`text-sm font-bold ${tipoSalarioSelecionado === "FAIXA" ? "text-blue-900" : "text-gray-600"}`}
-                  >
-                    Faixa Salarial
-                  </span>
-                </label>
-
-                {/* OPÇÃO 2: A COMBINAR */}
-                <label
-                  className={`cursor-pointer p-4 border-2 rounded-[20px] flex items-center gap-3 transition-all ${tipoSalarioSelecionado === "COMBINAR" ? "bg-blue-50 border-blue-500" : "bg-white border-gray-100 hover:border-blue-200"}`}
-                >
-                  <input
-                    type="radio"
-                    value="COMBINAR"
-                    {...register("tipo_salario")}
-                    className="hidden"
-                  />
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${tipoSalarioSelecionado === "COMBINAR" ? "border-blue-600" : "border-gray-300"}`}
-                  >
-                    {tipoSalarioSelecionado === "COMBINAR" && (
-                      <div className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-in zoom-in" />
-                    )}
-                  </div>
-                  <span
-                    className={`text-sm font-bold ${tipoSalarioSelecionado === "COMBINAR" ? "text-blue-900" : "text-gray-600"}`}
-                  >
-                    A Combinar
-                  </span>
-                </label>
-
-                {/* OPÇÃO 3: OCULTO */}
-                <label
-                  className={`cursor-pointer p-4 border-2 rounded-[20px] flex items-center gap-3 transition-all ${tipoSalarioSelecionado === "OCULTO" ? "bg-blue-50 border-blue-500" : "bg-white border-gray-100 hover:border-blue-200"}`}
-                >
-                  <input
-                    type="radio"
-                    value="OCULTO"
-                    {...register("tipo_salario")}
-                    className="hidden"
-                  />
-                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${tipoSalarioSelecionado === "OCULTO" ? "border-blue-600" : "border-gray-300"}`}
-                  >
-                    {tipoSalarioSelecionado === "OCULTO" && (
-                      <div className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-in zoom-in" />
-                    )}
-                  </div>
-                  <span
-                    className={`text-sm font-bold ${tipoSalarioSelecionado === "OCULTO" ? "text-blue-900" : "text-gray-600"}`}
-                  >
-                    Ocultar da Vaga
-                  </span>
-                </label>
+                    <input
+                      type="radio"
+                      value={opt.id}
+                      {...register("tipo_salario")}
+                      className="hidden"
+                    />
+                    <div
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${watch("tipo_salario") === opt.id ? "border-blue-600" : "border-gray-300"}`}
+                    >
+                      {watch("tipo_salario") === opt.id && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                      )}
+                    </div>
+                    <span
+                      className={`text-sm font-bold ${watch("tipo_salario") === opt.id ? "text-blue-900" : "text-gray-600"}`}
+                    >
+                      {opt.label}
+                    </span>
+                  </label>
+                ))}
               </div>
-
-              {/* SÓ MOSTRA OS INPUTS SE 'FAIXA' ESTIVER MARCADA */}
-              {tipoSalarioSelecionado === "FAIXA" && (
-                <div className="grid grid-cols-2 gap-4 mt-4 animate-in fade-in slide-in-from-top-4">
+              {watch("tipo_salario") === "FAIXA" && (
+                <div className="grid grid-cols-2 gap-4 mt-4 animate-in fade-in">
                   <Input
                     label="Salário De (R$)"
                     type="number"
@@ -667,21 +820,32 @@ export default function NovaVagaPage() {
               )}
             </div>
 
-            {/* ÁREA DE TEXTOS (Placeholders Educativos) */}
-            <div className="space-y-6 pt-4">
+            {/* Editores */}
+            <div className="space-y-8">
               <div className="space-y-1.5">
                 <label className="text-sm font-bold text-gray-700 ml-2">
                   Descrição Geral da Vaga
                 </label>
-                <textarea
-                  {...register("descricao")}
-                  className={`w-full p-6 bg-gray-50 border rounded-[32px] h-32 outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 resize-none
-                                        ${errors.descricao ? "border-red-400 focus:border-red-500 bg-red-50/30" : "border-gray-100 focus:border-blue-400"}
-                                    `}
-                  placeholder="Explique o propósito desta vaga, o impacto dela na empresa e por que um excelente profissional deveria querer fazer parte da sua equipe..."
+                <Controller
+                  name="descricao"
+                  control={control}
+                  render={({ field }) => (
+                    <div
+                      className={
+                        errors.descricao
+                          ? "ring-2 ring-red-400 rounded-[32px]"
+                          : ""
+                      }
+                    >
+                      <Editor
+                        content={field.value || ""}
+                        onChange={field.onChange}
+                      />
+                    </div>
+                  )}
                 />
                 {errors.descricao && (
-                  <p className="text-[10px] text-red-500 font-bold uppercase ml-4 mt-1">
+                  <p className="text-[10px] text-red-500 font-bold uppercase ml-4">
                     {errors.descricao.message}
                   </p>
                 )}
@@ -691,15 +855,26 @@ export default function NovaVagaPage() {
                 <label className="text-sm font-bold text-gray-700 ml-2">
                   Responsabilidades do Dia a Dia
                 </label>
-                <textarea
-                  {...register("responsabilidades")}
-                  className={`w-full p-6 bg-gray-50 border rounded-[32px] h-32 outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 resize-none
-                                        ${errors.responsabilidades ? "border-red-400 focus:border-red-500 bg-red-50/30" : "border-gray-100 focus:border-blue-400"}
-                                    `}
-                  placeholder="Liste as atividades diárias, as ferramentas que a pessoa irá utilizar e quais serão as principais entregas ou metas deste cargo..."
+                <Controller
+                  name="responsabilidades"
+                  control={control}
+                  render={({ field }) => (
+                    <div
+                      className={
+                        errors.responsabilidades
+                          ? "ring-2 ring-red-400 rounded-[32px]"
+                          : ""
+                      }
+                    >
+                      <Editor
+                        content={field.value || ""}
+                        onChange={field.onChange}
+                      />
+                    </div>
+                  )}
                 />
                 {errors.responsabilidades && (
-                  <p className="text-[10px] text-red-500 font-bold uppercase ml-4 mt-1">
+                  <p className="text-[10px] text-red-500 font-bold uppercase ml-4">
                     {errors.responsabilidades.message}
                   </p>
                 )}
@@ -709,15 +884,26 @@ export default function NovaVagaPage() {
                 <label className="text-sm font-bold text-gray-700 ml-2">
                   Requisitos Obrigatórios
                 </label>
-                <textarea
-                  {...register("requisitos_obrigatorios")}
-                  className={`w-full p-6 bg-gray-50 border rounded-[32px] h-32 outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 resize-none
-                                        ${errors.requisitos_obrigatorios ? "border-red-400 focus:border-red-500 bg-red-50/30" : "border-gray-100 focus:border-blue-400"}
-                                    `}
-                  placeholder="Quais experiências, formações acadêmicas ou habilidades técnicas são 100% essenciais e inegociáveis para que o candidato passe na triagem?"
+                <Controller
+                  name="requisitos_obrigatorios"
+                  control={control}
+                  render={({ field }) => (
+                    <div
+                      className={
+                        errors.requisitos_obrigatorios
+                          ? "ring-2 ring-red-400 rounded-[32px]"
+                          : ""
+                      }
+                    >
+                      <Editor
+                        content={field.value || ""}
+                        onChange={field.onChange}
+                      />
+                    </div>
+                  )}
                 />
                 {errors.requisitos_obrigatorios && (
-                  <p className="text-[10px] text-red-500 font-bold uppercase ml-4 mt-1">
+                  <p className="text-[10px] text-red-500 font-bold uppercase ml-4">
                     {errors.requisitos_obrigatorios.message}
                   </p>
                 )}
@@ -725,64 +911,54 @@ export default function NovaVagaPage() {
 
               <div className="space-y-1.5">
                 <label className="text-sm font-bold text-gray-700 ml-2">
-                  Diferenciais (Opcional mas Recomendado)
+                  Diferenciais (Opcional)
                 </label>
                 <textarea
                   {...register("diferenciais")}
-                  className={`w-full p-6 bg-gray-50 border rounded-[32px] h-32 outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 resize-none
-                                        ${errors.diferenciais ? "border-red-400 focus:border-red-500 bg-red-50/30" : "border-gray-100 focus:border-blue-400"}
-                                    `}
-                  placeholder="O que seria considerado um grande 'plus'? Mencione cursos, conhecimentos de nicho ou vivências que não são obrigatórias, mas destacam o candidato."
+                  className="w-full p-6 bg-gray-50 border border-gray-100 focus:border-blue-400 rounded-[32px] h-32 outline-none text-sm transition-all resize-none"
                 />
-                {errors.diferenciais && (
-                  <p className="text-[10px] text-red-500 font-bold uppercase ml-4 mt-1">
-                    {errors.diferenciais.message}
-                  </p>
-                )}
               </div>
             </div>
 
-            <div className="flex items-center gap-4 bg-blue-50 p-6 rounded-[28px] mt-4">
-              <HiOutlineEyeOff className="text-blue-600 shrink-0" size={24} />
+            <div className="flex items-center gap-4 bg-gray-50 border border-gray-200 p-5 rounded-[24px]">
+              <HiOutlineEyeOff className="text-gray-500 shrink-0" size={24} />
               <div>
-                <p className="text-sm font-bold text-blue-900">
+                <p className="text-sm font-bold text-gray-800">
                   Empresa Confidencial?
                 </p>
-                <p className="text-xs text-blue-700">
-                  A vaga será listada sem revelar o nome ou a logo da sua
-                  empresa para o público.
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  A vaga ocultará o nome da sua empresa.
                 </p>
               </div>
               <input
                 type="checkbox"
                 {...register("empresa_confidencial")}
-                className="ml-auto w-6 h-6 rounded-lg text-blue-600 focus:ring-blue-500 cursor-pointer"
+                className="ml-auto w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
               />
             </div>
           </section>
         )}
 
-        {/* STEP 3: BENEFÍCIOS */}
-        {step === 3 && (
-          <section className="bg-white p-10 rounded-[48px] border border-gray-100 shadow-sm space-y-8 animate-in slide-in-from-right-4">
-            <h2 className="text-2xl font-black text-gray-800">
+        {/* ABA 3: BENEFÍCIOS */}
+        {activeTab === "beneficios" && (
+          <section className="bg-white p-6 md:p-10 rounded-[32px] md:rounded-[48px] border border-gray-100 shadow-sm space-y-6 animate-in slide-in-from-bottom-4">
+            <h2 className="text-xl md:text-2xl font-black text-gray-800">
               Benefícios Oferecidos
             </h2>
-            <p className="text-sm text-gray-500 -mt-6">
-              Os benefícios padrão da sua empresa já foram pré-selecionados.
-            </p>
-
             <select
               onChange={(e) => {
                 const id = Number(e.target.value);
-                if (id && !selectedBeneficios.includes(id)) {
-                  setValue("beneficios_ids", [...selectedBeneficios, id]);
+                if (id && !valoresAtuais.beneficios_ids?.includes(id)) {
+                  setValue("beneficios_ids", [
+                    ...(valoresAtuais.beneficios_ids || []),
+                    id,
+                  ]);
                 }
                 e.target.value = "";
               }}
-              className="w-full p-5 bg-gray-50 border border-gray-100 rounded-[24px] outline-none text-sm font-bold text-gray-600"
+              className="w-full p-5 bg-gray-50 border border-gray-100 rounded-[24px] outline-none text-sm font-bold text-gray-600 cursor-pointer hover:border-blue-200 transition-colors"
             >
-              <option value="">Adicionar outros benefícios...</option>
+              <option value="">+ Adicionar um benefício...</option>
               {beneficiosTaxonomia.map((b: any) => (
                 <option key={b.id_beneficio} value={b.id_beneficio}>
                   {b.descricao}
@@ -790,15 +966,15 @@ export default function NovaVagaPage() {
               ))}
             </select>
 
-            <div className="flex flex-wrap gap-3">
-              {selectedBeneficios.map((id) => {
+            <div className="flex flex-wrap gap-2 pt-2">
+              {(valoresAtuais.beneficios_ids || []).map((id) => {
                 const ben = beneficiosTaxonomia.find(
                   (b: any) => b.id_beneficio === id,
                 ) as any;
                 return (
                   <div
                     key={id}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-50 text-blue-700 rounded-full text-xs font-black border border-blue-100"
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-800 rounded-full text-xs font-bold border border-emerald-100 animate-in zoom-in"
                   >
                     {ben?.descricao}
                     <button
@@ -806,11 +982,12 @@ export default function NovaVagaPage() {
                       onClick={() =>
                         setValue(
                           "beneficios_ids",
-                          selectedBeneficios.filter((i) => i !== id),
+                          valoresAtuais.beneficios_ids.filter((i) => i !== id),
                         )
                       }
+                      className="hover:text-red-500 hover:bg-red-50 p-1 rounded-full transition-colors"
                     >
-                      <HiOutlineX size={16} />
+                      <HiOutlineX size={14} />
                     </button>
                   </div>
                 );
@@ -819,119 +996,90 @@ export default function NovaVagaPage() {
           </section>
         )}
 
-        {/* STEP 4: ETAPAS DO PROCESSO */}
-        {step === 4 && (
-          <section className="bg-white p-10 rounded-[48px] border border-gray-100 shadow-sm space-y-6 animate-in slide-in-from-right-4">
-            <div>
-              <h2 className="text-2xl font-black text-gray-800">
-                Funil de Contratação
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                O sistema possui as etapas <b>Inscritos</b> e <b>Aprovados</b>{" "}
-                de forma fixa. Adicione as etapas intermediárias (Triagem,
-                Entrevista, etc).
-              </p>
-            </div>
+        {/* ABA 4: ETAPAS */}
+        {activeTab === "etapas" && (
+          <section className="bg-white p-6 md:p-10 rounded-[32px] md:rounded-[48px] border border-gray-100 shadow-sm space-y-6 animate-in slide-in-from-bottom-4">
+            <h2 className="text-xl md:text-2xl font-black text-gray-800">
+              Funil de Contratação
+            </h2>
 
-            <div className="space-y-4 pt-4">
-              {/* BLOCO FIXO INICIAL */}
-              <div className="flex items-center gap-4 p-5 bg-blue-50 rounded-[24px] border border-blue-100 relative opacity-90 cursor-not-allowed">
-                <div className="w-8 h-8 rounded-full bg-blue-200 text-blue-700 font-black flex items-center justify-center text-xs shrink-0">
+            <div className="space-y-4 pt-4 relative before:absolute before:inset-y-0 before:left-[35px] before:w-0.5 before:bg-gray-100">
+              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-[24px] relative z-10 border border-gray-200 opacity-70">
+                <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-600 font-black flex items-center justify-center shrink-0">
                   1
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-black text-blue-900">
-                    Inscritos (Etapa Inicial)
+                <div>
+                  <p className="text-sm font-black text-gray-700">
+                    Inscritos (Padrão)
                   </p>
-                  <p className="text-xs font-medium text-blue-600/80">
-                    Todos os novos candidatos caem aqui automaticamente.
+                  <p className="text-xs text-gray-500">
+                    Todos os candidatos entram aqui.
                   </p>
                 </div>
               </div>
 
-              {/* BLOCOS DINÂMICOS (INTERMEDIÁRIOS) */}
               {etapasFields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="flex flex-col md:flex-row items-start md:items-center gap-4 p-5 bg-white rounded-[24px] border border-gray-200 shadow-sm relative group ml-4 border-l-4 border-l-gray-300"
+                  className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 bg-white rounded-[24px] border border-blue-100 shadow-sm relative z-10 group hover:border-blue-300 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 font-black flex items-center justify-center text-xs shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-black flex items-center justify-center shrink-0">
                     {index + 2}
                   </div>
-
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                    <div className="md:col-span-2 space-y-1">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase px-2">
-                        Nome da Etapa Intermediária
-                      </label>
-                      <input
-                        {...register(`etapas.${index}.nome`)}
-                        className="w-full bg-gray-50 border border-transparent focus:border-blue-500 px-4 py-2.5 rounded-xl outline-none text-sm font-bold text-gray-700"
-                        placeholder="Ex: Entrevista com Gestor"
-                      />
-                    </div>
+                  <div className="flex-1 w-full">
+                    <input
+                      {...register(`etapas.${index}.nome`)}
+                      className="w-full bg-transparent border-b border-gray-200 focus:border-blue-500 py-2 outline-none text-sm font-bold text-gray-800 placeholder-gray-300"
+                      placeholder="Nome da etapa (Ex: Entrevista Técnica)"
+                    />
+                    {errors?.etapas?.[index]?.nome && (
+                      <p className="text-[10px] text-red-500 mt-1">
+                        {errors.etapas[index]?.nome?.message}
+                      </p>
+                    )}
                   </div>
-
-                  {/* Opção de Agendamento */}
-                  <div className="flex flex-col gap-1 items-center justify-center px-4 border-l border-gray-100">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase whitespace-nowrap">
-                      Agendamento?
-                    </label>
-                    <label className="relative inline-flex items-center cursor-pointer mt-1">
-                      <input
-                        type="checkbox"
-                        {...register(`etapas.${index}.requer_agendamento`)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
-                    </label>
-                  </div>
-
+                  <label className="flex items-center gap-2 cursor-pointer bg-gray-50 px-3 py-2 rounded-xl">
+                    <input
+                      type="checkbox"
+                      {...register(`etapas.${index}.requer_agendamento`)}
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-[10px] font-bold text-gray-600 uppercase">
+                      Agendamento
+                    </span>
+                  </label>
                   <button
                     type="button"
                     onClick={() => removeEtapa(index)}
-                    className="absolute -top-3 -right-3 bg-white text-gray-400 hover:text-white hover:bg-red-500 p-2 rounded-full shadow-md border border-gray-100 opacity-0 group-hover:opacity-100 transition-all"
+                    className="p-2 text-gray-400 hover:text-red-500 bg-gray-50 rounded-full hover:bg-red-50 transition-colors"
                   >
-                    <HiOutlineTrash size={16} />
+                    <HiOutlineTrash size={18} />
                   </button>
                 </div>
               ))}
 
-              <div className="pl-4">
+              <div className="pl-16 relative z-10 pt-2">
                 <button
                   type="button"
                   onClick={() =>
                     appendEtapa({ nome: "", requer_agendamento: false })
                   }
-                  className="w-full py-4 border-2 border-dashed border-gray-200 rounded-[24px] text-gray-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-all"
+                  className="py-3 px-6 bg-white border-2 border-dashed border-gray-200 rounded-full text-gray-500 font-bold text-xs flex items-center gap-2 hover:border-blue-400 hover:text-blue-600 transition-all shadow-sm"
                 >
-                  <HiOutlinePlus size={18} /> Adicionar Etapa Intermediária
+                  <HiOutlinePlus size={16} /> Adicionar Etapa
                 </button>
               </div>
 
-              {/* BLOCO FIXO FINAL (APROVADOS) */}
-              <div className="flex flex-col gap-3 p-5 bg-emerald-50 rounded-[24px] border border-emerald-200 mt-6 relative">
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-full bg-emerald-200 text-emerald-800 font-black flex items-center justify-center text-xs shrink-0">
-                    <HiOutlineCheckCircle size={18} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-black text-emerald-900">
-                      Aprovados / Contratados (Etapa Final)
-                    </p>
-                  </div>
+              <div className="flex items-center gap-4 p-4 bg-emerald-50 rounded-[24px] relative z-10 border border-emerald-100">
+                <div className="w-10 h-10 rounded-full bg-emerald-200 text-emerald-800 flex items-center justify-center shrink-0">
+                  <HiOutlineCheckCircle size={20} />
                 </div>
-                <div className="flex gap-3 bg-emerald-100/50 p-3 rounded-xl ml-12">
-                  <HiOutlineInformationCircle
-                    className="text-emerald-600 shrink-0 mt-0.5"
-                    size={16}
-                  />
-                  <p className="text-xs font-medium text-emerald-800 leading-relaxed">
-                    <b>Atenção:</b> Arrastar um candidato para esta coluna
-                    significa que o processo seletivo dele acabou com sucesso. O
-                    candidato <b>receberá uma notificação de aprovação</b> e a
-                    empresa deverá seguir com os trâmites de contratação
-                    externos.
+                <div>
+                  <p className="text-sm font-black text-emerald-900">
+                    Aprovados (Final)
+                  </p>
+                  <p className="text-xs text-emerald-700">
+                    Mover para cá aprova o candidato.
                   </p>
                 </div>
               </div>
@@ -939,62 +1087,151 @@ export default function NovaVagaPage() {
           </section>
         )}
 
-        {/* STEP 5: REVISÃO E ENVIO */}
-        {step === 5 && (
-          <section className="bg-white p-10 rounded-[48px] border border-gray-100 shadow-sm space-y-8 animate-in slide-in-from-right-4 text-center">
-            <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 font-black">
-              <HiOutlineClipboardList size={32} />
+        {/* ABA 5: REVISÃO */}
+        {activeTab === "revisao" && (
+          <section className="bg-white p-6 md:p-10 rounded-[32px] md:rounded-[48px] border border-gray-100 shadow-sm space-y-8 animate-in slide-in-from-bottom-4">
+            <div className="text-center space-y-2">
+              <div
+                className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-sm border-4 border-white ${isValid ? "bg-emerald-100 text-emerald-500" : "bg-red-100 text-red-500"}`}
+              >
+                {isValid ? (
+                  <HiOutlineClipboardList size={36} />
+                ) : (
+                  <HiOutlineExclamationCircle size={36} />
+                )}
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-gray-800">
+                {isValid
+                  ? "Tudo pronto para envio!"
+                  : "Faltam algumas informações"}
+              </h2>
+              <p className="text-sm text-gray-500 max-w-md mx-auto">
+                {isValid
+                  ? "Revise os detalhes da vaga abaixo. Se estiver tudo certo, basta enviar para aprovação."
+                  : "Notamos que alguns campos obrigatórios não foram preenchidos nas abas anteriores. Volte e corrija para poder publicar a vaga."}
+              </p>
             </div>
-            <h2 className="text-3xl font-black text-gray-800">Tudo pronto!</h2>
-            <p className="text-gray-500 max-w-md mx-auto">
-              Sua vaga está completa com as etapas definidas. Você pode salvar
-              como rascunho ou enviar agora para a aprovação da ACI Panambi.
-            </p>
 
-            <div className="pt-10 flex flex-col gap-4">
+            {/* Painel de Resumo */}
+            <div className="bg-gray-50 rounded-[24px] p-6 border border-gray-200 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                    Título da Vaga
+                  </p>
+                  <p
+                    className={`font-bold ${valoresAtuais.titulo ? "text-gray-800" : "text-red-500"}`}
+                  >
+                    {valoresAtuais.titulo || "Não preenchido"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                    Localização
+                  </p>
+                  <p
+                    className={`font-bold ${valoresAtuais.cidade ? "text-gray-800" : "text-red-500"}`}
+                  >
+                    {valoresAtuais.cidade
+                      ? `${valoresAtuais.cidade} - ${valoresAtuais.uf}`
+                      : "Não preenchido"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                    Modelo / Contrato
+                  </p>
+                  <p className="font-bold text-gray-800">
+                    {valoresAtuais.modelo_trabalho} •{" "}
+                    {valoresAtuais.tipo_contrato}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                    Área / Nível
+                  </p>
+                  <p className="font-bold text-gray-800">
+                    {valoresAtuais.id_area_atuacao > 0 ? (
+                      "Área Selecionada"
+                    ) : (
+                      <span className="text-red-500">Pendente</span>
+                    )}{" "}
+                    • {valoresAtuais.nivel_hierarquico}
+                  </p>
+                </div>
+              </div>
+              <hr className="border-gray-200" />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                    Descrição & Textos
+                  </p>
+                  <p
+                    className={`text-sm font-bold ${checkDescricao() ? "text-emerald-600" : "text-red-500"}`}
+                  >
+                    {checkDescricao()
+                      ? "Preenchidos corretamente"
+                      : "Pendentes (Revisar Aba Detalhes)"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+                    Etapas de Seleção
+                  </p>
+                  <p
+                    className={`text-sm font-bold ${checkEtapas() ? "text-blue-600" : "text-red-500"}`}
+                  >
+                    {checkEtapas()
+                      ? `${valoresAtuais.etapas?.length} Etapas Intermediárias`
+                      : "Nomes de etapas em branco"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
               <ButtonType
-                type="button"
-                onClick={handleFormSubmit(true)}
-                disabled={isLoading}
-                className="w-full py-6 rounded-[32px] text-lg shadow-2xl flex items-center justify-center gap-2"
+                type="submit"
+                disabled={isPublishing || !isValid}
+                className="w-full sm:w-auto px-10 py-5 rounded-full text-base shadow-xl flex items-center justify-center gap-2"
               >
-                <HiOutlineUpload size={24} /> Enviar para Aprovação
+                <HiOutlineUpload size={20} />{" "}
+                {isPublishing ? "Enviando..." : "Enviar para Aprovação"}
               </ButtonType>
-              <button
-                type="button"
-                onClick={handleFormSubmit(false)}
-                disabled={isLoading}
-                className="w-full py-6 rounded-[32px] font-black text-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center gap-2"
-              >
-                <HiOutlineSave size={24} /> Salvar como Rascunho
-              </button>
             </div>
           </section>
         )}
 
-        {/* Navegação */}
-        <div className="flex items-center justify-between px-2">
-          {step > 1 ? (
-            <button
-              type="button"
-              onClick={prevStep}
-              className="flex items-center gap-2 text-sm font-black text-gray-400 hover:text-blue-600 transition-colors"
-            >
-              <HiOutlineChevronLeft size={20} /> Voltar
-            </button>
-          ) : (
-            <div />
-          )}
+        {/* CONTROLES DE WIZARD INFERIORES */}
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between pt-8 mt-8 gap-4 border-t border-gray-100">
+          <div>
+            {ordemAbas.indexOf(activeTab) > 0 ? (
+              <button
+                type="button"
+                onClick={() => navegarParaAba("anterior")}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-full text-gray-500 font-bold hover:bg-gray-100 transition-colors"
+              >
+                <span className="text-xl leading-none">&larr;</span> Voltar
+              </button>
+            ) : (
+              <div className="hidden sm:block" />
+            )}
+          </div>
 
-          {step < 5 && (
-            <ButtonType
-              type="button"
-              onClick={handleNext}
-              className="px-10 py-4 rounded-[20px] shadow-lg flex items-center gap-2"
-            >
-              Próximo Passo <HiOutlineChevronRight size={20} />
-            </ButtonType>
-          )}
+          <div>
+            {ordemAbas.indexOf(activeTab) < ordemAbas.length - 1 && (
+              <button
+                type="button"
+                onClick={() => navegarParaAba("proximo")}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-blue-50 text-primary font-bold hover:bg-blue-100 transition-colors group"
+              >
+                Próxima Aba
+                <span className="text-xl leading-none group-hover:translate-x-1 transition-transform">
+                  &rarr;
+                </span>
+              </button>
+            )}
+          </div>
         </div>
       </form>
     </div>

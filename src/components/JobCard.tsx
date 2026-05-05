@@ -78,7 +78,7 @@ export function JobCard({ job, urlPrefix = "" }: JobCardComponentProps) {
         )}
         {job.pcdType === "VAGA_INCLUSIVA" && (
           <span className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-600 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase border border-indigo-100">
-            <HiUserGroup className="text-xs" /> Aceita PCD
+            <HiUserGroup className="text-xs" /> Também para PCD
           </span>
         )}
       </div>
@@ -86,7 +86,7 @@ export function JobCard({ job, urlPrefix = "" }: JobCardComponentProps) {
       <div className="space-y-4">
         {/* --- CABEÇALHO (Logo + Infos) --- */}
         {/* Adicionado pr-20 (padding-right) para o texto não ficar por baixo dos badges flutuantes */}
-        <div className="flex items-start gap-4 pr-20">
+        <div className="flex items-start gap-4 pr-2">
 
           {/* Logo da Empresa */}
           <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl border border-gray-100 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden relative shadow-sm">
@@ -122,7 +122,7 @@ export function JobCard({ job, urlPrefix = "" }: JobCardComponentProps) {
 
 
             {/* Título da Vaga */}
-            <h3 className="text-lg md:text-xl font-black text-gray-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+            <h3 className=" text-lg md:text-xl font-black text-gray-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">
               {job.title}
             </h3>
 
@@ -165,7 +165,7 @@ export function JobCard({ job, urlPrefix = "" }: JobCardComponentProps) {
           {job.isNew ? "Publicada recentemente" : `Há ${job.datePosted}`}
         </span>
 
-        <span className="inline-flex items-center justify-center px-4 py-1.5 text-xs font-bold rounded-xl border border-gray-200 text-gray-600 bg-white group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md">
+        <span className="inline-flex items-center justify-center px-4 py-3 text-xs font-bold rounded-xl border border-gray-200 text-gray-600 bg-white group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md">
           Ver detalhes
         </span>
       </div>
