@@ -278,11 +278,19 @@ export default function NovaVagaPage() {
         enviar_para_aprovacao: !isDraft,
       };
 
-      // ✨ A FAXINA DO RASCUNHO ✨
-      // Se for rascunho, removemos os campos vazios para o Zod do Backend não chiar
+      if (payload.tipo_salario !== "FAIXA") {
+        // Se a empresa escondeu o input, nós forçamos o valor a ser null
+        // para não salvar dados residuais no banco!
+        payload.salario_de = null;
+        payload.salario_ate = null;
+      } else {
+        // Se for faixa, converte direitinho
+        payload.salario_de = payload.salario_de ? Number(payload.salario_de) : null;
+        payload.salario_ate = payload.salario_ate ? Number(payload.salario_ate) : null;
+      }
+
       if (isDraft) {
         Object.keys(payload).forEach((key) => {
-          // Se for string vazia ou o número 0 dos salários, nós removemos do JSON
           if (
             payload[key] === "" ||
             payload[key] === "0" ||
@@ -291,15 +299,6 @@ export default function NovaVagaPage() {
             delete payload[key];
           }
         });
-      } else {
-        // Se for submissão oficial, garante que os salários cheguem como Número
-        // (porque inputs do tipo number no HTML costumam enviar strings)
-        payload.salario_de = payload.salario_de
-          ? Number(payload.salario_de)
-          : null;
-        payload.salario_ate = payload.salario_ate
-          ? Number(payload.salario_ate)
-          : null;
       }
 
       await api.post("/vagas", payload);
@@ -349,6 +348,7 @@ export default function NovaVagaPage() {
             </p>
           </div>
           <div className="flex w-full md:w-auto">
+      
             <button
               type="button"
               onClick={handleSaveDraft}
@@ -443,13 +443,12 @@ export default function NovaVagaPage() {
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id as any)}
-            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${
-              activeTab === tab.id
+            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${activeTab === tab.id
                 ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
                 : tab.hasError
                   ? "text-red-500 hover:bg-red-50 border-b-2 border-transparent"
                   : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
-            }`}
+              }`}
           >
             <span className="flex items-center gap-1.5 md:gap-2 relative z-10">
               {tab.icon} {tab.label}
