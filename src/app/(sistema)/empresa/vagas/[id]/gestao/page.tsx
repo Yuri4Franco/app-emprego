@@ -76,7 +76,6 @@ export default function GestaoVagaPage({
 
       setVaga(payload.vaga || null);
 
-      // Quando fazemos isso, o React espalha a atualização para o Kanban e para a Lista imediatamente!
       setColunas(payload.colunas || []);
 
     } catch (error: any) {

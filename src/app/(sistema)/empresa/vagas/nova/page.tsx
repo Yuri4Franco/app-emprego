@@ -348,7 +348,6 @@ export default function NovaVagaPage() {
             </p>
           </div>
           <div className="flex w-full md:w-auto">
-      
             <button
               type="button"
               onClick={handleSaveDraft}
