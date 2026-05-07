@@ -1,21 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback, use, useMemo } from "react";
+import { useState, useEffect, useCallback, use, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/src/services/api";
 import toast from "react-hot-toast";
 import {
-  HiOutlineViewBoards,
-  HiOutlineViewList,
   HiOutlineBell,
   HiOutlineXCircle,
   HiOutlineArrowLeft,
-  HiOutlineCog,
   HiOutlineEye,
   HiOutlineEyeOff,
   HiOutlineCheck,
+  HiOutlineAdjustments,
 } from "react-icons/hi";
-import { KanbanBoard } from "@/src/components/empresa/KanbanBoard";
 import { ListaCandidatos } from "@/src/components/empresa/ListaCandidatos";
 import { CandidatoDrawer } from "@/src/components/empresa/CandidatoDrawer";
 
@@ -55,15 +52,17 @@ export default function GestaoVagaPage({
   const [vaga, setVaga] = useState<any>(null);
   const [colunasMestre, setColunasMestre] = useState<ColunaKanban[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<"KANBAN" | "LISTA">("LISTA");
-  const [candidatoSelecionadoId, setCandidatoSelecionadoId] = useState<
-    number | null
-  >(null);
+  const [candidatoSelecionadoId, setCandidatoSelecionadoId] = useState<number | null>(null);
   const [notificacoesPendentes, setNotificacoesPendentes] = useState(0);
 
   // Estados de Ações Globais
   const [isNotificando, setIsNotificando] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+
+  // Controle do Menu Dropdown de Etapas
+  const [menuEtapasAberto, setMenuEtapasAberto] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null); // <-- REF ADICIONADA PARA O DROPDOWN
+
   const [camposDestaque, setCamposDestaque] = useState<string[]>([
     "nome",
     "experiencia_recente",
@@ -71,7 +70,7 @@ export default function GestaoVagaPage({
   ]);
   const [isSalvandoConfig, setIsSalvandoConfig] = useState(false);
 
-  // 2. ESTADOS DE FILTRO (Agora comandam tudo daqui!)
+  // 2. ESTADOS DE FILTRO
   const [termoBusca, setTermoBusca] = useState("");
   const [filtroNaoVistos, setFiltroNaoVistos] = useState(false);
   const [filtroSemAvaliacao, setFiltroSemAvaliacao] = useState(false);
@@ -106,26 +105,41 @@ export default function GestaoVagaPage({
     },
   ];
 
-  const carregarKanban = useCallback(
+  // === NOVO: USE EFFECT PARA FECHAR O MENU AO CLICAR FORA ===
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setMenuEtapasAberto(false);
+      }
+    };
+
+    if (menuEtapasAberto) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuEtapasAberto]);
+  // ==========================================================
+
+  const carregarDados = useCallback(
     async (isFirstLoad = false) => {
       if (isFirstLoad) setIsLoading(true);
       try {
-        const res = await api.get(`/empresa/vagas/${idVaga}/kanban`, {
+        const res = await api.get(`/empresa/vagas/${idVaga}/painel-gestao`, {
           params: { _t: new Date().getTime() },
         });
         const payload = res.data.data || res.data.dados || res.data;
         setVaga(payload.vaga || null);
         setColunasMestre(payload.colunas || []);
-        const colunasRecebidas = payload.colunas || [];
-        setColunasMestre(colunasRecebidas);
-        const pendentes =
-          colunasRecebidas.length > 0
-            ? Number(colunasRecebidas[0].notificacoes_pendentes) || 0
-            : 0;
+
+        const pendentes = payload.colunas?.length > 0
+          ? Number(payload.colunas[0].notificacoes_pendentes) || 0
+          : 0;
 
         setNotificacoesPendentes(pendentes);
       } catch (error: any) {
-        toast.error("Erro ao carregar a gestão.");
+        toast.error("Erro ao carregar a gestão de candidatos.");
       } finally {
         setIsLoading(false);
       }
@@ -134,8 +148,8 @@ export default function GestaoVagaPage({
   );
 
   useEffect(() => {
-    carregarKanban(true);
-  }, [carregarKanban]);
+    carregarDados(true);
+  }, [carregarDados]);
 
   // Ações da Vaga
   const dispararNotificacoes = async () => {
@@ -143,7 +157,7 @@ export default function GestaoVagaPage({
     try {
       await api.post(`/empresa/vagas/${idVaga}/notificar-candidatos`);
       toast.success("Notificações enviadas com sucesso aos candidatos!");
-      carregarKanban();
+      carregarDados();
     } catch (error) {
       toast.error("Erro ao enviar notificações.");
     } finally {
@@ -157,7 +171,7 @@ export default function GestaoVagaPage({
       await api.patch(`/empresa/vagas/${idVaga}/configurar-destaques`, {
         campos: camposDestaque,
       });
-      toast.success("Visão estratégica atualizada com sucesso!");
+      toast.success("Configuração salva com sucesso!");
       setIsConfigOpen(false);
     } catch (error) {
       toast.error("Erro ao salvar configurações.");
@@ -178,7 +192,7 @@ export default function GestaoVagaPage({
     else setColunasOcultas([...colunasOcultas, id_etapa]);
   };
 
-  // 3. ATUALIZAÇÃO OTIMISTA
+  // 3. ATUALIZAÇÃO OTIMISTA (Visualização)
   const handleAbrirCandidato = (idCandidatura: number) => {
     setColunasMestre((colunasAntigas) =>
       colunasAntigas.map((col) => ({
@@ -199,19 +213,16 @@ export default function GestaoVagaPage({
       .filter((col) => !colunasOcultas.includes(col.id_etapa))
       .map((coluna) => {
         const candidatosFiltrados = coluna.candidatos.filter((c: Candidato) => {
-          const matchNome = c.nome
-            .toLowerCase()
-            .includes(termoBusca.toLowerCase());
+          const matchNome = c.nome.toLowerCase().includes(termoBusca.toLowerCase());
+
           const matchAvaliacao = filtroSemAvaliacao
             ? c.avaliacao_nota === null || c.avaliacao_nota === undefined
             : true;
-          const matchNaoVisto = filtroNaoVistos
-            ? c.visualizada === false
-            : true;
+
+          const matchNaoVisto = filtroNaoVistos ? c.visualizada === false : true;
 
           const diasInscrito = Math.floor(
-            (new Date().getTime() - new Date(c.data_inscricao).getTime()) /
-              (1000 * 3600 * 24),
+            (new Date().getTime() - new Date(c.data_inscricao).getTime()) / (1000 * 3600 * 24),
           );
           const matchNovo = filtroNovos ? diasInscrito <= 2 : true;
 
@@ -234,301 +245,277 @@ export default function GestaoVagaPage({
         <div className="animate-pulse flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="text-gray-500 font-bold">
-            Carregando painel da vaga...
+            Preparando painel de gestão...
           </p>
         </div>
       </div>
     );
   }
 
-  // Calcula total original para o Header (sem filtros)
-  const totalCandidatos = colunasMestre.reduce(
-    (acc, col) => acc + col.candidatos.length,
-    0,
-  );
+  const totalCandidatos = colunasMestre.reduce((acc, col) => acc + col.candidatos.length, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col animate-in fade-in duration-500">
+
       {/* ================= HEADER DA GESTÃO ================= */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-[1600px] mx-auto flex flex-col gap-4">
-          <div className="flex items-center justify-between">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm px-4 md:px-8 py-5 md:py-6">
+        <div className="max-w-[1600px] mx-auto w-full flex flex-col gap-4">
+
+          {/* Linha Superior (Ações Menores: Voltar / Encerrar) */}
+          <div className="flex items-center justify-between w-full">
             <button
               onClick={() => router.push("/empresa/vagas")}
-              className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors"
+              className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-primary transition-colors"
             >
-              <HiOutlineArrowLeft size={16} /> Voltar para Minhas Vagas
+              <HiOutlineArrowLeft size={16} /> Minhas Vagas
             </button>
 
             {vaga?.status !== "ENCERRADA" && (
-              <button className="flex items-center gap-1.5 text-xs font-bold text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">
-                <HiOutlineXCircle size={16} /> Encerrar Vaga
+              <button className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-red-100">
+                Encerrar Vaga
               </button>
             )}
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          {/* Linha Principal (Títulos e Ações Primárias) */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
+            {/* Título e Status */}
             <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-2xl font-black text-gray-900 tracking-tight leading-none">
+              <div className="flex flex-wrap items-center gap-3 mb-1.5">
+                <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-none line-clamp-1">
                   {vaga?.titulo}
                 </h1>
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                    vaga?.status === "ATIVA"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
+                  className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest shrink-0 ${vaga?.status === "ATIVA"
+                    ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
+                    : "bg-gray-100 border border-gray-200 text-gray-600"
+                    }`}
                 >
                   {vaga?.status}
                 </span>
               </div>
-              <p className="text-sm font-medium text-gray-500">
-                {totalCandidatos} candidato(s) no processo
+              <p className="text-sm font-bold text-gray-500">
+                <span className="text-primary">{totalCandidatos}</span> candidato(s) no processo
               </p>
             </div>
 
-            <div className="flex items-center gap-4">
+            {/* Botões Principais */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
+
               <button
                 onClick={() => setIsConfigOpen(true)}
-                className="p-2.5 text-gray-400 hover:text-primary hover:bg-blue-50 rounded-xl transition-colors border border-gray-200"
-                title="Configurar Visão Estratégica"
+                className="flex justify-center items-center gap-2 px-5 py-3 text-sm font-bold text-gray-600 hover:text-primary bg-white border border-gray-200 hover:border-blue-200 hover:bg-blue-50 rounded-xl transition-all shadow-sm"
               >
-                <HiOutlineCog size={20} />
+                <HiOutlineAdjustments size={18} />
+                Configurar Tabela
               </button>
 
               {notificacoesPendentes === 0 ? (
                 <button
                   disabled
-                  className="flex items-center gap-2 bg-gray-50 text-gray-400 border border-gray-100 px-4 py-2.5 rounded-xl text-sm font-bold transition-all cursor-default"
+                  className="flex justify-center items-center gap-2 bg-gray-50 text-gray-400 border border-gray-100 px-6 py-3 rounded-xl text-sm font-bold transition-all cursor-default"
                 >
                   <HiOutlineCheck size={18} className="text-emerald-500" />
-                  Tudo atualizado
+                  Tudo Certo
                 </button>
               ) : (
                 <button
                   onClick={dispararNotificacoes}
                   disabled={isNotificando}
-                  className="relative flex items-center gap-2 bg-blue-50 text-primary border border-blue-100 hover:bg-blue-100 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+                  className="relative flex justify-center items-center gap-2 bg-blue-600 text-white border border-blue-700 hover:bg-blue-700 px-6 py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50 shadow-lg shadow-blue-600/20"
                 >
                   <div className="relative flex items-center justify-center">
                     <HiOutlineBell
                       size={18}
-                      // Se estiver processando, roda. Se não, dá um pulinho chamando a atenção
-                      className={
-                        isNotificando ? "animate-spin" : "animate-bounce"
-                      }
+                      className={isNotificando ? "animate-spin" : "animate-bounce"}
                     />
-
-                    {/* A bolinha vermelha piscando estilo notificação de app */}
                     <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
                     </span>
                   </div>
-
-                  {isNotificando
-                    ? "Enviando..."
-                    : `Disparar Alertas (${notificacoesPendentes})`}
+                  {isNotificando ? "Notificando..." : `Notificar Candidatos (${notificacoesPendentes})`}
                 </button>
               )}
-
-              <div className="h-8 w-px bg-gray-200 hidden md:block"></div>
-
-              <div className="bg-gray-100 p-1 rounded-xl flex items-center shadow-inner">
-                <button
-                  onClick={() => setViewMode("KANBAN")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                    viewMode === "KANBAN"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  <HiOutlineViewBoards size={18} />{" "}
-                  <span className="hidden md:inline">Kanban</span>
-                </button>
-                <button
-                  onClick={() => setViewMode("LISTA")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                    viewMode === "LISTA"
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  <HiOutlineViewList size={18} />{" "}
-                  <span className="hidden md:inline">Lista</span>
-                </button>
-              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* ================= BARRA DE FERRAMENTAS CENTRAL (BUSCA E FILTROS) ================= */}
-      <div className="max-w-[1600px] w-full mx-auto px-6 py-4 flex flex-col gap-4">
-        {/* Busca e Badges de Filtro */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+      <div className="max-w-[1600px] w-full mx-auto px-4 md:px-8 py-6 flex flex-col gap-4">
+
+        {/* Busca e Agrupamento de Filtros */}
+        <div className="flex flex-col xl:flex-row gap-4 xl:items-center justify-between">
           <input
             type="text"
             placeholder="Buscar candidato por nome..."
             value={termoBusca}
             onChange={(e) => setTermoBusca(e.target.value)}
-            className="w-full sm:max-w-md px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:border-primary focus:ring-2 focus:ring-blue-50 transition-all shadow-sm"
+            className="w-full xl:w-96 px-5 py-3 bg-white border border-gray-200 rounded-[16px] text-sm outline-none focus:border-primary focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm"
           />
 
-          <div className="flex flex-wrap gap-3">
-            <label
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors font-bold select-none ${filtroNaoVistos ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}
-            >
-              <input
-                type="checkbox"
-                className="hidden"
-                checked={filtroNaoVistos}
-                onChange={() => setFiltroNaoVistos(!filtroNaoVistos)}
-              />
-              <span
-                className={`w-2 h-2 rounded-full ${filtroNaoVistos ? "bg-blue-600" : "bg-blue-300"}`}
-              ></span>{" "}
+          {/* Container dos Filtros (Quebra no mobile de forma bonita) */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <label className={`flex items-center gap-2 px-4 py-2 rounded-[14px] border text-xs font-black uppercase tracking-widest cursor-pointer transition-colors select-none ${filtroNaoVistos ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
+              <input type="checkbox" className="hidden" checked={filtroNaoVistos} onChange={() => setFiltroNaoVistos(!filtroNaoVistos)} />
+              <span className={`w-2 h-2 rounded-full ${filtroNaoVistos ? "bg-blue-600" : "bg-blue-300"}`}></span>
               Não Lidos
             </label>
 
-            <label
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors font-bold select-none ${filtroSemAvaliacao ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}
-            >
-              <input
-                type="checkbox"
-                className="hidden"
-                checked={filtroSemAvaliacao}
-                onChange={() => setFiltroSemAvaliacao(!filtroSemAvaliacao)}
-              />
+            <label className={`flex items-center gap-2 px-4 py-2 rounded-[14px] border text-xs font-black uppercase tracking-widest cursor-pointer transition-colors select-none ${filtroSemAvaliacao ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
+              <input type="checkbox" className="hidden" checked={filtroSemAvaliacao} onChange={() => setFiltroSemAvaliacao(!filtroSemAvaliacao)} />
               Sem Avaliação
             </label>
 
-            <label
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors font-bold select-none ${filtroNovos ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}
-            >
-              <input
-                type="checkbox"
-                className="hidden"
-                checked={filtroNovos}
-                onChange={() => setFiltroNovos(!filtroNovos)}
-              />
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>{" "}
+            <label className={`flex items-center gap-2 px-4 py-2 rounded-[14px] border text-xs font-black uppercase tracking-widest cursor-pointer transition-colors select-none ${filtroNovos ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
+              <input type="checkbox" className="hidden" checked={filtroNovos} onChange={() => setFiltroNovos(!filtroNovos)} />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Novos (48h)
             </label>
-          </div>
-        </div>
 
-        {/* Visibilidade das Colunas */}
-        <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest shrink-0">
-            Exibir Etapas:
-          </span>
-          {colunasMestre.map((col) => {
-            const isOculta = colunasOcultas.includes(col.id_etapa);
-            return (
+            {/* Separador Visual (Só aparece em telas maiores) */}
+            <div className="hidden sm:block w-px h-6 bg-gray-200 mx-1"></div>
+
+            {/* DROPDOWN DE COLUNAS (ETAPAS) COM O USEREF */}
+            <div className="relative" ref={dropdownRef}>
               <button
-                key={col.id_etapa}
-                onClick={() => toggleColuna(col.id_etapa)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 border
-                  ${isOculta ? "bg-transparent border-dashed border-gray-300 text-gray-400 hover:bg-gray-50" : "bg-blue-50 border-blue-100 text-primary hover:bg-blue-100"}
-                `}
+                onClick={() => setMenuEtapasAberto(!menuEtapasAberto)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-[14px] border text-xs font-black uppercase tracking-widest transition-colors select-none ${menuEtapasAberto ? "bg-gray-100 border-gray-300 text-gray-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
+                  }`}
               >
-                {isOculta ? (
-                  <HiOutlineEyeOff size={14} />
-                ) : (
-                  <HiOutlineEye size={14} />
+                <HiOutlineEye size={16} />
+                Etapas
+                {colunasOcultas.length > 0 && (
+                  <span className="bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md text-[10px]">
+                    {colunasOcultas.length} Ocultas
+                  </span>
                 )}
-                {col.nome_etapa}
               </button>
-            );
-          })}
+
+              {/* Corpo do Dropdown */}
+              {menuEtapasAberto && (
+                <div
+                  className="absolute right-0 xl:right-auto xl:left-0 top-full mt-2 w-64 md:w-72 bg-white border border-gray-100 shadow-2xl rounded-[24px] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2"
+                >
+                  <div className="p-4 border-b border-gray-50 bg-gray-50/50">
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Ocultar ou Mostrar Etapas</p>
+                  </div>
+                  <div className="max-h-[40vh] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-gray-200">
+                    {colunasMestre.map((col) => {
+                      const isOculta = colunasOcultas.includes(col.id_etapa);
+                      return (
+                        <button
+                          key={col.id_etapa}
+                          onClick={() => toggleColuna(col.id_etapa)}
+                          className={`w-full flex items-center justify-between px-3 py-3 rounded-[16px] transition-colors text-sm font-bold
+                            ${isOculta
+                              ? "text-gray-400 hover:bg-gray-50"
+                              : "text-gray-700 hover:bg-blue-50"}
+                          `}
+                        >
+                          <div className="flex items-center gap-2.5 truncate pr-2">
+                            {isOculta ? <HiOutlineEyeOff size={18} className="text-gray-300 shrink-0" /> : <HiOutlineEye size={18} className="text-blue-500 shrink-0" />}
+                            <span className="truncate">{col.nome_etapa}</span>
+                          </div>
+                          <span className={`text-[10px] px-2 py-1 rounded-full shrink-0 ${isOculta ? 'bg-gray-100 text-gray-400' : 'bg-white shadow-sm border border-gray-100 text-gray-500'}`}>
+                            {col.candidatos.length}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+          </div>
         </div>
       </div>
 
-      {/* ================= ÁREA DE CONTEÚDO DINÂMICO ================= */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto px-6 overflow-hidden flex flex-col">
-        {viewMode === "KANBAN" ? (
-          <KanbanBoard
-            colunas={colunasFiltradas}
-            onAtualizar={carregarKanban}
-            onAbrirCandidato={handleAbrirCandidato}
-          />
-        ) : (
-          <ListaCandidatos
-            colunas={colunasFiltradas}
-            onAtualizar={carregarKanban}
-            onAbrirCandidato={handleAbrirCandidato}
-          />
-        )}
+      {/* ================= ÁREA DA TABELA (Lista de Candidatos) ================= */}
+      <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 md:px-8 pb-10 overflow-hidden flex flex-col">
+        <ListaCandidatos
+          colunas={colunasFiltradas}
+          onAtualizar={carregarDados}
+          onAbrirCandidato={handleAbrirCandidato}
+        />
       </main>
 
       {/* ================= MODAIS E DRAWERS ================= */}
       <CandidatoDrawer
         idCandidatura={candidatoSelecionadoId}
         onClose={() => setCandidatoSelecionadoId(null)}
-        onAtualizar={carregarKanban}
+        onAtualizar={carregarDados}
       />
 
+      {/* Modal de Configuração da Visão (Destaques) */}
       {isConfigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-[32px] p-8 w-full max-w-lg shadow-2xl">
-            <div className="flex justify-between items-start mb-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-[32px] p-6 md:p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-start mb-6 border-b border-gray-100 pb-4">
               <div>
                 <h3 className="text-xl font-black text-gray-800">
-                  Visão Estratégica
+                  Configurar Tabela
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Escolha o que deve aparecer no resumo do candidato.
+                <p className="text-sm text-gray-500 mt-1 font-medium">
+                  Escolha os dados que devem aparecer no resumo da tabela.
                 </p>
               </div>
               <button
                 onClick={() => setIsConfigOpen(false)}
-                className="text-gray-400 hover:bg-gray-100 p-2 rounded-full"
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-colors"
               >
                 <HiOutlineXCircle size={24} />
               </button>
             </div>
 
-            <div className="space-y-4 mb-8 max-h-[60vh] overflow-y-auto pr-2">
+            <div className="space-y-3 mb-8 max-h-[50vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200">
               {OPCOES_DESTAQUE.map((opcao) => (
                 <div
                   key={opcao.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-2xl hover:border-blue-100 transition-colors"
+                  className={`flex items-center justify-between p-4 rounded-[20px] transition-all cursor-pointer border ${camposDestaque.includes(opcao.id)
+                    ? "bg-blue-50/50 border-blue-200"
+                    : "bg-white border-gray-200 hover:border-blue-100"
+                    }`}
+                  onClick={() => toggleCampo(opcao.id)}
                 >
                   <div className="pr-4">
-                    <p className="font-bold text-gray-800 text-sm">
+                    <p className={`text-sm font-black ${camposDestaque.includes(opcao.id) ? "text-blue-900" : "text-gray-700"}`}>
                       {opcao.label}
                     </p>
-                    <p className="text-xs text-gray-500 mt-0.5">{opcao.desc}</p>
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">{opcao.desc}</p>
                   </div>
-                  <button
-                    onClick={() => toggleCampo(opcao.id)}
-                    className={`relative w-12 h-6 rounded-full transition-colors duration-300 ease-in-out shrink-0 focus:outline-none ${
-                      camposDestaque.includes(opcao.id)
-                        ? "bg-emerald-500"
-                        : "bg-gray-300"
-                    }`}
+
+                  {/* Toggle Switch Personalizado */}
+                  <div
+                    className={`relative w-11 h-6 rounded-full transition-colors duration-300 ease-in-out shrink-0 ${camposDestaque.includes(opcao.id) ? "bg-blue-500" : "bg-gray-300"
+                      }`}
                   >
                     <div
-                      className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ease-in-out ${
-                        camposDestaque.includes(opcao.id)
-                          ? "translate-x-6"
-                          : "translate-x-0"
-                      }`}
+                      className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ease-in-out ${camposDestaque.includes(opcao.id) ? "translate-x-5" : "translate-x-0"
+                        }`}
                     />
-                  </button>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <button
-              onClick={salvarConfiguracoes}
-              disabled={isSalvandoConfig}
-              className="w-full py-4 font-bold text-white bg-primary hover:bg-blue-700 rounded-2xl shadow-lg transition-all disabled:opacity-50"
-            >
-              {isSalvandoConfig ? "Salvando..." : "Salvar Configurações"}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsConfigOpen(false)}
+                className="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-50 rounded-[20px] transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={salvarConfiguracoes}
+                disabled={isSalvandoConfig}
+                className="flex-1 py-4 font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-[20px] shadow-lg shadow-blue-500/30 transition-all disabled:opacity-50"
+              >
+                {isSalvandoConfig ? "Salvando..." : "Salvar Configuração"}
+              </button>
+            </div>
           </div>
         </div>
       )}

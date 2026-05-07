@@ -14,9 +14,11 @@ import {
   HiOutlineLocationMarker,
   HiStar,
   HiOutlineDocumentText,
+  HiOutlineClock,
 } from "react-icons/hi";
 
 import { FaWhatsapp } from "react-icons/fa";
+import { TimelineCandidatura } from "./TimelineCandidatura";
 
 interface CandidatoDrawerProps {
   idCandidatura: number | null;
@@ -32,7 +34,7 @@ export function CandidatoDrawer({
   const [isLoading, setIsLoading] = useState(false);
   const [dados, setDados] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<
-    "CURRICULO" | "AVALIACAO" | "AGENDAMENTO"
+    "CURRICULO" | "AVALIACAO" | "AGENDAMENTO" | "HISTORICO"
   >("CURRICULO");
 
   const [nota, setNota] = useState(0);
@@ -193,6 +195,9 @@ export function CandidatoDrawer({
                 >
                   <HiOutlineCalendar size={18} /> Agendamento
                 </button>
+                <button onClick={() => setActiveTab("HISTORICO")}
+                  className={`pb-3 text-sm font-bold border-b-2 flex items-center gap-2 transition-colors ${activeTab === "HISTORICO" ? "border-blue-500 text-blue-600" : "border-transparent text-gray-400 hover:text-gray-700"}`}>
+                    <HiOutlineClock size={18} /> Histórico</button>
               </div>
             </div>
 
@@ -377,8 +382,6 @@ export function CandidatoDrawer({
                   </div>
                 </div>
               )}
-
-              {/* === ABA: AGENDAMENTO === */}
               {/* === ABA: AGENDAMENTO === */}
               {activeTab === "AGENDAMENTO" && (
                 <div className="space-y-8 animate-in fade-in">
@@ -481,6 +484,14 @@ export function CandidatoDrawer({
                       {isAgendando ? "Agendando..." : "Confirmar Agendamento"}
                     </button>
                   </div>
+                </div>
+              )}
+
+              {activeTab === "HISTORICO" && (
+                <div className="p-6">
+                  <h3 className="text-lg font-black text-gray-800 mb-6">Linha do Tempo</h3>
+                  {/* É só passar o ID e o componente faz a mágica! */}
+                  <TimelineCandidatura idCandidatura={idCandidatura} />
                 </div>
               )}
             </div>

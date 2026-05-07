@@ -1005,11 +1005,10 @@ export default function MeuCurriculoPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${
-              activeTab === tab.id
-                ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
-                : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
-            }`}
+            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${activeTab === tab.id
+              ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
+              : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
+              }`}
           >
             <span className="flex items-center gap-1.5 md:gap-2 relative z-10">
               {tab.icon} {tab.label}
@@ -2030,9 +2029,9 @@ export default function MeuCurriculoPage() {
                               {exp.atual
                                 ? "Atual"
                                 : new Date(exp.data_fim).toLocaleDateString(
-                                    "pt-BR",
-                                    { month: "short", year: "numeric" },
-                                  )}
+                                  "pt-BR",
+                                  { month: "short", year: "numeric" },
+                                )}
                             </p>
                           </div>
                           <div className="flex items-center gap-2 mt-4 md:mt-0 sm:opacity-0 group-hover:opacity-100 transition-opacity">
@@ -2348,8 +2347,11 @@ export default function MeuCurriculoPage() {
               </div>
             </form>
           )}
+
         </section>
       )}
+
+      <WizardNavegacao />
     </div>
   );
 }
