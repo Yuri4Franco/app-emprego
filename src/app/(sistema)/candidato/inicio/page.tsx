@@ -15,14 +15,16 @@ import {
   HiOutlineChevronRight,
   HiOutlineExclamationCircle,
   HiOutlineInformationCircle,
+  HiOutlineHeart, // <-- IMPORT NOVO PARA O CARD DE FAVORITOS
 } from "react-icons/hi";
 
-// Tipagens
+// Tipagens Atualizadas
 interface Metricas {
   saude_curriculo: number;
   candidaturas_ativas: number;
   visualizacoes_perfil: number;
   vagas_compativeis: number;
+  curriculos_salvos: number; // <-- NOVA MÉTRICA
 }
 
 interface CandidaturaRecente {
@@ -100,7 +102,7 @@ export default function DashboardCandidatoPage() {
             api.get("/candidato/dashboard/metricas"),
             api.get("/candidato/dashboard/candidaturas-recentes"),
             api.get("/candidato/dashboard/vagas-recomendadas"),
-            api.get("/candidato/meu-curriculo"), // Pegamos a visibilidade atual dele
+            api.get("/candidato/meu-curriculo"),
           ]);
 
         setMetricas(resMetricas.data.data);
@@ -136,7 +138,8 @@ export default function DashboardCandidatoPage() {
     return (
       <div className="max-w-7xl mx-auto py-10 px-4 space-y-8 animate-pulse">
         <div className="h-48 bg-gray-200 rounded-[32px] w-full"></div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="h-40 bg-gray-100 rounded-[32px]"></div>
           <div className="h-40 bg-gray-100 rounded-[32px]"></div>
           <div className="h-40 bg-gray-100 rounded-[32px]"></div>
           <div className="h-40 bg-gray-100 rounded-[32px]"></div>
@@ -165,14 +168,12 @@ export default function DashboardCandidatoPage() {
           </h1>
 
           {metricas?.saude_curriculo === 0 ? (
-            // Mensagem para quem acabou de chegar (0%)
             <p className="text-gray-600 font-medium leading-relaxed max-w-lg">
               Este é o seu painel principal. O seu primeiro passo para conseguir
               uma entrevista é cadastrar o seu currículo na plataforma. Vamos
               começar?
             </p>
           ) : (
-            // Mensagem padrão
             <p className="text-gray-600 font-medium leading-relaxed max-w-lg">
               Este é o seu painel de controle. Aqui você acompanha as vagas que
               se candidatou, vê as novidades da sua área e gerencia o seu
@@ -248,8 +249,8 @@ export default function DashboardCandidatoPage() {
                 {metricas.saude_curriculo === 100 ? (
                   <>
                     <p className="text-xs text-gray-500 font-medium mb-3">
-                      Está perfeito! Currículos 100% completos aparecem no topo
-                      das buscas do RH.
+                      Está perfeito! Currículos completos aparecem no topo das
+                      buscas do RH.
                     </p>
                     <Link
                       href="/candidato/meu-curriculo"
@@ -268,7 +269,7 @@ export default function DashboardCandidatoPage() {
                       href="/candidato/meu-curriculo"
                       className="text-xs font-bold px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-xl transition-colors inline-block text-center"
                     >
-                      Preencher meu currículo
+                      Preencher currículo
                     </Link>
                   </>
                 )}
@@ -279,11 +280,12 @@ export default function DashboardCandidatoPage() {
       </header>
 
       {/* ============================================================== */}
-      {/* CARDS DE MÉTRICAS RÁPIDAS (RESUMO)                               */}
+      {/* CARDS DE MÉTRICAS RÁPIDAS (RESUMO)                             */}
       {/* ============================================================== */}
       {metricas && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* CARD 1: PROCESSOS ATIVOS */}
+          <div className="bg-white p-6 xl:p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col">
             <div className="w-12 h-12 bg-blue-50 text-primary rounded-2xl flex items-center justify-center mb-4 shrink-0">
               <HiOutlineBriefcase size={24} />
             </div>
@@ -295,14 +297,15 @@ export default function DashboardCandidatoPage() {
                 <span className="text-4xl font-black text-gray-900">
                   {metricas.candidaturas_ativas}
                 </span>
-                <span className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1.5">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1.5 leading-tight">
                   Vagas que você enviou
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col relative overflow-hidden group hover:border-purple-200 transition-colors">
+          {/* CARD 2: VISUALIZAÇÕES */}
+          <div className="bg-white p-6 xl:p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col relative overflow-hidden group hover:border-purple-200 transition-colors">
             <div className="absolute -right-4 -top-4 w-24 h-24 bg-purple-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out z-0"></div>
             <div className="relative z-10">
               <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-4 shrink-0">
@@ -316,13 +319,35 @@ export default function DashboardCandidatoPage() {
                   {metricas.visualizacoes_perfil}
                 </span>
                 <span className="text-[10px] font-bold text-purple-600 mb-1.5 uppercase tracking-widest leading-tight">
-                  Vezes que empresas abriram seu contato
+                  Vezes que empresas viram
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col">
+          {/* CARD 3: CURRÍCULOS SALVOS (FAVORITOS) - NOVO! */}
+          <div className="bg-white p-6 xl:p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col relative overflow-hidden group hover:border-rose-200 transition-colors">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out z-0"></div>
+            <div className="relative z-10">
+              <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-4 shrink-0">
+                <HiOutlineHeart size={24} />
+              </div>
+              <h3 className="text-sm font-bold text-gray-500 mb-1">
+                Em Destaque
+              </h3>
+              <div className="flex items-end gap-3">
+                <span className="text-4xl font-black text-gray-900">
+                  {metricas.curriculos_salvos}
+                </span>
+                <span className="text-[10px] font-bold text-rose-600 mb-1.5 uppercase tracking-widest leading-tight">
+                  Empresas salvaram seu perfil
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* CARD 4: OPORTUNIDADES */}
+          <div className="bg-white p-6 xl:p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col">
             <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 shrink-0">
               <HiOutlineLocationMarker size={24} />
             </div>

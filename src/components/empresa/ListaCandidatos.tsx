@@ -10,12 +10,10 @@ import {
   HiOutlineXCircle,
   HiOutlineClipboardList,
   HiStar,
-  HiOutlineFilter,
   HiOutlineArrowRight,
 } from "react-icons/hi";
 import { FaWhatsapp } from "react-icons/fa";
 
-// 1. TIPAGENS ATUALIZADAS
 interface Candidato {
   id_candidatura: number;
   nome: string;
@@ -26,6 +24,7 @@ interface Candidato {
   data_entrevista: string | null;
   avaliacao_nota?: number | null;
   whatsapp?: string | null;
+  visualizada: boolean; // <-- ADICIONADO AQUI
 }
 
 interface Coluna {
@@ -35,44 +34,18 @@ interface Coluna {
 }
 
 interface ListaCandidatosProps {
-  colunasIniciais: Coluna[];
+  colunas: Coluna[]; // Recebe as colunas já mastigadas e filtradas do Pai
   onAtualizar: () => void;
   onAbrirCandidato: (id: number) => void;
 }
 
 export function ListaCandidatos({
-  colunasIniciais,
+  colunas,
   onAtualizar,
   onAbrirCandidato,
 }: ListaCandidatosProps) {
-  
-  // ESTADOS DE ABA
+  // ESTADOS DE ABA (Só cuida de qual aba estamos vendo)
   const [etapaAtivaId, setEtapaAtivaId] = useState<number | null>(null);
-
-  // ESTADOS DE FILTRO
-  const [termoBusca, setTermoBusca] = useState("");
-  const [filtroSemAvaliacao, setFiltroSemAvaliacao] = useState(false);
-  const [filtroNovos, setFiltroNovos] = useState(false);
-
-  useEffect(() => {
-    if (colunasIniciais.length > 0 && !etapaAtivaId) {
-      setEtapaAtivaId(colunasIniciais[0].id_etapa);
-    }
-  }, [colunasIniciais, etapaAtivaId]);
-
-  // DADOS DA ETAPA ATIVA COM FILTROS APLICADOS
-  const colunaAtual = colunasIniciais.find((col) => col.id_etapa === etapaAtivaId);
-  const candidatosBrutos = colunaAtual?.candidatos || [];
-  
-  const candidatosDaEtapa = candidatosBrutos.filter((c) => {
-    const matchNome = c.nome.toLowerCase().includes(termoBusca.toLowerCase());
-    const matchAvaliacao = filtroSemAvaliacao ? (c.avaliacao_nota === null || c.avaliacao_nota === undefined) : true;
-    
-    const diasInscrito = Math.floor((new Date().getTime() - new Date(c.data_inscricao).getTime()) / (1000 * 3600 * 24));
-    const matchNovo = filtroNovos ? diasInscrito <= 2 : true;
-
-    return matchNome && matchAvaliacao && matchNovo;
-  });
 
   // ESTADOS PARA AÇÕES EM MASSA E INDIVIDUAIS
   const [selecionados, setSelecionados] = useState<number[]>([]);
@@ -81,9 +54,37 @@ export function ListaCandidatos({
   const [motivoLote, setMotivoLote] = useState("");
   const [modalLoteAberto, setModalLoteAberto] = useState(false);
 
-  // CONTROLE DE SELEÇÃO
+  // 1. Inicia a primeira aba selecionada
+  useEffect(() => {
+    if (colunas.length > 0 && !etapaAtivaId) {
+      setEtapaAtivaId(colunas[0].id_etapa);
+    }
+  }, [colunas, etapaAtivaId]);
+
+  // 2. Proteção: Se a aba ativa for ocultada pelo Pai, volta para a primeira
+  useEffect(() => {
+    if (colunas.length > 0 && etapaAtivaId) {
+      const abaAindaExiste = colunas.some(
+        (col) => col.id_etapa === etapaAtivaId,
+      );
+      if (!abaAindaExiste) {
+        setEtapaAtivaId(colunas[0].id_etapa);
+        setSelecionados([]); // Limpa a seleção pra não dar b.o
+      }
+    }
+  }, [colunas, etapaAtivaId]);
+
+  // DADOS DA ETAPA ATIVA (A filtragem pesada já foi feita no Pai!)
+  const colunaAtual =
+    colunas.find((col) => col.id_etapa === etapaAtivaId) || colunas[0];
+  const candidatosDaEtapa = colunaAtual?.candidatos || [];
+
+  // ==================== CONTROLE DE SELEÇÃO ====================
   const toggleSelectAll = () => {
-    if (selecionados.length === candidatosDaEtapa.length) {
+    if (
+      selecionados.length === candidatosDaEtapa.length &&
+      candidatosDaEtapa.length > 0
+    ) {
       setSelecionados([]);
     } else {
       setSelecionados(candidatosDaEtapa.map((c) => c.id_candidatura));
@@ -99,15 +100,14 @@ export function ListaCandidatos({
   };
 
   // ==================== FUNÇÕES DE AÇÃO (API) ====================
-
-  // REPROVAR LOTE
   const confirmarReprovacaoEmLote = async () => {
     if (selecionados.length === 0) return;
     setIsReprovando(true);
     try {
       await api.post(`/empresa/candidaturas/reprovar-lote`, {
         id_candidaturas: selecionados,
-        motivo: motivoLote.trim() || "Candidato não atende aos requisitos da etapa.",
+        motivo:
+          motivoLote.trim() || "Candidato não atende aos requisitos da etapa.",
       });
       toast.success(`${selecionados.length} candidato(s) reprovado(s).`);
       setModalLoteAberto(false);
@@ -120,7 +120,6 @@ export function ListaCandidatos({
     }
   };
 
-  // AVANÇAR LOTE
   const avancarEmLote = async () => {
     if (selecionados.length === 0) return;
     setIsProcessandoLote(true);
@@ -128,7 +127,9 @@ export function ListaCandidatos({
       await api.patch(`/empresa/candidaturas/avancar-massa`, {
         id_candidaturas: selecionados,
       });
-      toast.success(`${selecionados.length} candidato(s) avançado(s) com sucesso!`);
+      toast.success(
+        `${selecionados.length} candidato(s) avançado(s) com sucesso!`,
+      );
       setSelecionados([]);
       onAtualizar();
     } catch (error) {
@@ -138,8 +139,10 @@ export function ListaCandidatos({
     }
   };
 
-  // AVANÇAR INDIVIDUAL
-  const avancarIndividual = async (id_candidatura: number, e: React.MouseEvent) => {
+  const avancarIndividual = async (
+    id_candidatura: number,
+    e: React.MouseEvent,
+  ) => {
     e.stopPropagation(); // Evita abrir o drawer
     try {
       await api.patch(`/empresa/candidaturas/${id_candidatura}/avancar`);
@@ -149,42 +152,13 @@ export function ListaCandidatos({
       toast.error("Erro ao avançar candidato.");
     }
   };
-
   // ===============================================================
 
   return (
     <div className="flex flex-col h-full gap-4 pb-4">
-      
-      {/* BARRA DE FILTROS SUPERIOR */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-2 px-2 items-start sm:items-center">
-        <input
-          type="text"
-          placeholder="Buscar candidato por nome..."
-          value={termoBusca}
-          onChange={(e) => setTermoBusca(e.target.value)}
-          className="w-full sm:max-w-md px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:border-primary focus:ring-2 focus:ring-blue-50 transition-all shadow-sm"
-        />
-        
-        <div className="flex flex-wrap gap-3">
-          <label className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors font-bold select-none
-            ${filtroSemAvaliacao ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}
-          `}>
-            <input type="checkbox" className="hidden" checked={filtroSemAvaliacao} onChange={() => setFiltroSemAvaliacao(!filtroSemAvaliacao)} />
-            <HiOutlineFilter size={16} /> Sem Avaliação
-          </label>
-
-          <label className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors font-bold select-none
-            ${filtroNovos ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}
-          `}>
-            <input type="checkbox" className="hidden" checked={filtroNovos} onChange={() => setFiltroNovos(!filtroNovos)} />
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Apenas Novos
-          </label>
-        </div>
-      </div>
-
       {/* NAVEGAÇÃO DE SUB-ABAS (ETAPAS) */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide px-2">
-        {colunasIniciais.map((coluna) => (
+        {colunas.map((coluna) => (
           <button
             key={coluna.id_etapa}
             onClick={() => {
@@ -196,7 +170,9 @@ export function ListaCandidatos({
             `}
           >
             {coluna.nome_etapa}
-            <span className={`px-2 py-0.5 rounded-full text-[10px] ${etapaAtivaId === coluna.id_etapa ? "bg-primary text-white" : "bg-gray-200 text-gray-500"}`}>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] ${etapaAtivaId === coluna.id_etapa ? "bg-primary text-white" : "bg-gray-200 text-gray-500"}`}
+            >
               {coluna.candidatos.length}
             </span>
           </button>
@@ -205,12 +181,12 @@ export function ListaCandidatos({
 
       {/* ÁREA DA TABELA */}
       <div className="w-full bg-white rounded-[32px] shadow-sm border border-gray-100 flex flex-col flex-1 overflow-hidden relative mx-2">
-        
-        {/* BARRA DE AÇÕES EM MASSA (Contextualizada para a etapa) */}
+        {/* BARRA DE AÇÕES EM MASSA */}
         {selecionados.length > 0 && (
           <div className="absolute top-0 left-0 right-0 bg-gray-900 text-white p-4 flex items-center justify-between z-10 animate-in slide-in-from-top-4">
             <span className="text-sm font-bold">
-              {selecionados.length} selecionado(s) na etapa {colunaAtual?.nome_etapa}
+              {selecionados.length} selecionado(s) na etapa{" "}
+              {colunaAtual?.nome_etapa}
             </span>
             <div className="flex gap-3">
               <button
@@ -220,7 +196,7 @@ export function ListaCandidatos({
               >
                 <HiOutlineXCircle size={18} /> Reprovar
               </button>
-              
+
               <button
                 onClick={avancarEmLote}
                 disabled={isProcessandoLote}
@@ -240,12 +216,15 @@ export function ListaCandidatos({
                 <th className="p-5 w-12 text-center">
                   <input
                     type="checkbox"
-                    checked={candidatosDaEtapa.length > 0 && selecionados.length === candidatosDaEtapa.length}
+                    checked={
+                      candidatosDaEtapa.length > 0 &&
+                      selecionados.length === candidatosDaEtapa.length
+                    }
                     onChange={toggleSelectAll}
                     className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                   />
                 </th>
-                <th className="p-5">Candidato</th>
+                <th className="p-5 pl-0">Candidato</th>
                 <th className="p-5">Avaliação</th>
                 <th className="p-5 text-center">Inscrição & Perfil</th>
                 <th className="p-5 text-right pr-8">Ação Rápida</th>
@@ -257,121 +236,188 @@ export function ListaCandidatos({
                   <td colSpan={5} className="p-20 text-center">
                     <div className="flex flex-col items-center gap-2 text-gray-300">
                       <HiOutlineClipboardList size={48} />
-                      <p className="font-bold">Nenhum candidato encontrado nesta etapa.</p>
+                      <p className="font-bold">
+                        Nenhum candidato encontrado nesta etapa.
+                      </p>
                     </div>
                   </td>
                 </tr>
               ) : (
                 candidatosDaEtapa.map((candidato) => {
-                  
-                  // LÓGICA DE CORES DA LINHA (Igual ao Kanban)
+                  // LÓGICA DE CORES DA LINHA
                   let rowColorClass = "bg-white hover:bg-blue-50/20";
                   if (selecionados.includes(candidato.id_candidatura)) {
-                    rowColorClass = "bg-blue-50/50"; // Selecionado sobrepõe a cor da nota
+                    rowColorClass = "bg-blue-50/50";
                   } else if (candidato.avaliacao_nota) {
-                    if (candidato.avaliacao_nota >= 4) rowColorClass = "bg-amber-50/20 hover:bg-amber-50/50";
-                    else if (candidato.avaliacao_nota <= 2) rowColorClass = "bg-gray-50/50 opacity-80 hover:opacity-100";
+                    if (candidato.avaliacao_nota >= 4)
+                      rowColorClass = "bg-amber-50/20 hover:bg-amber-50/50";
+                    else if (candidato.avaliacao_nota <= 2)
+                      rowColorClass =
+                        "bg-gray-50/50 opacity-80 hover:opacity-100";
                   }
 
-                  const diasInscrito = Math.floor((new Date().getTime() - new Date(candidato.data_inscricao).getTime()) / (1000 * 3600 * 24));
+                  const diasInscrito = Math.floor(
+                    (new Date().getTime() -
+                      new Date(candidato.data_inscricao).getTime()) /
+                      (1000 * 3600 * 24),
+                  );
                   const isNovo = diasInscrito <= 2;
+                  const isNaoLido = !candidato.visualizada;
 
                   return (
-                  <tr
-                    key={candidato.id_candidatura}
-                    className={`transition-colors group ${rowColorClass}`}
-                  >
-                    <td className="p-5 text-center">
-                      <input
-                        type="checkbox"
-                        checked={selecionados.includes(candidato.id_candidatura)}
-                        onChange={() => toggleSelectOne(candidato.id_candidatura)}
-                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
-                      />
-                    </td>
-                    
-                    {/* DADOS DO CANDIDATO */}
-                    <td
-                      className="p-5 cursor-pointer"
-                      onClick={() => onAbrirCandidato(candidato.id_candidatura)}
+                    <tr
+                      key={candidato.id_candidatura}
+                      className={`transition-colors group ${rowColorClass}`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0
+                      <td className="p-5 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selecionados.includes(
+                            candidato.id_candidatura,
+                          )}
+                          onChange={() =>
+                            toggleSelectOne(candidato.id_candidatura)
+                          }
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                        />
+                      </td>
+
+                      {/* DADOS DO CANDIDATO */}
+                      <td
+                        className="p-5 pl-0 cursor-pointer"
+                        onClick={() =>
+                          onAbrirCandidato(candidato.id_candidatura)
+                        }
+                      >
+                        <div className="flex items-center gap-3">
+                          {/* Indicador Visual de Não Lido (Bolinha estilo E-mail) */}
+                          <div className="w-2 h-2 shrink-0 flex items-center justify-center">
+                            {isNaoLido && (
+                              <div
+                                className="w-2 h-2 rounded-full bg-blue-500 shadow-sm"
+                                title="Não visualizado"
+                              ></div>
+                            )}
+                          </div>
+
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0
                           ${candidato.avaliacao_nota && candidato.avaliacao_nota >= 4 ? "bg-amber-100 text-amber-600" : "bg-blue-50 text-primary"}
-                        `}>
-                          {candidato.nome.charAt(0)}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-bold text-gray-800 text-sm group-hover:text-primary transition-colors">
-                            {candidato.nome}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-400 font-medium">
-                              #{candidato.id_candidatura}
+                        `}
+                          >
+                            {candidato.nome.charAt(0)}
+                          </div>
+                          <div className="flex flex-col">
+                            <span
+                              className={`text-sm group-hover:text-primary transition-colors ${isNaoLido ? "font-black text-gray-900" : "font-bold text-gray-800"}`}
+                            >
+                              {candidato.nome}
                             </span>
-                            {candidato.whatsapp && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const zapLimpo = candidato.whatsapp!.replace(/\D/g, '');
-                                  window.open(`https://wa.me/55${zapLimpo}`, '_blank');
-                                }}
-                                className="text-emerald-500 hover:text-emerald-600 transition-colors"
-                                title="Chamar no WhatsApp"
-                              >
-                                <FaWhatsapp size={12} />
-                              </button>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[10px] text-gray-400 font-medium">
+                                #{candidato.id_candidatura}
+                              </span>
+                              {candidato.whatsapp && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const zapLimpo =
+                                      candidato.whatsapp!.replace(/\D/g, "");
+                                    window.open(
+                                      `https://wa.me/55${zapLimpo}`,
+                                      "_blank",
+                                    );
+                                  }}
+                                  className="text-emerald-500 hover:text-emerald-600 transition-colors"
+                                  title="Chamar no WhatsApp"
+                                >
+                                  <FaWhatsapp size={12} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* AVALIAÇÃO */}
+                      <td
+                        className="p-5 cursor-pointer"
+                        onClick={() =>
+                          onAbrirCandidato(candidato.id_candidatura)
+                        }
+                      >
+                        {candidato.avaliacao_nota ? (
+                          <div className="flex items-center text-amber-400 gap-1">
+                            <HiStar size={16} />
+                            <span className="text-xs font-black text-amber-600">
+                              {candidato.avaliacao_nota}/5
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-300 font-medium italic">
+                            Pendente
+                          </span>
+                        )}
+                      </td>
+
+                      {/* INSCRIÇÃO E TAGS */}
+                      <td
+                        className="p-5 cursor-pointer"
+                        onClick={() =>
+                          onAbrirCandidato(candidato.id_candidatura)
+                        }
+                      >
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <span className="text-xs text-gray-500 font-medium">
+                            {new Date(
+                              candidato.data_inscricao,
+                            ).toLocaleDateString("pt-BR")}
+                          </span>
+                          <div className="flex gap-1">
+                            {isNovo && (
+                              <span
+                                className="w-2 h-2 rounded-full bg-emerald-400"
+                                title="Inscrição Recente"
+                              ></span>
+                            )}
+                            {candidato.fora_do_perfil && (
+                              <span
+                                className="w-2 h-2 rounded-full bg-red-400"
+                                title="Fora do Perfil"
+                              ></span>
+                            )}
+                            {candidato.possui_agendamento && (
+                              <span
+                                className="w-2 h-2 rounded-full bg-purple-400"
+                                title="Entrevista Agendada"
+                              ></span>
                             )}
                           </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* AVALIAÇÃO */}
-                    <td className="p-5 cursor-pointer" onClick={() => onAbrirCandidato(candidato.id_candidatura)}>
-                      {candidato.avaliacao_nota ? (
-                        <div className="flex items-center text-amber-400 gap-1">
-                          <HiStar size={16} />
-                          <span className="text-xs font-black text-amber-600">{candidato.avaliacao_nota}/5</span>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-300 font-medium italic">Pendente</span>
-                      )}
-                    </td>
-
-                    {/* INSCRIÇÃO E TAGS */}
-                    <td className="p-5 cursor-pointer" onClick={() => onAbrirCandidato(candidato.id_candidatura)}>
-                      <div className="flex flex-col items-center justify-center gap-2">
-                        <span className="text-xs text-gray-500 font-medium">
-                          {new Date(candidato.data_inscricao).toLocaleDateString("pt-BR")}
-                        </span>
-                        <div className="flex gap-1">
-                          {isNovo && <span className="w-2 h-2 rounded-full bg-emerald-400" title="Inscrição Recente"></span>}
-                          {candidato.fora_do_perfil && <span className="w-2 h-2 rounded-full bg-red-400" title="Fora do Perfil"></span>}
-                          {candidato.possui_agendamento && <span className="w-2 h-2 rounded-full bg-purple-400" title="Entrevista Agendada"></span>}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* AÇÕES INDIVIDUAIS */}
-                    <td className="p-5 text-right pr-8">
-                      <button
-                        onClick={(e) => avancarIndividual(candidato.id_candidatura, e)}
-                        className="opacity-0 group-hover:opacity-100 flex items-center gap-1.5 ml-auto px-3 py-1.5 bg-white border border-gray-200 text-gray-600 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-sm"
-                        title="Avançar 1 Etapa"
-                      >
-                        Avançar <HiOutlineArrowRight size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                )})
+                      {/* AÇÕES INDIVIDUAIS */}
+                      <td className="p-5 text-right pr-8">
+                        <button
+                          onClick={(e) =>
+                            avancarIndividual(candidato.id_candidatura, e)
+                          }
+                          className="opacity-0 group-hover:opacity-100 flex items-center gap-1.5 ml-auto px-3 py-1.5 bg-white border border-gray-200 text-gray-600 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-sm"
+                          title="Avançar 1 Etapa"
+                        >
+                          Avançar <HiOutlineArrowRight size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* MODAL DE REPROVAÇÃO (Mesma lógica) */}
+      {/* MODAL DE REPROVAÇÃO */}
       {modalLoteAberto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-[32px] p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95">

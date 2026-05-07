@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/src/services/api";
 import toast from "react-hot-toast";
@@ -11,103 +11,58 @@ import {
   HiOutlineXCircle,
   HiOutlineArrowLeft,
   HiOutlineCog,
+  HiOutlineEye,
+  HiOutlineEyeOff,
+  HiOutlineCheck,
 } from "react-icons/hi";
 import { KanbanBoard } from "@/src/components/empresa/KanbanBoard";
 import { ListaCandidatos } from "@/src/components/empresa/ListaCandidatos";
 import { CandidatoDrawer } from "@/src/components/empresa/CandidatoDrawer";
 
-// Tipagens baseadas no seu Service
-interface CandidatoResumo {
+// --- DECLARAÇÃO DAS TIPAGENS ---
+interface Candidato {
   id_candidatura: number;
-  id_usuario: number;
   nome: string;
+  id_usuario: number;
   fora_do_perfil: boolean;
   data_inscricao: string;
   possui_agendamento: boolean;
   data_entrevista: string | null;
+  avaliacao_nota?: number | null;
+  whatsapp?: string | null;
+  visualizada: boolean;
 }
 
 interface ColunaKanban {
   id_etapa: number;
   nome_etapa: string;
-  tipo: string;
-  ordem: number;
-  candidatos: CandidatoResumo[];
+  tipo?: string;
+  ordem?: number;
+  candidatos: Candidato[];
 }
+// ------------------------------
 
 export default function GestaoVagaPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const router = useRouter();
   const resolvedParams = use(params);
   const idVaga = resolvedParams.id;
+  const router = useRouter();
 
-  // Estados principais
-  const [vaga, setVaga] = useState<{ titulo: string; status: string } | null>(
-    null,
-  );
-  const [colunas, setColunas] = useState<ColunaKanban[]>([]);
+  // 1. ESTADOS BASE
+  const [vaga, setVaga] = useState<any>(null);
+  const [colunasMestre, setColunasMestre] = useState<ColunaKanban[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Controle de Visão (Kanban vs Lista)
-  const [viewMode, setViewMode] = useState<"KANBAN" | "LISTA">("KANBAN");
-
-  // Estado para ações globais
-  const [isNotificando, setIsNotificando] = useState(false);
-
+  const [viewMode, setViewMode] = useState<"KANBAN" | "LISTA">("LISTA");
   const [candidatoSelecionadoId, setCandidatoSelecionadoId] = useState<
     number | null
   >(null);
+  const [notificacoesPendentes, setNotificacoesPendentes] = useState(0);
 
-  const carregarKanban = useCallback(async (isFirstLoad = false) => {
-    if (isFirstLoad) {
-      setIsLoading(true);
-    }
-
-    try {
-      // O cache buster continua aqui para garantir!
-      const res = await api.get(`/empresa/vagas/${idVaga}/kanban`, {
-        params: { _t: new Date().getTime() }
-      });
-
-      const payload = res.data.data || res.data.dados || res.data;
-
-      setVaga(payload.vaga || null);
-
-      setColunas(payload.colunas || []);
-
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.response?.data?.error || "Erro ao carregar a gestão.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [idVaga]);
-  
-  useEffect(() => {
-    carregarKanban(true);
-  }, [carregarKanban]);
-
-  useEffect(() => {
-    carregarKanban();
-  }, [carregarKanban]);
-
-  // Função do seu endpoint "notificar-candidatos"
-  const dispararNotificacoes = async () => {
-    setIsNotificando(true);
-    try {
-      await api.post(`/empresa/vagas/${idVaga}/notificar-candidatos`);
-      toast.success("Notificações enviadas com sucesso aos candidatos!");
-      carregarKanban();
-    } catch (error) {
-      toast.error("Erro ao enviar notificações.");
-    } finally {
-      setIsNotificando(false);
-    }
-  };
-
+  // Estados de Ações Globais
+  const [isNotificando, setIsNotificando] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [camposDestaque, setCamposDestaque] = useState<string[]>([
     "nome",
@@ -115,6 +70,13 @@ export default function GestaoVagaPage({
     "localizacao",
   ]);
   const [isSalvandoConfig, setIsSalvandoConfig] = useState(false);
+
+  // 2. ESTADOS DE FILTRO (Agora comandam tudo daqui!)
+  const [termoBusca, setTermoBusca] = useState("");
+  const [filtroNaoVistos, setFiltroNaoVistos] = useState(false);
+  const [filtroSemAvaliacao, setFiltroSemAvaliacao] = useState(false);
+  const [filtroNovos, setFiltroNovos] = useState(false);
+  const [colunasOcultas, setColunasOcultas] = useState<number[]>([]);
 
   const OPCOES_DESTAQUE = [
     {
@@ -144,6 +106,51 @@ export default function GestaoVagaPage({
     },
   ];
 
+  const carregarKanban = useCallback(
+    async (isFirstLoad = false) => {
+      if (isFirstLoad) setIsLoading(true);
+      try {
+        const res = await api.get(`/empresa/vagas/${idVaga}/kanban`, {
+          params: { _t: new Date().getTime() },
+        });
+        const payload = res.data.data || res.data.dados || res.data;
+        setVaga(payload.vaga || null);
+        setColunasMestre(payload.colunas || []);
+        const colunasRecebidas = payload.colunas || [];
+        setColunasMestre(colunasRecebidas);
+        const pendentes =
+          colunasRecebidas.length > 0
+            ? Number(colunasRecebidas[0].notificacoes_pendentes) || 0
+            : 0;
+
+        setNotificacoesPendentes(pendentes);
+      } catch (error: any) {
+        toast.error("Erro ao carregar a gestão.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [idVaga],
+  );
+
+  useEffect(() => {
+    carregarKanban(true);
+  }, [carregarKanban]);
+
+  // Ações da Vaga
+  const dispararNotificacoes = async () => {
+    setIsNotificando(true);
+    try {
+      await api.post(`/empresa/vagas/${idVaga}/notificar-candidatos`);
+      toast.success("Notificações enviadas com sucesso aos candidatos!");
+      carregarKanban();
+    } catch (error) {
+      toast.error("Erro ao enviar notificações.");
+    } finally {
+      setIsNotificando(false);
+    }
+  };
+
   const salvarConfiguracoes = async () => {
     setIsSalvandoConfig(true);
     try {
@@ -160,12 +167,66 @@ export default function GestaoVagaPage({
   };
 
   const toggleCampo = (id: string) => {
-    if (camposDestaque.includes(id)) {
+    if (camposDestaque.includes(id))
       setCamposDestaque(camposDestaque.filter((c) => c !== id));
-    } else {
-      setCamposDestaque([...camposDestaque, id]);
-    }
+    else setCamposDestaque([...camposDestaque, id]);
   };
+
+  const toggleColuna = (id_etapa: number) => {
+    if (colunasOcultas.includes(id_etapa))
+      setColunasOcultas(colunasOcultas.filter((id) => id !== id_etapa));
+    else setColunasOcultas([...colunasOcultas, id_etapa]);
+  };
+
+  // 3. ATUALIZAÇÃO OTIMISTA
+  const handleAbrirCandidato = (idCandidatura: number) => {
+    setColunasMestre((colunasAntigas) =>
+      colunasAntigas.map((col) => ({
+        ...col,
+        candidatos: col.candidatos.map((cand: Candidato) =>
+          cand.id_candidatura === idCandidatura
+            ? { ...cand, visualizada: true }
+            : cand,
+        ),
+      })),
+    );
+    setCandidatoSelecionadoId(idCandidatura);
+  };
+
+  // 4. FILTRAGEM
+  const colunasFiltradas = useMemo(() => {
+    return colunasMestre
+      .filter((col) => !colunasOcultas.includes(col.id_etapa))
+      .map((coluna) => {
+        const candidatosFiltrados = coluna.candidatos.filter((c: Candidato) => {
+          const matchNome = c.nome
+            .toLowerCase()
+            .includes(termoBusca.toLowerCase());
+          const matchAvaliacao = filtroSemAvaliacao
+            ? c.avaliacao_nota === null || c.avaliacao_nota === undefined
+            : true;
+          const matchNaoVisto = filtroNaoVistos
+            ? c.visualizada === false
+            : true;
+
+          const diasInscrito = Math.floor(
+            (new Date().getTime() - new Date(c.data_inscricao).getTime()) /
+              (1000 * 3600 * 24),
+          );
+          const matchNovo = filtroNovos ? diasInscrito <= 2 : true;
+
+          return matchNome && matchAvaliacao && matchNaoVisto && matchNovo;
+        });
+        return { ...coluna, candidatos: candidatosFiltrados };
+      });
+  }, [
+    colunasMestre,
+    colunasOcultas,
+    termoBusca,
+    filtroSemAvaliacao,
+    filtroNaoVistos,
+    filtroNovos,
+  ]);
 
   if (isLoading) {
     return (
@@ -180,18 +241,17 @@ export default function GestaoVagaPage({
     );
   }
 
-  // Calcula total de candidatos somando todas as colunas
-  const totalCandidatos = colunas.reduce(
+  // Calcula total original para o Header (sem filtros)
+  const totalCandidatos = colunasMestre.reduce(
     (acc, col) => acc + col.candidatos.length,
     0,
   );
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* HEADER DA GESTÃO */}
+      {/* ================= HEADER DA GESTÃO ================= */}
       <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10 shadow-sm">
         <div className="max-w-[1600px] mx-auto flex flex-col gap-4">
-          {/* Linha 1: Voltar e Ações Destrutivas */}
           <div className="flex items-center justify-between">
             <button
               onClick={() => router.push("/empresa/vagas")}
@@ -207,7 +267,6 @@ export default function GestaoVagaPage({
             )}
           </div>
 
-          {/* Linha 2: Título da Vaga e Controles Principais */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-1">
@@ -215,10 +274,11 @@ export default function GestaoVagaPage({
                   {vaga?.titulo}
                 </h1>
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${vaga?.status === "ATIVA"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-gray-100 text-gray-600"
-                    }`}
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                    vaga?.status === "ATIVA"
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-gray-100 text-gray-600"
+                  }`}
                 >
                   {vaga?.status}
                 </span>
@@ -229,8 +289,6 @@ export default function GestaoVagaPage({
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Botão de Disparo de Notificações Seguro */}
-
               <button
                 onClick={() => setIsConfigOpen(true)}
                 className="p-2.5 text-gray-400 hover:text-primary hover:bg-blue-50 rounded-xl transition-colors border border-gray-200"
@@ -239,38 +297,63 @@ export default function GestaoVagaPage({
                 <HiOutlineCog size={20} />
               </button>
 
-              <button
-                onClick={dispararNotificacoes}
-                disabled={isNotificando}
-                className="flex items-center gap-2 bg-blue-50 text-primary border border-blue-100 hover:bg-blue-100 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
-              >
-                <HiOutlineBell
-                  size={18}
-                  className={isNotificando ? "animate-bounce" : ""}
-                />
-                {isNotificando ? "Enviando..." : "Disparar Notificações"}
-              </button>
+              {notificacoesPendentes === 0 ? (
+                <button
+                  disabled
+                  className="flex items-center gap-2 bg-gray-50 text-gray-400 border border-gray-100 px-4 py-2.5 rounded-xl text-sm font-bold transition-all cursor-default"
+                >
+                  <HiOutlineCheck size={18} className="text-emerald-500" />
+                  Tudo atualizado
+                </button>
+              ) : (
+                <button
+                  onClick={dispararNotificacoes}
+                  disabled={isNotificando}
+                  className="relative flex items-center gap-2 bg-blue-50 text-primary border border-blue-100 hover:bg-blue-100 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+                >
+                  <div className="relative flex items-center justify-center">
+                    <HiOutlineBell
+                      size={18}
+                      // Se estiver processando, roda. Se não, dá um pulinho chamando a atenção
+                      className={
+                        isNotificando ? "animate-spin" : "animate-bounce"
+                      }
+                    />
+
+                    {/* A bolinha vermelha piscando estilo notificação de app */}
+                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                    </span>
+                  </div>
+
+                  {isNotificando
+                    ? "Enviando..."
+                    : `Disparar Alertas (${notificacoesPendentes})`}
+                </button>
+              )}
 
               <div className="h-8 w-px bg-gray-200 hidden md:block"></div>
 
-              {/* TOGGLE DE VISÃO */}
               <div className="bg-gray-100 p-1 rounded-xl flex items-center shadow-inner">
                 <button
                   onClick={() => setViewMode("KANBAN")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === "KANBAN"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                    }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                    viewMode === "KANBAN"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
                 >
                   <HiOutlineViewBoards size={18} />{" "}
                   <span className="hidden md:inline">Kanban</span>
                 </button>
                 <button
                   onClick={() => setViewMode("LISTA")}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === "LISTA"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                    }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                    viewMode === "LISTA"
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
                 >
                   <HiOutlineViewList size={18} />{" "}
                   <span className="hidden md:inline">Lista</span>
@@ -281,26 +364,106 @@ export default function GestaoVagaPage({
         </div>
       </header>
 
-      {/* ÁREA DE CONTEÚDO DINÂMICO */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto p-6 overflow-hidden flex flex-col">
+      {/* ================= BARRA DE FERRAMENTAS CENTRAL (BUSCA E FILTROS) ================= */}
+      <div className="max-w-[1600px] w-full mx-auto px-6 py-4 flex flex-col gap-4">
+        {/* Busca e Badges de Filtro */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <input
+            type="text"
+            placeholder="Buscar candidato por nome..."
+            value={termoBusca}
+            onChange={(e) => setTermoBusca(e.target.value)}
+            className="w-full sm:max-w-md px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:border-primary focus:ring-2 focus:ring-blue-50 transition-all shadow-sm"
+          />
+
+          <div className="flex flex-wrap gap-3">
+            <label
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors font-bold select-none ${filtroNaoVistos ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+            >
+              <input
+                type="checkbox"
+                className="hidden"
+                checked={filtroNaoVistos}
+                onChange={() => setFiltroNaoVistos(!filtroNaoVistos)}
+              />
+              <span
+                className={`w-2 h-2 rounded-full ${filtroNaoVistos ? "bg-blue-600" : "bg-blue-300"}`}
+              ></span>{" "}
+              Não Lidos
+            </label>
+
+            <label
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors font-bold select-none ${filtroSemAvaliacao ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+            >
+              <input
+                type="checkbox"
+                className="hidden"
+                checked={filtroSemAvaliacao}
+                onChange={() => setFiltroSemAvaliacao(!filtroSemAvaliacao)}
+              />
+              Sem Avaliação
+            </label>
+
+            <label
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm cursor-pointer transition-colors font-bold select-none ${filtroNovos ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}
+            >
+              <input
+                type="checkbox"
+                className="hidden"
+                checked={filtroNovos}
+                onChange={() => setFiltroNovos(!filtroNovos)}
+              />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>{" "}
+              Novos (48h)
+            </label>
+          </div>
+        </div>
+
+        {/* Visibilidade das Colunas */}
+        <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest shrink-0">
+            Exibir Etapas:
+          </span>
+          {colunasMestre.map((col) => {
+            const isOculta = colunasOcultas.includes(col.id_etapa);
+            return (
+              <button
+                key={col.id_etapa}
+                onClick={() => toggleColuna(col.id_etapa)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 border
+                  ${isOculta ? "bg-transparent border-dashed border-gray-300 text-gray-400 hover:bg-gray-50" : "bg-blue-50 border-blue-100 text-primary hover:bg-blue-100"}
+                `}
+              >
+                {isOculta ? (
+                  <HiOutlineEyeOff size={14} />
+                ) : (
+                  <HiOutlineEye size={14} />
+                )}
+                {col.nome_etapa}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ================= ÁREA DE CONTEÚDO DINÂMICO ================= */}
+      <main className="flex-1 max-w-[1600px] w-full mx-auto px-6 overflow-hidden flex flex-col">
         {viewMode === "KANBAN" ? (
-          <div className="flex-1 bg-transparent overflow-hidden pt-4">
-            <KanbanBoard
-              colunasIniciais={colunas}
-              onAtualizar={carregarKanban}
-              onAbrirCandidato={(id: number) => setCandidatoSelecionadoId(id)}
-            />
-          </div>
+          <KanbanBoard
+            colunas={colunasFiltradas}
+            onAtualizar={carregarKanban}
+            onAbrirCandidato={handleAbrirCandidato}
+          />
         ) : (
-          <div className="flex-1 bg-transparent overflow-hidden pt-4">
-            <ListaCandidatos
-              colunasIniciais={colunas}
-              onAtualizar={carregarKanban}
-              onAbrirCandidato={(id: number) => setCandidatoSelecionadoId(id)}
-            />
-          </div>
+          <ListaCandidatos
+            colunas={colunasFiltradas}
+            onAtualizar={carregarKanban}
+            onAbrirCandidato={handleAbrirCandidato}
+          />
         )}
       </main>
+
+      {/* ================= MODAIS E DRAWERS ================= */}
       <CandidatoDrawer
         idCandidatura={candidatoSelecionadoId}
         onClose={() => setCandidatoSelecionadoId(null)}
@@ -339,20 +502,20 @@ export default function GestaoVagaPage({
                     </p>
                     <p className="text-xs text-gray-500 mt-0.5">{opcao.desc}</p>
                   </div>
-
-                  {/* TOGGLE SWITCH ESTILO iOS */}
                   <button
                     onClick={() => toggleCampo(opcao.id)}
-                    className={`relative w-12 h-6 rounded-full transition-colors duration-300 ease-in-out shrink-0 focus:outline-none ${camposDestaque.includes(opcao.id)
-                      ? "bg-emerald-500"
-                      : "bg-gray-300"
-                      }`}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-300 ease-in-out shrink-0 focus:outline-none ${
+                      camposDestaque.includes(opcao.id)
+                        ? "bg-emerald-500"
+                        : "bg-gray-300"
+                    }`}
                   >
                     <div
-                      className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ease-in-out ${camposDestaque.includes(opcao.id)
-                        ? "translate-x-6"
-                        : "translate-x-0"
-                        }`}
+                      className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ease-in-out ${
+                        camposDestaque.includes(opcao.id)
+                          ? "translate-x-6"
+                          : "translate-x-0"
+                      }`}
                     />
                   </button>
                 </div>

@@ -18,7 +18,7 @@ import {
   HiOutlineMenuAlt2,
   HiOutlineX,
   HiOutlineClipboardList,
-  HiOutlineBell, // <-- Novo Sino
+  HiOutlineBell,
   HiOutlineCheckCircle,
   HiOutlineInformationCircle,
 } from "react-icons/hi";
@@ -73,23 +73,23 @@ const MENU_CONFIG = {
   ],
   EMPRESA: [
     {
-      label: "Dashboard",
+      label: "Visão Geral",
       href: "/empresa/dashboard",
       icon: <HiOutlineChartBar size={22} />,
     },
+        {
+      label: "Perfil da Empresa",
+      href: "/empresa/minhas-informacoes",
+      icon: <HiOutlineOfficeBuilding size={22} />,
+    },
     {
-      label: "Minhas Vagas",
+      label: "Gestão de Vagas",
       href: "/empresa/vagas",
       icon: <HiOutlineBriefcase size={22} />,
     },
     {
       label: "Banco de Talentos",
       href: "/empresa/banco-talentos",
-      icon: <HiOutlineUsers size={22} />,
-    },
-    {
-      label: "Minhas Informações",
-      href: "/empresa/minhas-informacoes",
       icon: <HiOutlineUsers size={22} />,
     },
   ],
@@ -119,10 +119,48 @@ export function Sidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
+  // Estados de Scroll (Menu Mobile)
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
   // Estados de Dados
   const [vagasPendentes, setVagasPendentes] = useState(0);
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [naoLidas, setNaoLidas] = useState(0);
+
+  // 1. Lógica do Scroll da Barra Mobile
+  useEffect(() => {
+    const controlNavbar = () => {
+      if (typeof window !== "undefined") {
+        const currentScrollY = window.scrollY;
+        if (currentScrollY > lastScrollY && currentScrollY > 50) {
+          // Esconde se rolar pra baixo (e menus estiverem fechados)
+          if (!isMobileMenuOpen && !isNotificationsOpen) {
+            setIsVisible(false);
+          }
+        } else {
+          // Mostra se rolar pra cima
+          setIsVisible(true);
+        }
+        setLastScrollY(currentScrollY);
+      }
+    };
+
+    window.addEventListener("scroll", controlNavbar);
+    return () => window.removeEventListener("scroll", controlNavbar);
+  }, [lastScrollY, isMobileMenuOpen, isNotificationsOpen]);
+
+  // 2. Travar o Scroll do Body quando algum menu lateral abrir
+  useEffect(() => {
+    if (isMobileMenuOpen || isNotificationsOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileMenuOpen, isNotificationsOpen]);
 
   // Fecha menus ao trocar de página
   useEffect(() => {
@@ -130,10 +168,9 @@ export function Sidebar() {
     setIsNotificationsOpen(false);
   }, [pathname]);
 
-  // Carregamento de dados iniciais baseados no Role
+  // Carregamento de dados iniciais
   useEffect(() => {
     if (!user) return;
-
     if (user.role === "ADM") {
       api
         .get("/admin/vagas/pendentes", { params: { limit: 1 } })
@@ -141,14 +178,12 @@ export function Sidebar() {
         .catch(console.error);
     }
 
-    // Busca apenas a CONTAGEM inicial de notificações não lidas
     api
       .get("/notificacoes/nao-lidas")
       .then((res) => setNaoLidas(res.data.data.total_nao_lidas || 0))
       .catch(console.error);
   }, [user]);
 
-  // Função para abrir o painel de notificações e carregar a lista
   const handleOpenNotifications = async () => {
     setIsNotificationsOpen(true);
     try {
@@ -159,11 +194,10 @@ export function Sidebar() {
     }
   };
 
-  // Função para fechar o painel e marcar como lidas silenciosamente no backend
   const handleCloseNotifications = async () => {
     setIsNotificationsOpen(false);
     if (naoLidas > 0) {
-      setNaoLidas(0); // Zera o sino na tela imediatamente (Otimista)
+      setNaoLidas(0);
       try {
         await api.patch("/notificacoes/marcar-lidas");
       } catch (error) {
@@ -178,7 +212,6 @@ export function Sidebar() {
       return true;
     if (path === "/empresa/dashboard" && pathname === "/empresa/dashboard")
       return true;
-
     if (
       path !== "/inicio" &&
       path !== "/admin/dashboard" &&
@@ -198,8 +231,15 @@ export function Sidebar() {
 
   return (
     <>
-      {/* 1. BOTÃO FLUTUANTE MOBILE */}
-      <div className="md:hidden fixed top-0 left-0 w-full z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 p-4 flex items-center justify-between">
+      {/* 1. ESPAÇADOR FANTASMA PRO MOBILE NÃO COBRIR O CONTEÚDO */}
+      <div className="md:hidden h-[76px] w-full shrink-0"></div>
+
+      {/* 2. BARRA FLUTUANTE MOBILE (Com esconderijo automático) */}
+      <div
+        className={`md:hidden fixed top-0 left-0 w-full z-40 bg-white border-b border-gray-200 p-4 flex items-center justify-between transition-transform duration-300 ease-in-out ${
+          isVisible ? "translate-y-0" : "-translate-y-full"
+        }`}
+      >
         <Image
           src={Logo}
           alt="Logo ACI Panambi"
@@ -208,7 +248,6 @@ export function Sidebar() {
           className="object-contain filter invert brightness-0"
         />
         <div className="flex items-center gap-3">
-          {/* Sino Mobile */}
           <button
             onClick={handleOpenNotifications}
             className="relative p-2 text-gray-600"
@@ -218,7 +257,6 @@ export function Sidebar() {
               <span className="absolute top-1 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
             )}
           </button>
-          {/* Hambúrguer */}
           <button
             onClick={() => setIsMobileMenuOpen(true)}
             className="p-2 bg-primary text-white rounded-lg shadow-md hover:bg-blue-700 transition-colors"
@@ -228,49 +266,46 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* 2. OVERLAY ESCURO DO MENU MOBILE E NOTIFICAÇÕES */}
-      {(isMobileMenuOpen || isNotificationsOpen) && (
+      {/* 3. OVERLAY ESCURO PARA NOTIFICAÇÕES (O menu mobile agora é tela cheia) */}
+      {isNotificationsOpen && (
         <div
-          onClick={() => {
-            setIsMobileMenuOpen(false);
-            handleCloseNotifications();
-          }}
-          className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isMobileMenuOpen ? "z-40 md:hidden" : "z-40"}`}
+          onClick={handleCloseNotifications}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 z-40"
         />
       )}
 
-      {/* 3. A SIDEBAR PRINCIPAL */}
+      {/* 4. A SIDEBAR PRINCIPAL (Desktop compactado + Mobile Tela Cheia) */}
       <aside
         className={`
-          bg-primary h-[100dvh] w-72 flex flex-col border-r border-white/5 shadow-2xl shrink-0
-          md:sticky md:top-0 md:translate-x-0
-          fixed top-0 left-0 z-50 transition-transform duration-300 ease-in-out
+          bg-primary h-[100dvh] flex flex-col border-r border-white/5 shadow-2xl shrink-0
+          md:w-72 md:sticky md:top-0 md:translate-x-0
+          fixed top-0 left-0 w-full z-50 transition-transform duration-300 ease-in-out
           ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
         <button
           onClick={() => setIsMobileMenuOpen(false)}
-          className="md:hidden absolute top-6 right-6 p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+          className="md:hidden absolute top-6 right-6 p-2 text-white hover:bg-white/10 rounded-full transition-colors z-50"
         >
-          <HiOutlineX size={24} />
+          <HiOutlineX size={28} />
         </button>
 
-        <div className="p-8 pb-4">
-          <div className="relative h-12 w-full mb-8">
+        {/* Header da Sidebar (Mais compacto) */}
+        <div className="p-6 pb-2 mt-4 md:mt-0">
+          <div className="relative h-10 w-full mb-6">
             <Image
               src={Logo}
               alt="Logo ACI Panambi"
               fill
-              className="object-contain object-left"
+              className="object-contain object-left md:object-center lg:object-left"
               priority
             />
           </div>
 
-          {/* User Profile Card com o Sino Desktop */}
-          <div className="bg-white/5 border border-white/10 p-5 rounded-[24px] backdrop-blur-sm relative group">
+          <div className="bg-white/5 border border-white/10 p-4 rounded-[20px] backdrop-blur-sm relative group">
             <button
               onClick={handleOpenNotifications}
-              className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+              className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors hidden md:block"
             >
               <HiOutlineBell size={22} />
               {naoLidas > 0 && (
@@ -278,12 +313,11 @@ export function Sidebar() {
               )}
             </button>
 
-            <p className="text-[10px] font-black text-blue-300 uppercase tracking-[0.2em] mb-3 pr-6">
+            <p className="text-[10px] font-black text-blue-300 uppercase tracking-[0.2em] mb-2 pr-6">
               {currentBadge}
             </p>
-            <div className="space-y-1 pr-6">
+            <div className="space-y-0.5 pr-6">
               <h4 className="text-sm font-bold text-white leading-tight line-clamp-1">
-                {/* Usamos o ?. para evitar o crash se for null */}
                 {perfil?.empresa?.nome_fantasia ||
                   perfil?.nome ||
                   "Carregando..."}
@@ -295,7 +329,8 @@ export function Sidebar() {
           </div>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+        {/* Links (Espaçamento Reduzido) */}
+        <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto hide-scrollbar">
           {currentMenu.map((item) => (
             <MenuLink
               key={item.href}
@@ -313,29 +348,35 @@ export function Sidebar() {
         </nav>
 
         {/* Rodapé: Configurações e Logout */}
-        <div className="p-6 space-y-2 border-t border-white/5">
+        <div className="p-5 space-y-1 border-t border-white/5 shrink-0">
           <Link
             href="/configuracoes"
-            className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl transition-all font-bold text-xs uppercase tracking-wider ${isActive("/configuracoes") ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+            className={`w-full flex items-center gap-3 px-5 py-3 rounded-2xl transition-all font-bold text-xs uppercase tracking-wider ${
+              isActive("/configuracoes")
+                ? "bg-white/10 text-white"
+                : "text-white/50 hover:text-white hover:bg-white/5"
+            }`}
           >
             <HiOutlineCog size={20} /> Configurações
           </Link>
           <button
             onClick={logout}
-            className="w-full flex items-center gap-3 px-5 py-4 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-2xl transition-all font-bold text-xs uppercase tracking-wider group"
+            className="w-full flex items-center gap-3 px-5 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-2xl transition-all font-bold text-xs uppercase tracking-wider group"
           >
             <HiOutlineLogout
               size={20}
               className="group-hover:-translate-x-1 transition-transform"
-            />{" "}
+            />
             Sair da Conta
           </button>
         </div>
       </aside>
 
-      {/* 4. DRAWER DE NOTIFICAÇÕES (O Painel Lateral que desliza) */}
+      {/* 5. DRAWER DE NOTIFICAÇÕES (Desliza da Direita) */}
       <div
-        className={`fixed top-0 right-0 h-[100dvh] w-full max-w-sm bg-white shadow-[0_0_40px_rgba(0,0,0,0.1)] z-50 transform transition-transform duration-300 ease-out flex flex-col ${isNotificationsOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed top-0 right-0 h-[100dvh] w-full max-w-sm bg-white shadow-[0_0_40px_rgba(0,0,0,0.1)] z-50 transform transition-transform duration-300 ease-out flex flex-col ${
+          isNotificationsOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div>
@@ -364,7 +405,6 @@ export function Sidebar() {
           ) : (
             <div className="space-y-2">
               {notificacoes.map((notif) => {
-                // Define a cor baseada no "tipo" que vem do backend
                 const isSucesso =
                   notif.tipo === "SUCESSO" || notif.tipo === "ENTREVISTA";
                 const iconColor = isSucesso
@@ -377,7 +417,11 @@ export function Sidebar() {
                 return (
                   <div
                     key={notif.id_notificacao}
-                    className={`relative p-4 rounded-[20px] transition-colors ${!notif.lida ? "bg-white shadow-sm border border-blue-100" : "hover:bg-gray-50 border border-transparent"}`}
+                    className={`relative p-4 rounded-[20px] transition-colors ${
+                      !notif.lida
+                        ? "bg-white shadow-sm border border-blue-100"
+                        : "hover:bg-gray-50 border border-transparent"
+                    }`}
                   >
                     {!notif.lida && (
                       <div className="absolute top-6 left-2 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
@@ -427,23 +471,15 @@ export function Sidebar() {
   );
 }
 
-function MenuLink({
-  href,
-  icon,
-  label,
-  active,
-  badge,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  active: boolean;
-  badge?: number;
-}) {
+function MenuLink({ href, icon, label, active, badge }: any) {
   return (
     <Link
       href={href}
-      className={`flex items-center justify-between px-5 py-3.5 rounded-2xl font-bold text-sm transition-all relative group ${active ? "bg-white text-primary shadow-lg shadow-black/20" : "text-white/60 hover:text-white hover:bg-white/5"}`}
+      className={`flex items-center justify-between px-5 py-3 rounded-2xl font-bold text-sm transition-all relative group ${
+        active
+          ? "bg-white text-primary shadow-lg shadow-black/20"
+          : "text-white/60 hover:text-white hover:bg-white/5"
+      }`}
     >
       <div className="flex items-center gap-3">
         {active && (

@@ -177,6 +177,7 @@ export default function GestaoVagasPage() {
             { id: "ATIVA", label: "Ativas" },
             { id: "RASCUNHO", label: "Rascunhos" },
             { id: "EM_ANALISE", label: "Em Análise" },
+            { id: "AGUARDANDO_PAGAMENTO", label: "Pagamento" }, // <-- ADICIONADO AQUI
             { id: "ENCERRADA", label: "Encerradas" },
           ].map((tab) => (
             <button
@@ -221,12 +222,15 @@ export default function GestaoVagasPage() {
               onClick={() => handleCardClick(vaga)}
               className={`bg-white p-5 md:p-6 rounded-[32px] border shadow-sm hover:shadow-xl transition-all group cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-6 relative ${
                 menuAberto === vaga.id_vaga
-                  ? "border-blue-200 z-50" // Se o menu estiver aberto, joga o card lá pra frente
+                  ? "border-blue-200 z-50"
                   : "border-gray-100 z-10 hover:border-blue-200"
               }`}
             >
-              {/* Efeito de hover lateral na cor primária */}
-              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-l-[32px]"></div>
+              {/* === A MÁGICA ACONTECE AQUI: A MÁSCARA FANTASMA === */}
+              {/* O overflow-hidden fica só nesta div invisível. Ele corta a borda azul no formato arredondado sem afetar o resto do card! */}
+              <div className="absolute inset-0 rounded-[32px] overflow-hidden pointer-events-none">
+                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              </div>
 
               <div className="flex flex-col md:flex-row md:items-center gap-5 md:gap-6 w-full">
                 {/* INFORMAÇÕES DA VAGA */}
@@ -290,7 +294,7 @@ export default function GestaoVagasPage() {
                     )}
 
                   {/* Grupo de Botões de Ação */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 relative z-10">
                     {/* Botão Principal Dinâmico (Edição vs Kanban) */}
                     {vaga.status === "ENCERRADA" ? (
                       <div
@@ -345,7 +349,6 @@ export default function GestaoVagasPage() {
                       {/* Dropdown do Menu */}
                       {menuAberto === vaga.id_vaga && (
                         <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 shadow-xl rounded-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95">
-                          {/* Só permite editar se não for Encerrada e não for rascunho (pois rascunho já tem o botão principal) */}
                           {vaga.status !== "ENCERRADA" &&
                             vaga.status !== "RASCUNHO" &&
                             vaga.status !== "REPROVADA" && (
@@ -362,7 +365,6 @@ export default function GestaoVagasPage() {
                               </button>
                             )}
 
-                          {/* Duplicar sempre visível */}
                           <button
                             onClick={(e) => handleDuplicarVaga(e, vaga.id_vaga)}
                             className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition-colors text-left"
