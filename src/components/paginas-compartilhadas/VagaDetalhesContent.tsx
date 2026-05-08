@@ -1,8 +1,11 @@
 import Image from "next/image";
 import {
-    HiOutlineBriefcase, HiOutlineLocationMarker,
-    HiOutlineCurrencyDollar, HiOutlineClock, HiOutlineInformationCircle,
-    HiOutlineGlobeAlt
+    HiOutlineBriefcase,
+    HiOutlineLocationMarker,
+    HiOutlineCurrencyDollar,
+    HiOutlineClock,
+    HiOutlineGlobeAlt,
+    HiOutlineAcademicCap // Ícone adicionado para o nível hierárquico
 } from "react-icons/hi";
 import { FaInstagram, FaLinkedin, FaFacebook } from "react-icons/fa";
 import logoDefault from "@/src/assets/default/logo.webp";
@@ -10,8 +13,46 @@ import bannerDefault from "@/src/assets/default/banner.webp";
 
 interface VagaDetalhesContentProps {
     vaga: any;
-    botaoAcao: React.ReactNode; // Passamos o botão como prop para mudar o contexto
+    botaoAcao: React.ReactNode;
 }
+
+// ==========================================
+// DICIONÁRIOS DE TRADUÇÃO (Enums do Prisma)
+// ==========================================
+const DICIONARIO: any = {
+    modelos: {
+        PRESENCIAL: "Presencial",
+        HIBRIDO: "Híbrido",
+        REMOTO: "Remoto",
+    },
+    contratos: {
+        CLT_EFETIVO: "CLT (Efetivo)",
+        CLT_TEMPORARIO: "CLT (Temporário)",
+        CLT_INTERMITENTE: "CLT (Intermitente)",
+        PJ: "Pessoa Jurídica (PJ)",
+        AUTONOMO: "Autônomo",
+        FREELANCE: "Freelance",
+        ESTAGIO: "Estágio",
+        JOVEM_APRENDIZ: "Jovem Aprendiz",
+        COOPERADO: "Cooperado",
+        OUTROS: "Outros",
+    },
+    niveis: {
+        JOVEM_APRENDIZ: "Jovem Aprendiz",
+        ESTAGIO: "Estágio",
+        TRAINEE: "Trainee",
+        OPERACIONAL: "Operacional",
+        ASSISTENTE: "Assistente",
+        JUNIOR: "Júnior",
+        PLENO: "Pleno",
+        SENIOR: "Sênior",
+        ESPECIALISTA: "Especialista",
+        SUPERVISAO: "Supervisão",
+        GERENCIA: "Gerência",
+        DIRETORIA: "Diretoria",
+        NAO_SE_APLICA: "Não se Aplica",
+    },
+};
 
 const formatSocialUrl = (base: string, url: string) => {
     if (!url) return "#";
@@ -19,7 +60,10 @@ const formatSocialUrl = (base: string, url: string) => {
     return `${base}${url.replace("@", "")}`;
 };
 
-export default function VagaDetalhesContent({ vaga, botaoAcao }: VagaDetalhesContentProps) {
+export default function VagaDetalhesContent({
+    vaga,
+    botaoAcao,
+}: VagaDetalhesContentProps) {
     const isConfidencial = vaga.empresa_confidencial;
     const empresa = isConfidencial ? null : vaga.empresa;
 
@@ -28,13 +72,17 @@ export default function VagaDetalhesContent({ vaga, botaoAcao }: VagaDetalhesCon
     const banner = isConfidencial || !empresa?.banner_url ? bannerDefault : empresa.banner_url;
     const localizacao = empresa?.endereco ? `${empresa.endereco.cidade} - ${empresa.endereco.uf}` : "Panambi - RS";
 
+    // TRADUÇÕES APLICADAS
+    const modeloTraduzido = DICIONARIO.modelos[vaga.modelo_trabalho] || vaga.modelo_trabalho;
+    const contratoTraduzido = DICIONARIO.contratos[vaga.tipo_contrato] || vaga.tipo_contrato;
+    const nivelTraduzido = DICIONARIO.niveis[vaga.nivel_hierarquico] || vaga.nivel_hierarquico;
+
     const formatarSalario = () => {
-        if (vaga.ocultar_salario) return "Salário Confidencial";
         if (vaga.salario_a_combinar) return "A combinar";
         const de = Number(vaga.faixa_salarial_de);
         const ate = Number(vaga.faixa_salarial_ate);
-        if (de > 0 && ate > 0) return `R$ ${de.toLocaleString()} - R$ ${ate.toLocaleString()}`;
-        if (de > 0) return `A partir de R$ ${de.toLocaleString()}`;
+        if (de > 0 && ate > 0) return `R$ ${de.toLocaleString("pt-BR")} - R$ ${ate.toLocaleString("pt-BR")}`;
+        if (de > 0) return `A partir de R$ ${de.toLocaleString("pt-BR")}`;
         return "Não informado";
     };
 
@@ -55,18 +103,41 @@ export default function VagaDetalhesContent({ vaga, botaoAcao }: VagaDetalhesCon
                         </div>
                     </div>
 
-                    <div className="space-y-3 w-full">
+                    <div className="space-y-3 w-full flex flex-col items-center">
                         <span className="inline-block text-xs font-black text-primary uppercase tracking-widest bg-blue-50 px-4 py-1.5 rounded-full">
                             {vaga.area_atuacao?.nome || "Geral"}
                         </span>
-                        <h1 className="text-3xl font-black text-gray-900 leading-tight tracking-tight">{vaga.titulo}</h1>
-                        <p className="text-lg md:text-xl font-bold text-gray-500">{nomeEmpresa}</p>
+
+                        <h1 className="text-3xl font-black text-gray-900 leading-tight tracking-tight">
+                            {vaga.titulo}
+                        </h1>
+
+                        {/* === NOVA BADGE DE NÍVEL HIERÁRQUICO (Só aparece se for diferente de NAO_SE_APLICA) === */}
+                        {vaga.nivel_hierarquico && vaga.nivel_hierarquico !== "NAO_SE_APLICA" && (
+                            <div className="flex justify-center mt-1 mb-2">
+                                <span className="flex items-center gap-1.5 px-3 py-1 bg-purple-50 text-purple-700 border border-purple-100 rounded-lg text-xs font-black uppercase tracking-widest">
+                                    <HiOutlineAcademicCap size={16} /> Nível: {nivelTraduzido}
+                                </span>
+                            </div>
+                        )}
+
+                        <p className="text-lg md:text-xl font-bold text-gray-500">
+                            {nomeEmpresa}
+                        </p>
 
                         <div className="flex flex-wrap justify-center gap-3 pt-4">
                             <Badge icon={<HiOutlineLocationMarker size={18} />} text={localizacao} />
-                            <Badge icon={<HiOutlineBriefcase size={18} />} text={vaga.modelo_trabalho} />
-                            <Badge icon={<HiOutlineClock size={18} />} text={`${vaga.tipo_contrato} • ${vaga.nivel_hierarquico}`} />
-                            <Badge icon={<HiOutlineCurrencyDollar size={18} />} text={formatarSalario()} color="bg-emerald-50 text-emerald-700 border-emerald-100" />
+                            <Badge icon={<HiOutlineBriefcase size={18} />} text={modeloTraduzido} />
+                            <Badge icon={<HiOutlineClock size={18} />} text={contratoTraduzido} />
+
+                            {/* === BADGE DE SALÁRIO CONDICIONAL === */}
+                            {!vaga.ocultar_salario && (
+                                <Badge
+                                    icon={<HiOutlineCurrencyDollar size={18} />}
+                                    text={formatarSalario()}
+                                    color="bg-emerald-50 text-emerald-700 border-emerald-100"
+                                />
+                            )}
                         </div>
                     </div>
 
@@ -77,6 +148,7 @@ export default function VagaDetalhesContent({ vaga, botaoAcao }: VagaDetalhesCon
 
                 {/* 3. CONTEÚDO EM SEQUÊNCIA */}
                 <div className="space-y-8">
+
                     <Section title="Descrição da Vaga">
                         <div className="rich-text text-gray-600 leading-relaxed text-lg" dangerouslySetInnerHTML={{ __html: vaga.descricao }} />
                     </Section>
@@ -89,24 +161,45 @@ export default function VagaDetalhesContent({ vaga, botaoAcao }: VagaDetalhesCon
 
                     <Section title="Requisitos e Qualificações">
                         <div className="space-y-8">
-                            <SubSection title="Obrigatórios" color="primary" content={vaga.requisitos_obrigatorios} />
-                            {vaga.diferenciais && <SubSection title="Diferenciais" color="blue" content={vaga.diferenciais} isHighlight />}
+                            {vaga.requisitos_obrigatorios && (
+                                <SubSection title="Obrigatórios" color="primary" content={vaga.requisitos_obrigatorios} isHtml={true} />
+                            )}
+
+                            {vaga.diferenciais && (
+                                <SubSection title="Diferenciais (Opcional)" color="blue" content={vaga.diferenciais} isHighlight={true} isHtml={false} />
+                            )}
                         </div>
                     </Section>
+
+                    {vaga.competencias && vaga.competencias.length > 0 && (
+                        <Section title="Competências Desejadas">
+                            <div className="flex flex-wrap gap-3">
+                                {vaga.competencias.map((comp: any) => (
+                                    <span key={comp.id_competencia} className="flex items-center gap-1.5 px-4 py-2 bg-gray-50 text-gray-700 border border-gray-200 rounded-xl text-sm font-bold shadow-sm">
+                                        {comp.competencia?.nome}
+                                        {comp.obrigatoria && <span className="text-red-500" title="Obrigatório">*</span>}
+                                    </span>
+                                ))}
+                            </div>
+                        </Section>
+                    )}
 
                     {vaga.beneficios?.length > 0 && (
                         <Section title="Benefícios">
                             <div className="flex flex-wrap gap-3">
                                 {vaga.beneficios.map((item: any) => (
                                     <div key={item.id_beneficio} className="flex items-center gap-2 px-5 py-3 bg-emerald-50/50 text-emerald-700 border border-emerald-100 rounded-2xl text-sm font-bold shadow-sm">
-                                        <svg className="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                                        {item.beneficio.descricao}
+                                        <svg className="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                        {item.beneficio?.descricao}
                                     </div>
                                 ))}
                             </div>
                         </Section>
                     )}
 
+                    {/* SOBRE A EMPRESA */}
                     <section className="bg-gradient-to-br from-gray-900 to-gray-800 p-8 md:p-12 rounded-[40px] shadow-xl text-white space-y-8 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
                         <div className="relative z-10">
@@ -132,11 +225,11 @@ export default function VagaDetalhesContent({ vaga, botaoAcao }: VagaDetalhesCon
     );
 }
 
-// --- SUB-COMPONENTES AUXILIARES (Dentro do mesmo arquivo para organização) ---
+// --- SUB-COMPONENTES AUXILIARES ---
 
 function Badge({ icon, text, color = "bg-gray-50 text-gray-600 border-gray-100" }: any) {
     return (
-        <span className={`flex items-center gap-1 px-4 py-2 rounded-xl text-sm font-medium border ${color}`}>
+        <span className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold border ${color}`}>
             {icon} {text}
         </span>
     );
@@ -151,13 +244,22 @@ function Section({ title, children }: any) {
     );
 }
 
-function SubSection({ title, color, content, isHighlight = false }: any) {
+function SubSection({ title, color, content, isHighlight = false, isHtml = true }: any) {
+    if (!content) return null;
+
     return (
         <div className={isHighlight ? `bg-blue-50/50 p-6 rounded-3xl border border-blue-100/50` : ""}>
             <h4 className={`text-sm font-black text-${color}-500 uppercase tracking-widest mb-4 flex items-center gap-2`}>
                 <span className={`w-2 h-2 bg-${color}-500 rounded-full`}></span> {title}
             </h4>
-            <div className="rich-text text-gray-600" dangerouslySetInnerHTML={{ __html: content }} />
+
+            {isHtml ? (
+                <div className="rich-text text-gray-600" dangerouslySetInnerHTML={{ __html: content }} />
+            ) : (
+                <div className="text-gray-600 leading-relaxed text-lg whitespace-pre-wrap">
+                    {content}
+                </div>
+            )}
         </div>
     );
 }

@@ -17,7 +17,7 @@ export default function Home() {
         <div className="relative w-full min-h-[600px] flex flex-col items-center justify-center text-center px-4 md:px-14 py-32 bg-[#1459ad]">
           <Image
             src={heroBgImage}
-            alt="Fundo do escritório ACI Empregos"
+            alt="Fundo do escritório ACI Vagas"
             fill
             priority
             className="object-cover object-center opacity-40 mix-blend-overlay"
@@ -32,7 +32,7 @@ export default function Home() {
               Sua próxima conquista profissional começa aqui.
             </h1>
             <p className="text-lg md:text-2xl text-blue-100 max-w-3xl font-medium drop-shadow-md">
-              Encontre as melhores oportunidades e conecte-se com empresas da região na ACI Empregos.
+              Encontre as melhores oportunidades e conecte-se com empresas da região na ACI Vagas.
             </p>
 
             <div className="w-full flex justify-center pt-8">

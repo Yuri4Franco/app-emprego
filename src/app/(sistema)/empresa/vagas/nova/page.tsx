@@ -124,7 +124,7 @@ export default function NovaVagaPage() {
     defaultValues: {
       titulo: "",
       id_area_atuacao: 0,
-      nivel_hierarquico: "JUNIOR",
+      nivel_hierarquico: "NAO_SE_APLICA",
       modelo_trabalho: "PRESENCIAL",
       tipo_contrato: "CLT_EFETIVO",
       tipo_salario: "OCULTO",
@@ -443,10 +443,10 @@ export default function NovaVagaPage() {
             type="button"
             onClick={() => setActiveTab(tab.id as any)}
             className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${activeTab === tab.id
-                ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
-                : tab.hasError
-                  ? "text-red-500 hover:bg-red-50 border-b-2 border-transparent"
-                  : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
+              ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
+              : tab.hasError
+                ? "text-red-500 hover:bg-red-50 border-b-2 border-transparent"
+                : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
               }`}
           >
             <span className="flex items-center gap-1.5 md:gap-2 relative z-10">
@@ -564,12 +564,19 @@ export default function NovaVagaPage() {
                   {...register("nivel_hierarquico")}
                   className={`w-full p-4 rounded-[20px] outline-none text-sm transition-colors border ${getFieldStatus("nivel_hierarquico")}`}
                 >
+                  <option value="JOVEM_APRENDIZ">Jovem Aprendiz</option>
                   <option value="ESTAGIO">Estágio</option>
+                  <option value="TRAINEE">Trainee</option>
+                  <option value="OPERACIONAL">Operacional</option>
+                  <option value="ASSISTENTE">Assistente</option>
                   <option value="JUNIOR">Júnior</option>
                   <option value="PLENO">Pleno</option>
                   <option value="SENIOR">Sênior</option>
+                  <option value="ESPECIALISTA">Especialista</option>
+                  <option value="SUPERVISAO">Supervisão</option>
                   <option value="GERENCIA">Gerência</option>
                   <option value="DIRETORIA">Diretoria</option>
+                  <option value="NAO_SE_APLICA">Não se aplica</option>
                 </select>
               </div>
               <div className="space-y-1.5">
