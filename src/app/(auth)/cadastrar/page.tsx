@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
-import { HiOutlineEye, HiOutlineEyeOff, HiArrowRight } from "react-icons/hi";
+import { HiOutlineEye, HiOutlineEyeOff, HiArrowRight, HiOutlineInformationCircle } from "react-icons/hi";
 import Image from "next/image";
 import toast from "react-hot-toast"; // Importado para feedbacks
 
@@ -81,7 +81,6 @@ export default function RegisterPage() {
     }
   };
 
-  
   return (
     <div className="flex min-h-screen w-full">
       {/* --- LADO ESQUERDO: FORMULÁRIO --- */}
@@ -115,14 +114,31 @@ export default function RegisterPage() {
               error={errors.name?.message}
               {...register("name")}
             />
-
-            <Input
-              label="E-mail"
-              type="email"
-              placeholder="seu@email.com"
-              error={errors.email?.message}
-              {...register("email")}
-            />
+            <div>
+              <Input
+                label="E-mail"
+                type="email"
+                placeholder="seu@email.com"
+                error={errors.email?.message}
+                {...register("email")}
+              />
+              <div className="flex items-start gap-1.5 mt-2 ml-1">
+                <HiOutlineInformationCircle
+                  className="text-gray-400 mt-[2px] shrink-0"
+                  size={14}
+                />
+                <span className="text-xs font-medium text-gray-500">
+                  Não tem e-mail?{" "}
+                  <a
+                    href="https://wa.me/555533759350"
+                    target="_blank"
+                    className="text-primary/80 hover:underline font-bold transition-all"
+                  >
+                    Fale com a ACI-Panambi
+                  </a>
+                </span>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="relative">

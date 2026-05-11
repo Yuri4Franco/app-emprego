@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <div className="w-full">
       {/* Adicionei overflow-x-hidden para garantir que nada estoure a largura da tela */}
-      <main className="flex min-h-screen flex-col md:pt-24 pt-12 overflow-x-hidden">
+      <main className="flex min-h-screen flex-col overflow-x-hidden">
 
         {/* --- SEÇÃO HERO --- */}
         {/* MUDANÇA: bg-[#1459ad] -> bg-primary (Usa sua variável global) */}

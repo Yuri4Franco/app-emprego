@@ -7,6 +7,7 @@ import { z } from "zod";
 import api from "@/src/services/api";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import Link from "next/link";
 import DefaultLogo from "@/src/assets/default/logo.webp";
 import DefaultBanner from "@/src/assets/default/banner.webp";
 import {
@@ -18,6 +19,7 @@ import {
   HiOutlineInformationCircle,
   HiOutlineX,
   HiOutlineGift,
+  HiOutlineExternalLink, // <-- Ícone importado para o botão de visualização
 } from "react-icons/hi";
 import { FaInstagram, FaLinkedin, FaFacebook } from "react-icons/fa";
 import { Input } from "@/src/components/Input";
@@ -54,7 +56,7 @@ export default function MinhasInformacoesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Estados para Controle de Arquivos e Previews (Trava de Segurança)
+  // Estados para Controle de Arquivos e Previews
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -108,7 +110,6 @@ export default function MinhasInformacoesPage() {
     fetchPerfil();
   }, [fetchPerfil]);
 
-  // Lógica de Preview Local (Não sobe para o servidor ainda)
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     tipo: "logo" | "banner",
@@ -140,25 +141,21 @@ export default function MinhasInformacoesPage() {
     setSelecionados(selecionados.filter((b) => b.id_beneficio !== id));
   };
 
-  // Update centralizado (Imagens + Texto)
   const onSubmit = async (data: PerfilFormData) => {
     setIsSaving(true);
     try {
-      // 1. Upload de Banner se foi alterado
       if (bannerFile) {
         const formDataBanner = new FormData();
         formDataBanner.append("banner", bannerFile);
         await api.patch("/empresa/perfil/banner", formDataBanner);
       }
 
-      // 2. Upload de Logo se foi alterado
       if (logoFile) {
         const formDataLogo = new FormData();
         formDataLogo.append("logo", logoFile);
         await api.patch("/empresa/perfil/logo", formDataLogo);
       }
 
-      // 3. Update de dados textuais e benefícios
       const beneficios_ids = selecionados.map((b) => b.id_beneficio);
       const payload = {
         ...data,
@@ -169,7 +166,6 @@ export default function MinhasInformacoesPage() {
 
       toast.success("Perfil atualizado com sucesso!");
 
-      // Limpa os previews locais e sincroniza com o banco
       setBannerFile(null);
       setBannerPreview(null);
       setLogoFile(null);
@@ -191,193 +187,224 @@ export default function MinhasInformacoesPage() {
     );
 
   return (
-    <div className="max-w-6xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-4duration-700">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
-        <section className="relative mb-32">
-          {/* Área do Banner */}
-          <div className="relative h-72 w-full rounded-[48px] overflow-hidden bg-gray-200 shadow-2xl group">
-            <Image
-              src={bannerPreview || empresa?.banner_url || DefaultBanner}
-              alt="Banner da Empresa"
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            <label className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-sm">
-              <input
-                type="file"
-                className="hidden"
-                onChange={(e) => handleFileChange(e, "banner")}
-                accept="image/*"
-              />
-              <div className="flex flex-col items-center gap-2 text-white">
-                <HiOutlineCamera size={40} />
-                <span className="text-xs font-black uppercase tracking-widest">
-                  Alterar Capa
-                </span>
-                <p className="text-white/70 text-[10px] font-medium mt-1">
-                  Recomendado: 1200x400px
-                </p>
-              </div>
-            </label>
-          </div>
+    <div className="min-h-screen bg-gray-50 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {/* ======================================================== */}
+        {/* HEADER HERO (Idêntico à página pública)                  */}
+        {/* ======================================================== */}
 
-          {/* Área da Logo */}
-          <div className="absolute -bottom-20 left-12 group">
-            <div className="relative w-44 h-44 rounded-full overflow-hidden border-[5px] border-white bg-white shadow-2xl transition-transform group-hover:scale-105">
-              <Image
-                src={logoPreview || empresa?.logotipo_url || DefaultLogo}
-                alt="Logo da Empresa"
-                fill
-                className="object-contain rounded-full"
-              />
-              <label className="absolute inset-0 bg-primary/80 flex flex-col items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-sm">
+        {/* 1. BANNER */}
+        <div className="w-full h-64 md:h-80 relative overflow-hidden group">
+          <Image
+            src={bannerPreview || empresa?.banner_url || DefaultBanner}
+            alt="Banner da Empresa"
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            priority
+          />
+          <div className="absolute inset-0 bg-black/20 transition-colors group-hover:bg-black/40" />
+
+          <label className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 backdrop-blur-md border border-white/30 text-white px-5 py-3 rounded-[20px] transition-all sm:opacity-0 group-hover:opacity-100 flex flex-col items-center gap-1 cursor-pointer shadow-lg">
+            <input
+              type="file"
+              className="hidden"
+              onChange={(e) => handleFileChange(e, "banner")}
+              accept="image/*"
+            />
+            <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-widest">
+              <HiOutlineCamera size={18} /> Trocar Capa
+            </div>
+            <span className="text-[10px] font-medium text-white/80">
+              Recomendado: 1200x400px
+            </span>
+          </label>
+        </div>
+
+        {/* 2. CONTAINER CENTRALIZADO COM LOGO E TEXTOS */}
+        <div className="max-w-4xl mx-auto px-4 md:px-8 -mt-20 relative z-10 mb-12">
+          <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-xl shadow-gray-200/40 border border-gray-100 flex flex-col items-center text-center gap-5">
+            {/* LOGO SOBREPOSTA CENTRALIZADA */}
+            <div className="w-36 h-36 md:w-44 md:h-44 bg-white rounded-full p-1.5 border-2 border-white shadow-xl -mt-28 md:-mt-32 relative shrink-0 group">
+              <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-50 flex items-center justify-center">
+                <Image
+                  src={logoPreview || empresa?.logotipo_url || DefaultLogo}
+                  alt="Logo da Empresa"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <label className="absolute inset-0 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-all cursor-pointer backdrop-blur-sm">
                 <input
                   type="file"
                   className="hidden"
                   onChange={(e) => handleFileChange(e, "logo")}
                   accept="image/*"
                 />
-                <HiOutlineCamera size={28} className="text-white" />
-                <div className="text-center px-2">
-                  <p className="text-white text-[10px] font-black uppercase tracking-widest">
-                    Alterar Logo
-                  </p>
-                  <p className="text-white/70 text-[9px] font-medium">
-                    400x400px
-                  </p>
-                </div>
+                <HiOutlineCamera size={26} className="mb-1" />
+                <span className="text-[10px] font-black uppercase tracking-widest mt-1">
+                  Trocar Logo
+                </span>
+                <span className="text-[9px] font-medium text-white/70 mt-0.5">
+                  400x400px
+                </span>
               </label>
             </div>
+
+            {/* NOME E BOTÃO DA PÁGINA CENTRALIZADOS */}
+            <div className="flex flex-col items-center gap-5 w-full pt-2">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-none">
+                  {empresa?.nome_fantasia || "Minha Empresa"}
+                </h1>
+                <p className="text-sm font-bold text-gray-500 mt-2">
+                  Configurações do Perfil Institucional
+                </p>
+              </div>
+
+              {empresa?.slug && (
+                <Link
+                  href={`/${empresa.slug}`}
+                  target="_blank"
+                  className="flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-colors shadow-sm"
+                >
+                  <HiOutlineExternalLink size={18} />
+                  Ver Página Pública
+                </Link>
+              )}
+            </div>
           </div>
-        </section>
+        </div>
 
-        <div className="flex flex-col space-y-10">
-          <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white p-10 rounded-[48px] border border-gray-100 shadow-sm space-y-10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-[0.2em] text-[10px]">
-                  <HiOutlineInformationCircle size={18} /> Dados Institucionais
-                </div>
+        {/* ======================================================== */}
+        {/* RESTANTE DO FORMULÁRIO                                   */}
+        {/* ======================================================== */}
+
+        <div className="max-w-4xl mx-auto px-4 md:px-8 space-y-8">
+          <div className="bg-white p-8 md:p-10 rounded-[40px] border border-gray-100 shadow-sm space-y-8">
+            <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-[0.2em] text-[10px]">
+              <HiOutlineInformationCircle size={18} /> Dados Institucionais
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-6 bg-gray-50 rounded-[28px] border border-gray-100/50">
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                  Razão Social
+                </p>
+                <p className="text-sm font-bold text-gray-700">
+                  {empresa?.razao_social}
+                </p>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-6 bg-gray-50 rounded-[28px] border border-gray-100/50">
-                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                    Razão Social
-                  </p>
-                  <p className="text-sm font-bold text-gray-700">
-                    {empresa?.razao_social}
-                  </p>
-                </div>
-                <div className="p-6 bg-gray-50 rounded-[28px] border border-gray-100/50">
-                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                    CNPJ
-                  </p>
-                  <p className="text-sm font-mono text-gray-700">
-                    {empresa?.cnpj}
-                  </p>
-                </div>
+              <div className="p-6 bg-gray-50 rounded-[28px] border border-gray-100/50">
+                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                  CNPJ
+                </p>
+                <p className="text-sm font-mono text-gray-700">
+                  {empresa?.cnpj}
+                </p>
               </div>
+            </div>
 
-              <div className="space-y-6">
-                <Input
-                  label="Nome Fantasia (Como os candidatos verão)"
-                  placeholder="Ex: ACI Soluções Tecnológicas"
-                  {...register("nome_fantasia")}
-                  error={errors.nome_fantasia?.message}
-                />
-                <div className="space-y-3">
-                  <label className="text-sm font-bold text-gray-700 ml-1">
-                    Quem Somos
-                  </label>
-                  <Controller
-                    name="quem_somos"
-                    control={control}
-                    render={({ field }) => (
-                      <Editor content={field.value} onChange={field.onChange} />
-                    )}
-                  />
-                  {errors.quem_somos && (
-                    <p className="text-xs text-red-500 ml-2">
-                      {errors.quem_somos.message}
-                    </p>
+            <div className="space-y-6">
+              <Input
+                label="Nome Fantasia (Como os candidatos verão)"
+                placeholder="Ex: ACI Soluções Tecnológicas"
+                {...register("nome_fantasia")}
+                error={errors.nome_fantasia?.message}
+              />
+              <div className="space-y-3">
+                <label className="text-sm font-bold text-gray-700 ml-1">
+                  Quem Somos
+                </label>
+                <Controller
+                  name="quem_somos"
+                  control={control}
+                  render={({ field }) => (
+                    <Editor content={field.value} onChange={field.onChange} />
                   )}
-                </div>
+                />
+                {errors.quem_somos && (
+                  <p className="text-xs text-red-500 ml-2 font-bold">
+                    {errors.quem_somos.message}
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="space-y-8">
-            <div className="bg-white p-8 rounded-[48px] border border-gray-100 shadow-sm space-y-8">
-              <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-[0.2em] text-[10px]">
-                <HiOutlineLink size={18} /> Links e Redes Sociais
-              </div>
-              <div className="space-y-5">
-                <Input
-                  label="Site Institucional"
-                  icon={<HiOutlineGlobeAlt size={20} />}
-                  {...register("site")}
-                  placeholder="https://www.empresa.com.br"
-                />
-                <Input
-                  label="Instagram"
-                  icon={<FaInstagram size={20} />}
-                  {...register("instagram")}
-                  placeholder="@suaempresa"
-                />
-                <Input
-                  label="LinkedIn"
-                  icon={<FaLinkedin size={20} />}
-                  {...register("linkedin")}
-                  placeholder="linkedin.com/company/..."
-                />
-                <Input
-                  label="Facebook"
-                  icon={<FaFacebook size={20} />}
-                  {...register("facebook")}
-                  placeholder="facebook.com/..."
-                />
-              </div>
+          <div className="bg-white p-8 md:p-10 rounded-[40px] border border-gray-100 shadow-sm space-y-8">
+            <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-[0.2em] text-[10px]">
+              <HiOutlineLink size={18} /> Links e Redes Sociais
             </div>
+            <div className="space-y-5">
+              <Input
+                label="Site Institucional"
+                icon={<HiOutlineGlobeAlt size={20} />}
+                {...register("site")}
+                placeholder="https://www.empresa.com.br"
+              />
+              <Input
+                label="Instagram"
+                icon={<FaInstagram size={20} />}
+                {...register("instagram")}
+                placeholder="@suaempresa"
+              />
+              <Input
+                label="LinkedIn"
+                icon={<FaLinkedin size={20} />}
+                {...register("linkedin")}
+                placeholder="linkedin.com/company/..."
+              />
+              <Input
+                label="Facebook"
+                icon={<FaFacebook size={20} />}
+                {...register("facebook")}
+                placeholder="facebook.com/..."
+              />
+            </div>
+          </div>
 
-            <div className="bg-white p-10 rounded-[48px] border border-gray-100 shadow-sm space-y-6">
-              <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-[0.2em] text-[10px]">
-                <HiOutlineGift size={18} /> Benefícios Oferecidos
-              </div>
-              <select
-                onChange={handleAddBeneficio}
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-[20px] outline-none text-sm text-gray-700 font-medium"
-              >
-                <option value="">Adicionar um benefício...</option>
-                {todosBeneficios.map((b) => (
-                  <option key={b.id_beneficio} value={b.id_beneficio}>
-                    {b.descricao}
-                  </option>
-                ))}
-              </select>
-              <div className="flex flex-wrap gap-2">
+          <div className="bg-white p-8 md:p-10 rounded-[40px] border border-gray-100 shadow-sm space-y-8">
+            <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-[0.2em] text-[10px]">
+              <HiOutlineGift size={18} /> Benefícios Oferecidos
+            </div>
+            <select
+              onChange={handleAddBeneficio}
+              className="w-full p-4 bg-gray-50 border border-gray-100 rounded-[20px] outline-none text-sm text-gray-700 font-medium focus:border-blue-500"
+            >
+              <option value="">Adicionar um benefício...</option>
+              {todosBeneficios.map((b) => (
+                <option key={b.id_beneficio} value={b.id_beneficio}>
+                  {b.descricao}
+                </option>
+              ))}
+            </select>
+
+            {selecionados.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2">
                 {selecionados.map((ben) => (
                   <div
                     key={ben.id_beneficio}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-100 animate-in zoom-in-95"
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold border border-emerald-100 animate-in zoom-in-95"
                   >
                     {ben.descricao}
                     <button
                       type="button"
                       onClick={() => handleRemoveBeneficio(ben.id_beneficio)}
-                      className="hover:text-red-500 transition-colors"
+                      className="hover:text-red-500 hover:bg-red-50 p-1 rounded-full transition-colors"
                     >
                       <HiOutlineX size={14} />
                     </button>
                   </div>
                 ))}
               </div>
-            </div>
+            )}
+          </div>
 
+          <div className="pt-4 flex justify-center pb-10">
             <ButtonType
               type="submit"
               disabled={isSaving}
-              className="w-full py-6 rounded-[32px] shadow-2xl shadow-blue-200/50 flex items-center justify-center gap-3 text-lg font-black transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
+              className="w-full md:w-auto min-w-[300px] py-5 rounded-[32px] shadow-2xl shadow-blue-200/50 flex items-center justify-center gap-3 text-base md:text-lg font-black transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70"
             >
               {isSaving ? (
                 <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />

@@ -22,6 +22,7 @@ import {
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
 import Link from "next/link";
+import { validarCPF } from "@/src/utils/validarCpf";
 
 export const maskCPF = (value: string | undefined | null) => {
   if (!value) return "";
@@ -32,6 +33,19 @@ export const maskCPF = (value: string | undefined | null) => {
     .replace(/(\d{3})(\d{1,2})/, "$1-$2")
     .replace(/(-\d{2})\d+?$/, "$1");
 };
+
+export const maskMesAno = (value: string | undefined | null) => {
+  if (!value) return "";
+  let v = value.replace(/\D/g, "");
+  if (v.length >= 3) {
+    v = v.substring(0, 2) + "/" + v.substring(2, 6);
+  }
+  return v.substring(0, 7);
+};
+
+const urlFlexivelRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/;
+
+const mesAnoRegex = /^(0[1-9]|1[0-2])\/\d{4}$/;
 
 const descricoesTurno: Record<string, string> = {
   QUALQUER_TURNO: "Disponível para trabalhar em qualquer turno.",
@@ -61,30 +75,43 @@ export const maskTelefone = (value: string | undefined | null) => {
 
 // 1. Schema dos Dados Gerais
 const dadosGeraisSchema = z.object({
-  cpf: z.string().length(14, "CPF deve ter 11 dígitos").optional().nullable(),
-  data_nascimento: z.string().optional().nullable(),
-  genero: z.string().optional().nullable(),
+  cpf: z
+    .string()
+    .min(1, "O CPF é obrigatório")
+    .refine((val) => validarCPF(val), {
+      message: "CPF inválido. Verifique os números digitados.",
+    }),
+  data_nascimento: z.string().min(1, "Informe sua data de nascimento!"),
+  genero: z.string().min(1, "Por favor, informe seu genêro!"),
   telefone: z.string().optional().nullable(),
   whatsapp: z.string().optional().nullable(),
 
   link_linkedin: z
     .string()
-    .url("URL inválida")
+    .regex(
+      urlFlexivelRegex,
+      "Insira um link válido (ex: linkedin.com/in/seu-perfil)",
+    )
     .optional()
-    .or(z.literal(""))
-    .nullable(),
+    .nullable()
+    .or(z.literal("")),
+
   link_portfolio: z
     .string()
-    .url("URL inválida")
+    .regex(
+      urlFlexivelRegex,
+      "Insira um link válido (ex: www.github.com/seu-usuario)",
+    )
     .optional()
-    .or(z.literal(""))
-    .nullable(),
+    .nullable()
+    .or(z.literal("")),
+
   link_outro: z
     .string()
-    .url("URL inválida")
+    .regex(urlFlexivelRegex, "Insira um link válido")
     .optional()
-    .or(z.literal(""))
-    .nullable(),
+    .nullable()
+    .or(z.literal("")),
 
   objetivo_profissional: z.string().max(200).optional().nullable(),
   resumo_profissional: z
@@ -100,6 +127,7 @@ const dadosGeraisSchema = z.object({
   necessidade: z.string().max(300, "Texto muito longo").optional().nullable(),
   disponibilidade_viagem: z.boolean().default(false),
   disponibilidade_mudanca: z.boolean().default(false),
+  disponibilidade_sabados: z.boolean().default(false),
   cnh: z
     .array(z.enum(["NAO_POSSUO", "A", "B", "C", "D", "E"]))
     .optional()
@@ -137,13 +165,12 @@ type DadosGeraisData = z.infer<typeof dadosGeraisSchema>;
 const descricoesCnh: Record<string, string> = {
   NAO_POSSUO: "Não possuo carteira de habilitação no momento.",
   A: "Moto (Veículos motorizados de 2 ou 3 rodas).",
-  B: "Carro (Veículos de passeio). Exame toxicológico obrigatório.",
-  C: "Caminhão (Veículos de carga acima de 3,5 ton). Exame toxicológico obrigatório.",
-  D: "Ônibus/Vans (Transporte de passageiros). Exame toxicológico obrigatório.",
-  E: "Carretas (Veículos articulados). Exame toxicológico obrigatório.",
+  B: "Carro (Veículos de passeio).",
+  C: "Caminhão (Veículos de carga acima de 3,5 ton).",
+  D: "Ônibus/Vans (Transporte de passageiros).",
+  E: "Carretas (Veículos articulados).",
 };
 
-// 2. Schema de Experiência
 const experienciaSchema = z
   .object({
     empresa: z.string().min(2, "Nome da empresa é obrigatório"),
@@ -153,17 +180,20 @@ const experienciaSchema = z
       .max(1000, "Resumo muito longo")
       .optional()
       .nullable(),
-    data_inicio: z.string().min(6, "Mês/Ano de início obrigatório"),
+    data_inicio: z.string().regex(mesAnoRegex, "Use o formato MM/AAAA"),
     data_fim: z.string().optional().nullable(),
     atual: z.boolean().default(false),
   })
   .refine(
     (data) => {
-      if (!data.atual && !data.data_fim) return false;
+      // Se não for o emprego atual, data_fim é obrigatória e deve ter o formato certo
+      if (!data.atual && (!data.data_fim || !mesAnoRegex.test(data.data_fim))) {
+        return false;
+      }
       return true;
     },
     {
-      message: "Data de fim é obrigatória se não for o emprego atual",
+      message: "Data final é obrigatória (MM/AAAA)",
       path: ["data_fim"],
     },
   );
@@ -173,27 +203,47 @@ type ExperienciaData = z.infer<typeof experienciaSchema>;
 // Schema de Formação
 const formacaoSchema = z
   .object({
-    instituicao: z.string().min(2, "Nome da instituição é obrigatório"),
     nivel: z.string().min(2, "Selecione o nível de escolaridade"),
-    curso: z.string().min(2, "Nome do curso é obrigatório"),
-    status: z.string().min(2, "Selecione o status do curso"),
+    status: z.string().min(2, "Selecione o status atual"),
+    instituicao: z.string().optional().nullable(),
+    curso: z.string().optional().nullable(),
     data_conclusao: z.string().optional().nullable(),
   })
-  .refine(
-    (data) => {
-      if (
-        data.status.toUpperCase() === "CONCLUÍDO" &&
-        (!data.data_conclusao || data.data_conclusao === "")
-      ) {
-        return false;
+  .superRefine((data, ctx) => {
+    const isBasico =
+      data.nivel === "Ensino Fundamental" || data.nivel === "Ensino Médio";
+    const isConcluido = data.status.toUpperCase() === "CONCLUÍDO";
+
+    // Se NÃO for educação básica, aplicamos as validações rígidas
+    if (!isBasico && data.nivel !== "") {
+      if (!data.instituicao || data.instituicao.trim().length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "A instituição de ensino é obrigatória.",
+          path: ["instituicao"],
+        });
       }
-      return true;
-    },
-    {
-      message: "A data de conclusão é obrigatória para cursos concluídos.",
-      path: ["data_conclusao"],
-    },
-  );
+
+      if (!data.curso || data.curso.trim().length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "O nome do curso é obrigatório.",
+          path: ["curso"],
+        });
+      }
+
+      if (
+        isConcluido &&
+        (!data.data_conclusao || data.data_conclusao.trim() === "")
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "A data de conclusão é obrigatória.",
+          path: ["data_conclusao"],
+        });
+      }
+    }
+  });
 
 type FormacaoData = z.infer<typeof formacaoSchema>;
 
@@ -229,6 +279,7 @@ export default function MeuCurriculoPage() {
 
   const [listaTaxonomiaAreas, setListaTaxonomiaAreas] = useState<any[]>([]);
   const [areasSelecionadas, setAreasSelecionadas] = useState<any[]>([]);
+  const [erroAreas, setErroAreas] = useState<string | null>(null);
   const [searchTermArea, setSearchTermArea] = useState("");
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
 
@@ -346,6 +397,7 @@ export default function MeuCurriculoPage() {
       primeiro_emprego: false,
       disponibilidade_viagem: false,
       disponibilidade_mudanca: false,
+      disponibilidade_sabados: false,
       cep: "",
       logradouro: "",
       numero: "",
@@ -461,6 +513,7 @@ export default function MeuCurriculoPage() {
             necessidade: dados.necessidade || "",
             disponibilidade_viagem: dados.disponibilidade_viagem || false,
             disponibilidade_mudanca: dados.disponibilidade_mudanca || false,
+            disponibilidade_sabados: dados.disponibilidade_sabados || false,
             turno_preferido: dados.turno_preferido || [],
             cnh: dados.cnh || [],
             primeiro_emprego: dados.primeiro_emprego || false,
@@ -511,6 +564,15 @@ export default function MeuCurriculoPage() {
   };
 
   const onSubmitDadosGerais = async (data: DadosGeraisData) => {
+    if (areasSelecionadas.length === 0) {
+      setErroAreas("Selecione pelo menos uma área de atuação.");
+      toast.error("Preencha as Áreas de Atuação antes de salvar.");
+      return;
+    }
+    if (areasSelecionadas.length > 10) {
+      setErroAreas("Você pode selecionar no máximo 10 áreas de atuação.");
+      return;
+    }
     setIsSaving(true);
     try {
       const payload = {
@@ -531,6 +593,7 @@ export default function MeuCurriculoPage() {
         tipo_contato: data.tipo_contato,
         disponibilidade_viagem: data.disponibilidade_viagem,
         disponibilidade_mudanca: data.disponibilidade_mudanca,
+        disponibilidade_sabados: data.disponibilidade_sabados,
         turno_preferido: data.turno_preferido,
         cnh: data.cnh,
         primeiro_emprego: data.primeiro_emprego,
@@ -552,7 +615,12 @@ export default function MeuCurriculoPage() {
 
       toast.success("Dados atualizados com sucesso!");
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Erro ao salvar.");
+      const msgErro = error.response?.data?.error || "Erro ao salvar.";
+      toast.error(msgErro);
+
+      if (error.response?.data?.detalhes?.[0]?.campo === "areas_ids") {
+        setErroAreas(msgErro);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -608,16 +676,21 @@ export default function MeuCurriculoPage() {
     );
 
   const abrirFormExperiencia = (exp?: any) => {
+    const formatToMask = (isoString?: string | null) => {
+      if (!isoString) return "";
+      const parts = String(isoString).split("T")[0].split("-");
+      if (parts.length >= 2) return `${parts[1]}/${parts[0]}`;
+      return "";
+    };
+
     if (exp) {
       setEditingExpId(exp.id_experiencia);
       resetExp({
         empresa: exp.empresa,
         cargo: exp.cargo,
         atividades: exp.atividades || "",
-        data_inicio: exp.data_inicio
-          ? String(exp.data_inicio).substring(0, 7)
-          : "",
-        data_fim: exp.data_fim ? String(exp.data_fim).substring(0, 7) : "",
+        data_inicio: formatToMask(exp.data_inicio),
+        data_fim: formatToMask(exp.data_fim),
         atual: exp.atual || false,
       });
     } else {
@@ -642,15 +715,16 @@ export default function MeuCurriculoPage() {
   const salvarExperiencia = async (data: ExperienciaData) => {
     setIsSavingExp(true);
     try {
-      const formatarData = (yyyyMM: string) =>
-        new Date(`${yyyyMM}-01T12:00:00.000Z`).toISOString();
+      const formatToDb = (mmAAAA: string) => {
+        const [mes, ano] = mmAAAA.split("/");
+        return new Date(`${ano}-${mes}-01T12:00:00.000Z`).toISOString();
+      };
+
       const payload = {
         ...data,
-        data_fim: data.atual ? null : data.data_fim,
-        data_inicio: formatarData(data.data_inicio),
-        ...(data.data_fim && !data.atual
-          ? { data_fim: formatarData(data.data_fim) }
-          : {}),
+        data_inicio: formatToDb(data.data_inicio),
+        data_fim:
+          data.atual || !data.data_fim ? null : formatToDb(data.data_fim),
       };
 
       if (editingExpId) {
@@ -713,14 +787,27 @@ export default function MeuCurriculoPage() {
     setShowFormFormacao(true);
   };
 
-  const salvarFormacao = async (data: FormacaoData) => {
+  const salvarFormacao = async (data: any) => {
     setIsSavingForm(true);
     try {
+      const isBasico =
+        data.nivel === "Ensino Fundamental" || data.nivel === "Ensino Médio";
+      const isConcluido = data.status === "CONCLUÍDO";
+
       const payload = {
         ...data,
-        data_conclusao: data.data_conclusao
-          ? new Date(`${data.data_conclusao}-01-01T12:00:00.000Z`).toISOString()
-          : null,
+        // Se for básico, o curso é igual ao nível (ex: "Ensino Médio"). Senão, é o curso que a pessoa digitou.
+        curso: isBasico ? data.nivel : data.curso,
+        // Instituição e Série vão nulos se for básico
+        instituicao: isBasico ? null : data.instituicao,
+        serie: null,
+        // A data só é enviada se não for básico E estiver concluído
+        data_conclusao:
+          !isBasico && isConcluido && data.data_conclusao
+            ? new Date(
+                `${data.data_conclusao}-01-01T12:00:00.000Z`,
+              ).toISOString()
+            : null,
       };
 
       if (editingFormId) {
@@ -733,15 +820,17 @@ export default function MeuCurriculoPage() {
             f.id_formacao === editingFormId ? res.data.data : f,
           ),
         );
-        toast.success("Formação atualizada!");
+        toast.success("Escolaridade atualizada!");
       } else {
         const res = await api.post("/candidato/formacoes", payload);
         setFormacoes((prev) => [...prev, res.data.data]);
-        toast.success("Formação adicionada!");
+        toast.success("Escolaridade adicionada!");
       }
       setShowFormFormacao(false);
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Erro ao salvar formação.");
+      toast.error(
+        error.response?.data?.error || "Erro ao salvar escolaridade.",
+      );
     } finally {
       setIsSavingForm(false);
     }
@@ -785,6 +874,7 @@ export default function MeuCurriculoPage() {
         tipo_contato: data.tipo_contato,
         disponibilidade_viagem: data.disponibilidade_viagem,
         disponibilidade_mudanca: data.disponibilidade_mudanca,
+        disponibilidade_sabados: data.disponibilidade_sabados,
         turno_preferido: data.turno_preferido,
         cnh: data.cnh,
         primeiro_emprego: isChecked,
@@ -830,19 +920,21 @@ export default function MeuCurriculoPage() {
   });
 
   const adicionarArea = (area: any) => {
-    if (areasSelecionadas.length >= 3) {
-      toast.error("Você pode selecionar no máximo 3 .");
+    if (areasSelecionadas.length >= 10) {
+      toast.error("Você pode selecionar no máximo 10 .");
       return;
     }
     setAreasSelecionadas([...areasSelecionadas, area]);
     setSearchTermArea("");
     setIsAreaDropdownOpen(false);
+    setErroAreas(null);
   };
 
   const removerArea = (id: number) => {
     setAreasSelecionadas(
       areasSelecionadas.filter((a) => (a.id_area || a.id) !== id),
     );
+    setErroAreas(null);
   };
 
   const WizardNavegacao = () => {
@@ -1005,10 +1097,11 @@ export default function MeuCurriculoPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${activeTab === tab.id
-              ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
-              : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
-              }`}
+            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${
+              activeTab === tab.id
+                ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
+                : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
+            }`}
           >
             <span className="flex items-center gap-1.5 md:gap-2 relative z-10">
               {tab.icon} {tab.label}
@@ -1200,12 +1293,12 @@ export default function MeuCurriculoPage() {
                     <span
                       className={`text-[10px] uppercase tracking-widest font-black ${areasSelecionadas.length === 3 ? "text-red-500" : "text-blue-500"}`}
                     >
-                      {areasSelecionadas.length}/3
+                      {areasSelecionadas.length}/10
                     </span>
                   </label>
                   <p className="text-[11px] md:text-xs text-gray-500 ml-1 mt-0.5">
-                    Selecione até 3 áreas principais para seu perfil ser
-                    encontrado em nosso banco de talentos.
+                    Selecione até 10 áreas principais de seu interesse para seu
+                    perfil ser encontrado em nosso banco de talentos.
                   </p>
                 </div>
                 <div className="relative group z-20">
@@ -1213,12 +1306,17 @@ export default function MeuCurriculoPage() {
                   <input
                     type="text"
                     placeholder={
-                      areasSelecionadas.length >= 3
+                      areasSelecionadas.length >= 10
                         ? "Limite de áreas atingido"
                         : "Buscar área (Ex: TI, RH...)"
                     }
-                    disabled={areasSelecionadas.length >= 3}
-                    className="w-full pl-12 pr-4 py-3.5 md:py-4 bg-gray-50 border border-gray-100 rounded-[20px] md:rounded-[24px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 disabled:opacity-50"
+                    disabled={areasSelecionadas.length >= 10}
+                    // ✨ INPUT FICA VERMELHO SE TIVER ERRO
+                    className={`w-full pl-12 pr-4 py-3.5 md:py-4 border rounded-[20px] md:rounded-[24px] outline-none text-sm transition-all disabled:opacity-50 ${
+                      erroAreas
+                        ? "bg-red-50/30 border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
+                        : "bg-gray-50 border-gray-100 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500"
+                    }`}
                     value={searchTermArea}
                     onChange={(e) => {
                       setSearchTermArea(e.target.value);
@@ -1252,6 +1350,11 @@ export default function MeuCurriculoPage() {
                       )}
                     </div>
                   )}
+                  {erroAreas && (
+                    <p className="text-[11px] font-bold text-red-500 ml-2 mt-1">
+                      {erroAreas}
+                    </p>
+                  )}
                 </div>
                 {areasSelecionadas.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-2">
@@ -1283,7 +1386,7 @@ export default function MeuCurriculoPage() {
                 </label>
                 <textarea
                   {...register("resumo_profissional")}
-                  className={`w-full p-4 md:p-6 rounded-[24px] md:rounded-[32px] h-32 outline-none text-sm focus:ring-4 resize-none transition-colors border ${getFieldStatus("resumo_profissional")}`}
+                  className={`w-full p-4 md:p-6 rounded-[24px] md:rounded-[32px] h-32 outline-none text-sm focus:ring-2 resize-none transition-colors border ${getFieldStatus("resumo_profissional")}`}
                   placeholder="Exemplo: Profissional com 3 anos de experiência em atendimento..."
                 />
                 {errors.resumo_profissional && (
@@ -1299,7 +1402,7 @@ export default function MeuCurriculoPage() {
                 </label>
                 <textarea
                   {...register("objetivo_profissional")}
-                  className={`w-full p-4 md:p-6 rounded-[24px] md:rounded-[32px] h-32 outline-none text-sm focus:ring-4 resize-none transition-colors border ${getFieldStatus("objetivo_profissional")}`}
+                  className={`w-full p-4 md:p-6 rounded-[24px] md:rounded-[32px] h-32 outline-none text-sm focus:ring-2 resize-none transition-colors border ${getFieldStatus("objetivo_profissional")}`}
                   placeholder="Exemplo: Busco oportunidades na área administrativa..."
                 />
                 {errors.objetivo_profissional && (
@@ -1450,6 +1553,21 @@ export default function MeuCurriculoPage() {
                     Disponibilidade Logística
                   </h3>
                   <div className="flex flex-col gap-4">
+                    <label className="flex items-center justify-between cursor-pointer group bg-white p-3.5 rounded-xl border border-gray-200 shadow-sm hover:border-blue-200 transition-all">
+                      <div>
+                        <span className="block text-xs md:text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
+                          Trabalharia aos sábados?
+                        </span>
+                        <span className="block text-[10px] text-gray-400 mt-0.5">
+                          Muito comum no comércio e varejo.
+                        </span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        {...register("disponibilidade_sabados")}
+                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-blue-500"
+                      />
+                    </label>
                     <label className="flex items-center justify-between cursor-pointer group bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
                       <span className="text-xs md:text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">
                         Aceita viagens a trabalho?
@@ -1473,43 +1591,48 @@ export default function MeuCurriculoPage() {
                   </div>
                 </div>
 
-                {/* 3. Inclusão PCD (Card) */}
+                {/* 3. Inclusão e Diversidade (Card) */}
                 <div
                   className={`p-4 md:p-6 rounded-[20px] md:rounded-[24px] border transition-all shadow-sm ${watch("pcd") ? "bg-blue-50/50 border-blue-200" : "bg-gray-50 border-gray-100"}`}
                 >
-                  <label className="flex items-center gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      {...register("pcd")}
-                      className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-blue-500"
-                    />
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <div className="pt-0.5">
+                      <input
+                        type="checkbox"
+                        {...register("pcd")}
+                        className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-blue-500"
+                      />
+                    </div>
                     <div>
                       <span className="block text-xs md:text-sm font-black text-gray-800 group-hover:text-primary transition-colors">
-                        Sou Pessoa com Deficiência (PcD)
+                        Sou uma Pessoa com Deficiência (PcD) ou Neurodivergente
                       </span>
-                      <span className="block text-[10px] md:text-xs text-gray-500 mt-0.5">
-                        Seção opcional de inclusão.
+                      <span className="block text-[10px] md:text-xs text-gray-500 mt-0.5 leading-relaxed">
+                        Preenchimento opcional. Ajuda as empresas a promoverem
+                        ambientes mais inclusivos.
                       </span>
                     </div>
                   </label>
 
                   {watch("pcd") && (
-                    <div className="mt-5 space-y-4 animate-in slide-in-from-top-4 pt-4 border-t border-blue-100">
+                    <div className="mt-5 space-y-5 animate-in slide-in-from-top-4 pt-5 border-t border-blue-100">
                       <Input
-                        label="Tipo de deficiência"
-                        placeholder="Ex: Física, Visual, Auditiva..."
+                        label="Como você descreve sua deficiência ou condição?"
+                        placeholder="Ex: Física, Auditiva, TEA (Autismo), TDAH, Visual..."
                         className={`bg-white shadow-sm ${getFieldStatus("tipo_pcd")}`}
                         {...register("tipo_pcd")}
                         error={errors.tipo_pcd?.message}
                       />
+
                       <div className="space-y-1.5">
                         <label className="text-[11px] md:text-xs font-bold text-gray-700 ml-1">
-                          Necessita adaptação na entrevista?
+                          Como podemos tornar o processo seletivo mais acessível
+                          para você?
                         </label>
                         <textarea
                           {...register("necessidade")}
-                          className={`w-full p-3 bg-white shadow-sm rounded-xl h-20 outline-none text-xs focus:ring-4 resize-none transition-colors border ${getFieldStatus("necessidade")}`}
-                          placeholder="Ex: Rampa de acesso, intérprete..."
+                          className={`w-full p-4 bg-white shadow-sm rounded-xl h-24 outline-none text-xs focus:ring-4 resize-none transition-colors border ${getFieldStatus("necessidade")}`}
+                          placeholder="Ex: Rampa de acesso, intérprete de Libras, ambiente com menos estímulos visuais/sonoros, comunicação mais direta..."
                         />
                       </div>
                     </div>
@@ -2029,9 +2152,9 @@ export default function MeuCurriculoPage() {
                               {exp.atual
                                 ? "Atual"
                                 : new Date(exp.data_fim).toLocaleDateString(
-                                  "pt-BR",
-                                  { month: "short", year: "numeric" },
-                                )}
+                                    "pt-BR",
+                                    { month: "short", year: "numeric" },
+                                  )}
                             </p>
                           </div>
                           <div className="flex items-center gap-2 mt-4 md:mt-0 sm:opacity-0 group-hover:opacity-100 transition-opacity">
@@ -2081,22 +2204,38 @@ export default function MeuCurriculoPage() {
                   error={errorsExp.cargo?.message}
                 />
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 <Input
-                  label="Data de Início"
-                  type="month"
-                  {...registerExp("data_inicio")}
+                  label="Data de Início (mês/ano)"
+                  type="text"
+                  placeholder="MM/AAAA"
+                  maxLength={7}
+                  {...registerExp("data_inicio", {
+                    onChange: (e) => {
+                      e.target.value = maskMesAno(e.target.value);
+                    },
+                  })}
                   error={errorsExp.data_inicio?.message}
                 />
+
                 <div className="space-y-2">
                   <Input
-                    label="Data de Fim"
-                    type="month"
+                    label="Data de Fim (mês/ano)"
+                    type="text"
+                    placeholder={
+                      watchExp("atual") ? "Trabalho atual" : "MM/AAAA"
+                    }
+                    maxLength={7}
                     disabled={watchExp("atual")}
                     className={
                       watchExp("atual") ? "opacity-50 bg-gray-100" : ""
                     }
-                    {...registerExp("data_fim")}
+                    {...registerExp("data_fim", {
+                      onChange: (e) => {
+                        e.target.value = maskMesAno(e.target.value);
+                      },
+                    })}
                     error={errorsExp.data_fim?.message}
                   />
                   <label className="flex items-center gap-2 cursor-pointer group px-1">
@@ -2107,7 +2246,7 @@ export default function MeuCurriculoPage() {
                         setValueExp("atual", e.target.checked);
                         if (e.target.checked) setValueExp("data_fim", "");
                       }}
-                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-blue-500"
+                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-blue-500 transition-colors cursor-pointer"
                     />
                     <span className="text-[11px] md:text-xs font-bold text-gray-500 group-hover:text-primary transition-colors">
                       Trabalho atualmente neste cargo
@@ -2115,6 +2254,7 @@ export default function MeuCurriculoPage() {
                   </label>
                 </div>
               </div>
+
               <div className="space-y-1.5">
                 <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
                   Atividades e Conquistas
@@ -2156,15 +2296,17 @@ export default function MeuCurriculoPage() {
       {/* ABA 3: FORMAÇÃO ACADÊMICA */}
       {activeTab === "formacao" && (
         <section className="space-y-6 animate-in slide-in-from-bottom-4">
+          {/* ================= LISTAGEM DAS ESCOLARIDADES ================= */}
           {!showFormFormacao && (
-            <div className="bg-white p-6 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6">
+            <div className="bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6 md:space-y-8">
+              {/* Header da Seção */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-lg md:text-xl font-black text-gray-800">
-                    Sua Formação
+                  <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
+                    Escolaridade e Cursos
                   </h2>
-                  <p className="text-xs md:text-sm text-gray-500 mt-0.5">
-                    Liste seus cursos, graduações e especializações.
+                  <p className="text-sm text-gray-500 mt-1 font-medium">
+                    Adicione seu nível de ensino, graduações ou cursos técnicos.
                   </p>
                 </div>
                 {formacoes.length > 0 && (
@@ -2177,177 +2319,243 @@ export default function MeuCurriculoPage() {
                 )}
               </div>
 
+              {/* Estado Vazio ou Lista */}
               {formacoes.length === 0 ? (
                 <div
                   onClick={() => abrirFormFormacao()}
-                  className="p-10 md:p-16 rounded-[24px] md:rounded-[32px] border-2 border-dashed border-gray-200 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all group"
+                  className="p-10 md:p-16 rounded-[24px] md:rounded-[32px] border-2 border-dashed border-gray-200 bg-gray-50/50 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50/50 transition-all group"
                 >
-                  <div className="w-14 h-14 md:w-16 md:h-16 bg-gray-50 text-gray-400 group-hover:text-blue-500 group-hover:bg-blue-100 transition-colors rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <HiOutlineAcademicCap size={24} className="md:w-7 md:h-7" />
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-white text-gray-400 shadow-sm border border-gray-100 group-hover:text-blue-500 group-hover:border-blue-200 transition-colors rounded-full flex items-center justify-center mx-auto mb-4 md:mb-5">
+                    <HiOutlineAcademicCap
+                      size={32}
+                      className="md:w-10 md:h-10"
+                    />
                   </div>
-                  <h3 className="text-base md:text-lg font-bold text-gray-700">
-                    Nenhuma formação cadastrada
+                  <h3 className="text-lg md:text-xl font-black text-gray-800">
+                    Nenhuma escolaridade cadastrada
                   </h3>
-                  <p className="text-xs md:text-sm text-gray-400 mt-1">
-                    Adicione cursos técnicos ou graduações.
+                  <p className="text-sm text-gray-500 mt-1.5 font-medium max-w-sm mx-auto">
+                    Adicione seu nível de ensino atual, cursos técnicos ou
+                    graduações para destacar seu perfil.
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-3 md:gap-4">
-                  {formacoes.map((f: any) => (
-                    <div
-                      key={f.id_formacao}
-                      className="flex flex-col md:flex-row md:items-center justify-between p-5 md:p-6 bg-gray-50 border border-gray-100 rounded-[20px] md:rounded-[24px] group hover:border-blue-200 transition-colors"
-                    >
-                      <div className="space-y-1">
-                        <h4 className="font-bold text-gray-800 text-base md:text-lg leading-tight">
-                          {f.curso}
-                        </h4>
-                        <p className="text-xs md:text-sm font-medium text-primary">
-                          {f.instituicao} • {f.nivel}
-                        </p>
-                        <span
-                          className={`inline-block px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase mt-1 ${f.status === "CONCLUÍDO" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
-                        >
-                          {f.status}{" "}
-                          {f.data_conclusao &&
-                            `em ${new Date(f.data_conclusao).getFullYear()}`}
-                        </span>
+                <div className="grid grid-cols-1 gap-4">
+                  {formacoes.map((f: any) => {
+                    const isBasico =
+                      f.nivel === "Ensino Fundamental" ||
+                      f.nivel === "Ensino Médio";
+
+                    return (
+                      <div
+                        key={f.id_formacao}
+                        className="group relative flex flex-col md:flex-row md:items-center justify-between p-5 md:p-6 bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-200 rounded-[24px] transition-all gap-5"
+                      >
+                        {/* Infos do Card */}
+                        <div className="flex items-start gap-4 md:gap-5">
+                          {/* Ícone Redondo */}
+                          <div className="w-12 h-12 md:w-14 md:h-14 shrink-0 bg-gray-50 group-hover:bg-blue-50 border border-gray-100 group-hover:border-blue-100 text-gray-400 group-hover:text-blue-500 rounded-full flex items-center justify-center transition-colors">
+                            <HiOutlineAcademicCap size={24} />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <h4 className="font-black text-gray-900 text-base md:text-lg leading-tight">
+                              {isBasico ? f.nivel : f.curso}
+                            </h4>
+
+                            {!isBasico && (
+                              <p className="text-xs md:text-sm font-bold text-gray-500 line-clamp-1">
+                                {f.instituicao}{" "}
+                                <span className="text-gray-300 mx-1.5">•</span>{" "}
+                                {f.nivel}
+                              </p>
+                            )}
+
+                            <div>
+                              <span
+                                className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                                  f.status === "CONCLUÍDO"
+                                    ? "bg-emerald-50 text-emerald-600 border border-emerald-100/50"
+                                    : "bg-amber-50 text-amber-600 border border-amber-100/50"
+                                }`}
+                              >
+                                {f.status}
+                                {!isBasico &&
+                                  f.status === "CONCLUÍDO" &&
+                                  f.data_conclusao && (
+                                    <>
+                                      <span className="opacity-50 mx-1">•</span>
+                                      {new Date(f.data_conclusao).getFullYear()}
+                                    </>
+                                  )}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Botões de Ação (Aparecem no hover no Desktop, visíveis no Mobile) */}
+                        <div className="flex items-center gap-2 mt-1 md:mt-0 w-full md:w-auto md:opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => abrirFormFormacao(f)}
+                            className="flex-1 md:flex-none flex justify-center items-center px-6 py-2.5 md:py-2 text-xs font-black uppercase tracking-widest text-gray-600 bg-white border border-gray-200 hover:border-blue-300 hover:text-primary hover:bg-blue-50 rounded-xl md:rounded-full transition-colors"
+                          >
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => excluirFormacao(f.id_formacao)}
+                            className="flex items-center justify-center p-2.5 md:p-2 bg-white border border-gray-200 hover:border-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl md:rounded-full transition-colors shrink-0"
+                            title="Excluir escolaridade"
+                          >
+                            <HiOutlineTrash
+                              size={18}
+                              className="md:w-4 md:h-4"
+                            />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 mt-4 md:mt-0 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => abrirFormFormacao(f)}
-                          className="flex-1 sm:flex-none justify-center flex px-4 py-2 text-xs font-bold text-gray-600 bg-white border border-gray-200 hover:border-blue-300 hover:text-primary rounded-full"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => excluirFormacao(f.id_formacao)}
-                          className="p-2 flex items-center justify-center bg-white border border-gray-200 hover:border-red-300 hover:text-red-500 rounded-full"
-                        >
-                          <HiOutlineTrash size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
           )}
 
+          {/* ================= FORMULÁRIO DINÂMICO ================= */}
           {showFormFormacao && (
             <form
               onSubmit={handleSubmitForm(salvarFormacao)}
-              className="bg-white p-6 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6"
+              className="bg-gray-50/50 p-6 md:p-10 rounded-[32px] md:rounded-[40px] shadow-inner border border-gray-100 space-y-6 md:space-y-8 relative overflow-hidden"
             >
-              <h2 className="text-lg md:text-xl font-black text-gray-800 border-b border-gray-100 pb-3 md:pb-4">
-                {editingFormId ? "Editar Formação" : "Nova Formação"}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Instituição"
-                  placeholder="Ex: UNIJUÍ, IFFar, Fisk..."
-                  {...registerForm("instituicao")}
-                  error={errorsForm.instituicao?.message}
-                />
-                <Input
-                  label="Curso"
-                  placeholder="Ex: Administração..."
-                  {...registerForm("curso")}
-                  error={errorsForm.curso?.message}
-                />
+              {/* Detalhe visual de fundo para dar charme */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50 pointer-events-none"></div>
+
+              <div className="relative z-10 border-b border-gray-200/60 pb-4 md:pb-5">
+                <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
+                  {editingFormId ? "Editar Escolaridade" : "Nova Escolaridade"}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1 font-medium">
+                  Preencha as informações abaixo para atualizar seu perfil.
+                </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
-                    Nível
-                  </label>
-                  <select
-                    {...registerForm("nivel")}
-                    className="w-full p-3.5 md:p-4 bg-gray-50 border border-gray-100 rounded-[16px] md:rounded-[20px] outline-none text-sm focus:border-blue-500"
-                  >
-                    <option value="">Selecione...</option>
-                    <option value="Ensino Fundamental">
-                      Ensino Fundamental
-                    </option>
-                    <option value="Ensino Médio">Ensino Médio</option>
-                    <option value="Curso Técnico">Curso Técnico</option>
-                    <option value="Superior Curto (Tecnólogo)">
-                      Superior (Tecnólogo)
-                    </option>
-                    <option value="Graduação">
-                      Graduação (Bacharel/Licenciatura)
-                    </option>
-                    <option value="Pós-Graduação / Especialização">
-                      Pós / Especialização
-                    </option>
-                    <option value="Mestrado / Doutorado">
-                      Mestrado / Doutorado
-                    </option>
-                    <option value="Curso Complementar">
-                      Curso Complementar / Idiomas
-                    </option>
-                  </select>
-                  {errorsForm.nivel && (
-                    <p className="text-[11px] text-red-500 ml-2">
-                      {errorsForm.nivel.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
-                    Status
-                  </label>
-                  <select
-                    {...registerForm("status")}
-                    className="w-full p-3.5 md:p-4 bg-gray-50 border border-gray-100 rounded-[16px] md:rounded-[20px] outline-none text-sm focus:border-blue-500"
-                  >
-                    <option value="">Selecione...</option>
-                    <option value="CURSANDO">Cursando</option>
-                    <option value="CONCLUÍDO">Concluído</option>
-                    <option value="INTERROMPIDO">
-                      Interrompido / Trancado
-                    </option>
-                  </select>
-                  {errorsForm.status && (
-                    <p className="text-[11px] text-red-500 ml-2">
-                      {errorsForm.status.message}
-                    </p>
-                  )}
-                </div>
-                <Input
-                  label="Ano de Conclusão"
-                  type="number"
-                  placeholder="Exemplo: 2024"
-                  min="1950"
-                  max="2050"
-                  disabled={watchForm("status") !== "CONCLUÍDO"}
-                  className={
-                    watchForm("status") !== "CONCLUÍDO" ? "opacity-50" : ""
-                  }
-                  {...registerForm("data_conclusao")}
-                  error={errorsForm.data_conclusao?.message}
-                />
+
+              <div className="relative z-10 space-y-1.5 mb-6 flex flex-col">
+                <label className="text-xs md:text-sm font-black text-gray-700 ml-1 uppercase tracking-widest">
+                  1. Qual o seu nível de ensino?
+                </label>
+                <select
+                  {...registerForm("nivel")}
+                  className="w-full md:w-2/3 p-4 bg-white border border-gray-200 rounded-[20px] outline-none text-sm font-medium focus:border-primary focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer"
+                >
+                  <option value="">Selecione para começar...</option>
+                  <option value="Ensino Fundamental">Ensino Fundamental</option>
+                  <option value="Ensino Médio">Ensino Médio</option>
+                  <option value="Curso Técnico">Curso Técnico</option>
+                  <option value="Superior Curto (Tecnólogo)">
+                    Superior (Tecnólogo)
+                  </option>
+                  <option value="Graduação">
+                    Graduação (Bacharel/Licenciatura)
+                  </option>
+                  <option value="Pós-Graduação / Especialização">
+                    Pós / Especialização
+                  </option>
+                  <option value="Mestrado / Doutorado">
+                    Mestrado / Doutorado
+                  </option>
+                  <option value="Curso Complementar">
+                    Curso Complementar / Idiomas
+                  </option>
+                </select>
+                {errorsForm.nivel && (
+                  <p className="text-[11px] font-bold text-red-500 ml-2 mt-1">
+                    {errorsForm.nivel.message}
+                  </p>
+                )}
               </div>
-              <div className="flex flex-col-reverse md:flex-row justify-center md:justify-end gap-3 pt-6 border-t border-gray-100">
+
+              {/* CAMPOS DINÂMICOS (Animação suave ao aparecer) */}
+              {watchForm("nivel") && (
+                <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-5 animate-in fade-in slide-in-from-top-4 duration-500">
+                  {/* SE NÃO FOR BÁSICO: Pede Instituição e Curso */}
+                  {watchForm("nivel") !== "Ensino Fundamental" &&
+                    watchForm("nivel") !== "Ensino Médio" && (
+                      <>
+                        <Input
+                          label="Instituição de Ensino"
+                          placeholder="Ex: UNIJUÍ, IFFar, Fisk..."
+                          {...registerForm("instituicao")}
+                          error={errorsForm.instituicao?.message}
+                        />
+                        <Input
+                          label="Nome do Curso"
+                          placeholder="Ex: Administração, Marketing..."
+                          {...registerForm("curso")}
+                          error={errorsForm.curso?.message}
+                        />
+                      </>
+                    )}
+
+                  {/* STATUS (Para todos) */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs md:text-sm font-black text-gray-700 ml-1 uppercase tracking-widest">
+                      Situação Atual
+                    </label>
+                    <select
+                      {...registerForm("status")}
+                      className="w-full p-4 bg-white border border-gray-200 rounded-[20px] outline-none text-sm font-medium focus:border-primary focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm cursor-pointer"
+                    >
+                      <option value="">Selecione o status...</option>
+                      <option value="CURSANDO">Cursando</option>
+                      <option value="CONCLUÍDO">Concluído</option>
+                      <option value="INTERROMPIDO">
+                        Incompleto / Trancado
+                      </option>
+                    </select>
+                    {errorsForm.status && (
+                      <p className="text-[11px] font-bold text-red-500 ml-2 mt-1">
+                        {errorsForm.status.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* DATA DE CONCLUSÃO (Somente se não for básico E estiver Concluído) */}
+                  {watchForm("nivel") !== "Ensino Fundamental" &&
+                    watchForm("nivel") !== "Ensino Médio" &&
+                    watchForm("status") === "CONCLUÍDO" && (
+                      <div className="animate-in fade-in zoom-in-95 duration-300">
+                        <Input
+                          label="Ano de Conclusão"
+                          type="number"
+                          placeholder="Exemplo: 2024"
+                          min="1950"
+                          max="2050"
+                          {...registerForm("data_conclusao")}
+                          error={errorsForm.data_conclusao?.message}
+                        />
+                      </div>
+                    )}
+                </div>
+              )}
+
+              {/* BOTÕES DO FORMULÁRIO */}
+              <div className="relative z-10 flex flex-col-reverse md:flex-row justify-center md:justify-end gap-3 pt-8 mt-4 border-t border-gray-200/60">
                 <button
                   type="button"
                   onClick={() => setShowFormFormacao(false)}
-                  className="w-full md:w-auto px-8 py-3.5 md:py-4 font-bold text-gray-500 hover:bg-gray-50 rounded-full md:rounded-[24px] border border-transparent hover:border-gray-200"
+                  className="w-full md:w-auto px-8 py-4 font-black text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-full md:rounded-2xl border border-gray-200 transition-all uppercase tracking-widest text-xs"
                 >
                   Cancelar
                 </button>
                 <ButtonType
                   type="submit"
                   disabled={isSavingForm}
-                  className="w-full md:w-auto px-10 py-3.5 md:py-4 rounded-full md:rounded-[24px] shadow-lg shadow-blue-100 flex justify-center"
+                  className="w-full md:w-auto px-10 py-4 rounded-full md:rounded-2xl shadow-lg shadow-blue-500/20 flex justify-center uppercase tracking-widest text-xs font-black transition-all hover:scale-105 active:scale-95 disabled:hover:scale-100"
                 >
-                  {isSavingForm ? "Salvando..." : "Salvar Formação"}
+                  {isSavingForm ? "Salvando..." : "Salvar Escolaridade"}
                 </ButtonType>
               </div>
             </form>
           )}
-
         </section>
       )}
 

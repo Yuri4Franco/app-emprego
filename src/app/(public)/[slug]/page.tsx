@@ -86,19 +86,19 @@ export default async function PerfilPublicoEmpresaPage({ params }: PageProps) {
                 <HiOutlineLocationMarker className="text-primary" size={18} />{" "}
                 {localizacao}
               </span>
-              {empresa.site && (
-                <a
-                  href={formatSocialUrl("https://", empresa.site)}
-                  target="_blank"
-                  className="flex items-center gap-1 px-4 py-2 bg-blue-50 text-primary rounded-xl text-sm font-bold border border-blue-100 hover:bg-blue-100 transition-colors"
-                >
-                  <HiOutlineGlobeAlt size={18} /> Visitar Website
-                </a>
-              )}
             </div>
 
             {/* Redes Sociais */}
             <div className="flex justify-center gap-4 pt-2">
+              {empresa.site && (
+                <a
+                  href={formatSocialUrl("https://", empresa.site)}
+                  target="_blank"
+                  className="p-3 bg-gray-50 text-gray-600 rounded-2xl hover:bg-gray-800 hover:text-white transition-all shadow-sm"
+                >
+                  <HiOutlineGlobeAlt size={18} />
+                </a>
+              )}
               {empresa.instagram && (
                 <a
                   href={formatSocialUrl(
@@ -143,9 +143,6 @@ export default async function PerfilPublicoEmpresaPage({ params }: PageProps) {
         <div className="space-y-10">
           {/* QUEM SOMOS */}
           <section className="bg-white p-8 md:p-12 rounded-[40px] shadow-sm border border-gray-100 space-y-6">
-            <h2 className="text-2xl font-black text-gray-800 border-b border-gray-100 pb-4 flex items-center gap-2">
-              Sobre a Empresa
-            </h2>
             <div
               className="rich-text text-gray-600 leading-relaxed text-lg"
               dangerouslySetInnerHTML={{ __html: empresa.quem_somos }}

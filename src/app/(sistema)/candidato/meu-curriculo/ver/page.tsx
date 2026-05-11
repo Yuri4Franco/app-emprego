@@ -404,6 +404,14 @@ export default function VerCurriculoPage() {
               <ul className="space-y-3 print:space-y-1.5 text-sm print:text-xs text-gray-700 font-medium">
                 <li className="flex justify-between items-center border-b border-gray-200/60 print:border-none pb-2 print:pb-0">
                   <span className="text-gray-500 print:text-gray-600">
+                    Trabalho aos sabados:
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    {dados.disponibilidade_sabados ? "Sim" : "Não"}
+                  </span>
+                </li>
+                <li className="flex justify-between items-center border-b border-gray-200/60 print:border-none pb-2 print:pb-0">
+                  <span className="text-gray-500 print:text-gray-600">
                     Viagens a trabalho:
                   </span>
                   <span className="font-bold text-gray-900">
@@ -442,7 +450,7 @@ export default function VerCurriculoPage() {
               <ul className="space-y-3 print:space-y-1.5 text-sm print:text-xs text-gray-700 font-medium">
                 <li className="flex justify-between items-center border-b border-gray-200/60 print:border-none pb-2 print:pb-0">
                   <span className="text-gray-500 print:text-gray-600">
-                    Contato Preferido:
+                    Meio de contato preferido:
                   </span>
                   <span className="font-bold text-blue-600 print:text-gray-900">
                     {contatoLabels[dados.tipo_contato] || "Qualquer canal"}
