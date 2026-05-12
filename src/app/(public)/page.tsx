@@ -13,7 +13,6 @@ export default function Home() {
       <main className="flex min-h-screen flex-col overflow-x-hidden">
 
         {/* --- SEÇÃO HERO --- */}
-        {/* MUDANÇA: bg-[#1459ad] -> bg-primary (Usa sua variável global) */}
         <div className="relative w-full min-h-[600px] flex flex-col items-center justify-center text-center px-4 md:px-14 py-32 bg-[#1459ad]">
           <Image
             src={heroBgImage}
@@ -21,7 +20,7 @@ export default function Home() {
             fill
             priority
             className="object-cover object-center opacity-40 mix-blend-overlay"
-            quality={60} // Subi levemente a qualidade para telas retina
+            quality={60}
           />
 
           {/* MUDANÇA: Overlay usando bg-primary */}
@@ -56,7 +55,6 @@ export default function Home() {
 
             <div className="w-full md:w-1/2 flex flex-col items-center">
               <RandomDesignImage />
-
               {/* Botão Mobile (Só aparece em telas pequenas) */}
               <div className="w-full md:hidden mt-8 flex justify-center">
                 <ButtonType href="/entrar" variant="primary" size="lg" className="w-full shadow-lg">

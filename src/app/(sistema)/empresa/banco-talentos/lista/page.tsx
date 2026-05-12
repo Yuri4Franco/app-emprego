@@ -21,6 +21,7 @@ import {
   HiOutlineAcademicCap,
   HiOutlineIdentification,
   HiOutlineClock,
+  HiOutlineArrowLeft,
 } from "react-icons/hi";
 import toast from "react-hot-toast";
 
@@ -85,11 +86,10 @@ const FilterChip = ({
 }) => (
   <button
     onClick={onClick}
-    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border ${
-      active
+    className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border ${active
         ? "bg-primary border-primary text-surface shadow-md shadow-primary/20"
         : "bg-surface border-gray-200 text-gray-500 hover:border-primary/50 hover:text-primary"
-    }`}
+      }`}
   >
     {label}
   </button>
@@ -108,11 +108,10 @@ const FilterSquare = ({
 }) => (
   <button
     onClick={onClick}
-    className={`flex flex-col items-center justify-center p-3 gap-1.5 rounded-xl border transition-all ${
-      active
+    className={`flex flex-col items-center justify-center p-3 gap-1.5 rounded-xl border transition-all ${active
         ? "bg-primary/10 border-primary/30 text-primary shadow-sm"
         : "bg-gray-50 border-gray-100 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-    }`}
+      }`}
   >
     <Icon size={20} />
     <span className="text-[9px] font-black uppercase tracking-widest text-center leading-tight">
@@ -352,7 +351,13 @@ function VitrineConteudo() {
   const tagsAtivas = getFiltrosAtivos();
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-6 md:px-10 animate-in fade-in duration-700">
+    <div className="max-w-7xl mx-auto space-y-4 py-10 px-6 md:px-10 animate-in fade-in duration-700">
+      <button
+        onClick={() => router.back()}
+        className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-bold transition-colors bg-white px-5 py-2.5 rounded-full border border-gray-200 shadow-sm hover:shadow-md"
+      >
+        <HiOutlineArrowLeft size={18} /> Voltar
+      </button>
       <header className="mb-8 bg-surface p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
         <div className="relative z-10 space-y-2">
@@ -728,11 +733,10 @@ function VitrineConteudo() {
                     <Link
                       key={candidato.id_candidato}
                       href={`/empresa/banco-talentos/${candidato.id_candidato}`}
-                      className={`block bg-surface p-5 md:p-6 rounded-[24px] border shadow-sm transition-all duration-300 group ${
-                        candidato.pcd
+                      className={`block bg-surface p-5 md:p-6 rounded-[24px] border shadow-sm transition-all duration-300 group ${candidato.pcd
                           ? "border-blue-200 hover:border-blue-400 hover:shadow-blue-100"
                           : "border-gray-100 hover:border-primary/30 hover:shadow-lg"
-                      }`}
+                        }`}
                     >
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-2 flex-1">
