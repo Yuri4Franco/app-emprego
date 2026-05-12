@@ -2450,7 +2450,7 @@ export default function MeuCurriculoPage() {
                   <option value="Ensino Fundamental">Ensino Fundamental</option>
                   <option value="Ensino Médio">Ensino Médio</option>
                   <option value="Curso Técnico">Curso Técnico</option>
-                  <option value="Superior Curto (Tecnólogo)">
+                  <option value="Superior (Tecnólogo)">
                     Superior (Tecnólogo)
                   </option>
                   <option value="Graduação">

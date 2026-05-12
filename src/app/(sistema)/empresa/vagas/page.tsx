@@ -49,7 +49,7 @@ const STATUS_MAP: any = {
   },
   PAUSADA: {
     label: "Pausada",
-    color: "bg-blue-50 text-blue-600 border-blue-200",
+    color: "bg-blue-50 text-primary border-blue-200",
     icon: <HiOutlinePause />,
   },
   ENCERRADA: {
@@ -185,7 +185,7 @@ export default function GestaoVagasPage() {
               onClick={() => setFiltroStatus(tab.id)}
               className={`px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap shrink-0 ${
                 filtroStatus === tab.id
-                  ? "bg-gray-800 text-white shadow-md"
+                  ? "bg-primary text-white shadow-md"
                   : "bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 border border-gray-100"
               }`}
             >
@@ -229,7 +229,7 @@ export default function GestaoVagasPage() {
               {/* === A MÁGICA ACONTECE AQUI: A MÁSCARA FANTASMA === */}
               {/* O overflow-hidden fica só nesta div invisível. Ele corta a borda azul no formato arredondado sem afetar o resto do card! */}
               <div className="absolute inset-0 rounded-[32px] overflow-hidden pointer-events-none">
-                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
 
               <div className="flex flex-col md:flex-row md:items-center gap-5 md:gap-6 w-full">
@@ -252,7 +252,7 @@ export default function GestaoVagasPage() {
                     )}
                   </div>
 
-                  <h3 className="text-lg md:text-xl font-black text-gray-800 group-hover:text-blue-600 transition-colors pr-8">
+                  <h3 className="text-lg md:text-xl font-black text-gray-800 group-hover:text-primary transition-colors pr-8">
                     {vaga.titulo}
                   </h3>
 
@@ -284,7 +284,7 @@ export default function GestaoVagasPage() {
                   {vaga.status !== "RASCUNHO" &&
                     vaga.status !== "REPROVADA" && (
                       <div className="text-center px-4 md:px-6 md:border-r border-gray-100">
-                        <p className="text-2xl font-black text-blue-600 leading-none">
+                        <p className="text-2xl font-black text-primary leading-none">
                           {vaga._count?.candidaturas || 0}
                         </p>
                         <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1.5">
@@ -310,7 +310,7 @@ export default function GestaoVagasPage() {
                           e.stopPropagation();
                           router.push(`/empresa/vagas/${vaga.id_vaga}/editar`);
                         }}
-                        className="flex items-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 rounded-[16px] hover:bg-blue-600 hover:text-white transition-all shadow-sm font-bold text-sm"
+                        className="flex items-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 rounded-[16px] hover:bg-primary hover:text-white transition-all shadow-sm font-bold text-sm"
                       >
                         <HiOutlinePencilAlt size={18} />{" "}
                         <span className="hidden sm:block">Continuar</span>
@@ -337,7 +337,7 @@ export default function GestaoVagasPage() {
                             menuAberto === vaga.id_vaga ? null : vaga.id_vaga,
                           );
                         }}
-                        className="p-3 text-gray-400 hover:text-blue-600 bg-gray-50 hover:bg-blue-50 rounded-[16px] transition-all"
+                        className="p-3 text-gray-400 hover:text-primary bg-gray-50 hover:bg-blue-50 rounded-[16px] transition-all"
                       >
                         {isDuplicating === vaga.id_vaga ? (
                           <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
