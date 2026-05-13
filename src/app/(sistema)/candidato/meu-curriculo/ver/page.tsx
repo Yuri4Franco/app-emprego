@@ -80,7 +80,6 @@ export default function VerCurriculoPage() {
   return (
     <div className="max-w-4xl pt-10 mx-auto pb-20 animate-in fade-in duration-700">
       {/* BARRA DE AÇÕES (Oculta na impressão) */}
-      {/* BARRA DE AÇÕES (Oculta na impressão) */}
       <div className="flex items-center justify-between mb-8 print:hidden">
         {/* Botão Secundário: Voltar */}
         <Link
@@ -107,23 +106,22 @@ export default function VerCurriculoPage() {
       {/* A FOLHA DO CURRÍCULO */}
       <div
         ref={componentRef}
-        // print:m-0 print:p-8 tira o padding exagerado da tela e deixa uma margem segura pra folha A4
         className="bg-white rounded-[40px] md:p-14 p-8 shadow-sm border border-gray-100 print:shadow-none print:border-none print:m-0 print:p-8 print:w-full"
       >
         {/* ========================================= */}
         {/* CABEÇALHO (Foto, Nome e Contatos)         */}
         {/* ========================================= */}
         <header className="flex flex-col md:flex-row print:flex-row gap-8 lg:gap-10 items-center md:items-start border-b border-gray-100 print:border-gray-200 pb-10 mb-10 print:pb-8 print:mb-8">
-          {/* FOTO: Estilo retrato clássico (Círculo) com borda fina */}
+          {/* FOTO: Ajustada para w-32 h-32 */}
           <div className="relative shrink-0">
             {dados.foto_url ? (
               <img
                 src={dados.foto_url}
                 alt={nome}
-                className="w-40 h-40 print:w-32 print:h-32 rounded-full object-cover border border-gray-200 shadow-sm print:shadow-none print:border-gray-300"
+                className="w-32 h-32 rounded-full object-cover border border-gray-200 shadow-sm print:shadow-none print:border-gray-300"
               />
             ) : (
-              <div className="w-40 h-40 print:w-32 print:h-32 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-4xl font-black text-gray-300 shrink-0 print:border-gray-300">
+              <div className="w-32 h-32 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-4xl font-black text-gray-300 shrink-0 print:border-gray-300">
                 {nome.charAt(0)}
               </div>
             )}
@@ -142,7 +140,7 @@ export default function VerCurriculoPage() {
               )}
             </div>
 
-            {/* CONTATOS: Estilo "Papel Timbrado" - Sem fundos coloridos, limpo e direto */}
+            {/* CONTATOS */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-3 mt-6 pt-6 border-t border-gray-50 print:border-gray-100 text-sm print:text-xs text-gray-600 font-medium">
               {dados.usuario?.email && (
                 <div className="flex items-center gap-2">
@@ -274,7 +272,6 @@ export default function VerCurriculoPage() {
                 {dados.experiencias.map((exp: any) => (
                   <div
                     key={exp.id_experiencia}
-                    // break-inside-avoid garante que a experiência não seja cortada no meio se a folha acabar
                     className="relative pl-8 border-l-2 border-gray-100 print:border-gray-300 print:break-inside-avoid"
                   >
                     <div className="absolute w-4 h-4 bg-white border-4 border-blue-600 rounded-full -left-[9px] top-1 print:border-gray-800"></div>
@@ -377,12 +374,13 @@ export default function VerCurriculoPage() {
               {dados.competencias.map((c: any) => (
                 <div
                   key={c.id_competencia}
-                  className="flex flex-col justify-center px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-2xl print:border-gray-300 print:bg-transparent print:rounded-lg print:py-1 print:px-3"
+                  // ✨ Adicionado fundo azulzinho bem sutil na tela, mas transparente na impressão
+                  className="flex flex-col justify-center px-4 py-2.5 bg-blue-50/50 border border-blue-100 text-blue-800 rounded-2xl print:border-gray-300 print:bg-transparent print:text-gray-800 print:rounded-lg print:py-1 print:px-3"
                 >
-                  <span className="text-sm print:text-xs font-bold text-gray-800">
+                  <span className="text-sm print:text-xs font-bold">
                     {c.competencia?.nome}
                   </span>
-                  <span className="text-[10px] text-gray-400 print:text-gray-500 uppercase font-black tracking-widest mt-0.5">
+                  <span className="text-[10px] text-blue-500/70 print:text-gray-500 uppercase font-black tracking-widest mt-0.5">
                     {c.nivel}
                   </span>
                 </div>
@@ -399,12 +397,25 @@ export default function VerCurriculoPage() {
             {/* Bloco de Logística */}
             <div className="bg-gray-50 p-6 rounded-3xl print:bg-transparent print:p-0">
               <h4 className="text-xs font-black text-gray-400 print:text-gray-800 uppercase tracking-widest mb-4">
-                Disponibilidade
+                Disponibilidade & Logística
               </h4>
               <ul className="space-y-3 print:space-y-1.5 text-sm print:text-xs text-gray-700 font-medium">
                 <li className="flex justify-between items-center border-b border-gray-200/60 print:border-none pb-2 print:pb-0">
                   <span className="text-gray-500 print:text-gray-600">
-                    Trabalho aos sabados:
+                    Carteira de Habilitação (CNH):
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    {dados.cnh &&
+                    dados.cnh.length > 0 &&
+                    !dados.cnh.includes("NAO_POSSUO")
+                      ? dados.cnh.join(", ")
+                      : "Não possui"}
+                  </span>
+                </li>
+
+                <li className="flex justify-between items-center border-b border-gray-200/60 print:border-none pb-2 print:pb-0">
+                  <span className="text-gray-500 print:text-gray-600">
+                    Trabalho aos sábados:
                   </span>
                   <span className="font-bold text-gray-900">
                     {dados.disponibilidade_sabados ? "Sim" : "Não"}

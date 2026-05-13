@@ -147,7 +147,7 @@ export default function BancoTalentosDashboard() {
         {/* BOTÕES DE AÇÃO */}
         <div className="flex flex-col sm:flex-row items-stretch gap-2 w-full lg:w-auto shrink-0">
           <Link
-            href="/empresa/meus-curriculos-salvos"
+            href="/empresa/banco-talentos/meus-curriculos-salvos"
             className="flex items-center justify-center gap-2 px-6 py-3.5 bg-gray-50 border border-gray-200 text-foreground rounded-full text-xs font-black uppercase tracking-widest hover:border-primary hover:text-primary transition-all group"
           >
             <HiOutlineBookmark size={16} className="group-hover:scale-110 transition-transform" />
@@ -157,7 +157,7 @@ export default function BancoTalentosDashboard() {
           {/* SÓ MOSTRA SE NÃO FOR ASSOCIADA */}
           {!isAssociada && (
             <Link
-              href="/empresa/meus-desbloqueados"
+              href="/empresa/banco-talentos/meus-desbloqueados"
               className="flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-surface rounded-full text-xs font-black uppercase tracking-widest hover:bg-hover-button transition-all shadow-md shadow-primary/20 group"
             >
               <HiLockClosed size={16} className="group-hover:scale-110 transition-transform" />
