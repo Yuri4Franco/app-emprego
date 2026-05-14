@@ -16,6 +16,7 @@ import {
     HiOutlineSearch
 } from "react-icons/hi";
 import { IoIosArrowDown } from "react-icons/io";
+import ContatoEmpresaForm from "@/src/components/ContatoEmpresaForm";
 
 const faqData = [
     {
@@ -98,7 +99,7 @@ export default function EmpresasPage() {
                             <ButtonType href="#contato" variant="secondary" size="lg" className="shadow-lg shadow-blue-900/20">
                                 Falar com um consultor
                             </ButtonType>
-                            <ButtonType href="/sobre" variant="outline" size="lg" className="border-blue-200 text-blue-100 hover:bg-white/10 hover:border-white">
+                            <ButtonType href="https://acipanambi.com/" variant="outline" size="lg" className="border-blue-200 text-blue-100 hover:bg-white/10 hover:border-white">
                                 Conhecer a ACI
                             </ButtonType>
                         </div>
@@ -266,68 +267,7 @@ export default function EmpresasPage() {
             </section>
 
             {/* --- 6. FORMULÁRIO DE CONTATO --- */}
-            <section id="contato" className="py-24 bg-white scroll-mt-20">
-                <div className="max-w-6xl mx-auto px-6 md:px-8">
-                    <div className="bg-primary rounded-3xl p-8 md:p-16 flex flex-col md:flex-row gap-12 shadow-2xl relative overflow-hidden">
-
-                        {/* Decorativo */}
-                        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500 rounded-full blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
-
-                        {/* Texto */}
-                        <div className="w-full md:w-1/2 text-white relative z-10">
-                            <h2 className="text-3xl md:text-4xl font-bold mb-6">Pronto para encontrar os melhores talentos?</h2>
-                            <p className="text-blue-100 text-lg mb-8">
-                                Preencha o formulário ao lado e um de nossos consultores entrará em contato para ativar o cadastro da sua empresa.
-                            </p>
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3 text-blue-100">
-                                    <HiOutlineCheckCircle className="text-2xl text-blue-300" />
-                                    <span>Atendimento personalizado</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-blue-100">
-                                    <HiOutlineCheckCircle className="text-2xl text-blue-300" />
-                                    <span>Condições exclusivas para associados</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-blue-100">
-                                    <HiOutlineCheckCircle className="text-2xl text-blue-300" />
-                                    <span>Suporte para cadastro de vagas</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* O Formulário  */}
-                        <div className="w-full md:w-1/2 bg-white rounded-2xl p-8 shadow-lg relative z-10">
-                            <h3 className="text-gray-800 font-bold text-xl mb-6">Fale Conosco</h3>
-                            <form className="space-y-5">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Empresa ou Responsável</label>
-                                    <input type="text" className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="Ex: ACI Panambi" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">E-mail Profissional</label>
-                                    <input type="email" className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="rh@suaempresa.com.br" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Assunto</label>
-                                    <select className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
-                                        <option>Quero cadastrar minha empresa</option>
-                                        <option>Dúvidas sobre planos</option>
-                                        <option>Suporte técnico</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem</label>
-                                    <textarea rows={4} className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="Como podemos ajudar?"></textarea>
-                                </div>
-                                <ButtonType variant="primary" size="lg" className="w-full justify-center mt-2">
-                                    Enviar Mensagem
-                                </ButtonType>
-                            </form>
-                        </div>
-
-                    </div>
-                </div>
-            </section>
+            <ContatoEmpresaForm />
 
         </div>
     );
