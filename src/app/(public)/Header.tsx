@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Logo from "@/src/assets/logos/logo-transparente.png";
+import Logo from "@/src/assets/logos/logo-transparente.webp";
 import NavLinks from "./NavLinks";
 import { ButtonType } from "@/src/components/ButtonType";
 
@@ -73,7 +73,7 @@ export default function Header() {
                 <Link href="/" className="block h-full hover:opacity-80 transition-opacity" onClick={closeMenu}>
                     <Image
                         src={Logo}
-                        alt="ACI Empregos Logo"
+                        alt="ACI Vagas Logo"
                         className="h-full w-auto object-contain"
                         priority
                     />
@@ -124,7 +124,7 @@ export default function Header() {
                         <Link href="/" onClick={closeMenu}>
                             <Image
                                 src={Logo}
-                                alt="ACI Empregos Logo"
+                                alt="ACI Vagas Logo"
                                 className="h-full w-auto object-contain"
                                 priority
                             />

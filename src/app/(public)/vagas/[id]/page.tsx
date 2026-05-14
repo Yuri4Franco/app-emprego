@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: `${vaga.titulo} em Panambi | ${empresaNome}`,
         description: `Candidate-se para a vaga de ${vaga.titulo}. ${vaga.modelo_trabalho} em Panambi - RS. Veja os requisitos e benefícios.`,
         openGraph: {
-            images: [vaga.empresa?.logotipo_url || '/og-image.png'],
+            images: [vaga.empresa?.logotipo_url || '/og-image.webp'],
         },
     };
 }

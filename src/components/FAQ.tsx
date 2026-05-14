@@ -5,12 +5,12 @@ import { IoIosArrowDown } from "react-icons/io";
 
 const faqData = [
     {
-        question: "O que é a ACI Empregos?",
-        answer: "A ACI Empregos é uma plataforma online desenvolvida pela ACI - Panambi que conecta candidatos a emprego com empresas da região de Panambi. Nosso objetivo é facilitar o processo de recrutamento, oferecendo uma experiência intuitiva tanto para quem busca uma vaga quanto para as empresas que desejam contratar talentos locais."
+        question: "O que é a ACI Vagas?",
+        answer: "A ACI Vagas é uma plataforma online desenvolvida pela ACI - Panambi que conecta candidatos a emprego com empresas da região de Panambi. Nosso objetivo é facilitar o processo de recrutamento, oferecendo uma experiência intuitiva tanto para quem busca uma vaga quanto para as empresas que desejam contratar talentos locais."
     },
     {
         question: "O cadastro é gratuito?",
-        answer: "Sim! O cadastro de currículos na ACI Empregos é totalmente gratuito para candidatos. Nossa missão é conectar talentos às melhores oportunidades de Panambi e região sem custos para quem busca emprego."
+        answer: "Sim! O cadastro de currículos na ACI Vagas é totalmente gratuito para candidatos. Nossa missão é conectar talentos às melhores oportunidades de Panambi e região sem custos para quem busca emprego."
     },
     {
         question: "Como faço cadastrar meu currículo?",
@@ -66,7 +66,7 @@ export default function FAQ() {
                         Dúvidas Frequentes
                     </h2>
                     <p className="text-white/80 max-w-2xl mx-auto">
-                        Separamos as principais perguntas para te ajudar a navegar pela plataforma da ACI Empregos.
+                        Separamos as principais perguntas para te ajudar a navegar pela plataforma da ACI Vagas.
                     </p>
                 </div>
 

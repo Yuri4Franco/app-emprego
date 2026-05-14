@@ -12,8 +12,8 @@ import { HiOutlineEye, HiOutlineEyeOff, HiArrowRight, HiOutlineInformationCircle
 import Image from "next/image";
 import toast from "react-hot-toast"; // Importado para feedbacks
 
-import Logo from "@/src/assets/logos/logo-transparente.png";
-import bgAuth from "@/src/assets/backgrounds/bg-cadastrar.jpg";
+import Logo from "@/src/assets/logos/logo-transparente.webp";
+import bgAuth from "@/src/assets/backgrounds/bg-cadastrar.webp";
 import api from "@/src/services/api";
 
 // 1. Schema de Validação (Alinhado com as regras do Backend)
@@ -91,7 +91,7 @@ export default function RegisterPage() {
             <Link href="/" className="inline-block mb-8">
               <Image
                 src={Logo}
-                alt="Logo ACI Empregos"
+                alt="Logo ACI Vagas"
                 className="w-50 mx-auto mb-4"
               />
             </Link>
@@ -220,7 +220,7 @@ export default function RegisterPage() {
         <div className="absolute inset-0 bg-primary z-10 mix-blend-multiply"></div>
         <Image
           src={bgAuth}
-          alt="Imagem de Fundo ACI Empregos"
+          alt="Imagem de Fundo ACI Vagas"
           fill
           className="object-cover w-full h-full opacity-70"
         />
@@ -238,7 +238,7 @@ export default function RegisterPage() {
             </h2>
             <p className="text-blue-100 text-lg">
               Dê o primeiro passo na sua carreira hoje. Empresas de toda a
-              região estão procurando por perfis como o seu na ACI Empregos.
+              região estão procurando por perfis como o seu na ACI Vagas.
             </p>
             <ul className="space-y-3 pt-4">
               <li className="flex items-center gap-3">

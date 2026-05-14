@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ButtonType } from "@/src/components/ButtonType";
-import BgImagem from "@/src/assets/backgrounds/bg-t1.jpg";
+import BgImagem from "@/src/assets/backgrounds/bg-t1.webp";
 import {
     HiOutlineOfficeBuilding,
     HiOutlineUserGroup,
@@ -92,7 +92,7 @@ export default function EmpresasPage() {
                             Publique sua vaga em minutos e encontre o talento certo.
                         </h1>
                         <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed max-w-2xl">
-                            Chega de currículos perdidos em caixas de e-mail ou redes sociais. A ACI Empregos é a nova plataforma oficial da Associação Comercial e Industrial de panambi para centralizar e profissionalizar o recrutamento na nossa cidade. Conectamos sua empresa diretamente aos candidatos locais de forma organizada, ágil e confiável.
+                            Chega de currículos perdidos em caixas de e-mail ou redes sociais. A ACI Vagas é a nova plataforma oficial da Associação Comercial e Industrial de panambi para centralizar e profissionalizar o recrutamento na nossa cidade. Conectamos sua empresa diretamente aos candidatos locais de forma organizada, ágil e confiável.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <ButtonType href="#contato" variant="secondary" size="lg" className="shadow-lg shadow-blue-900/20">
@@ -243,7 +243,7 @@ export default function EmpresasPage() {
                 <div className="max-w-4xl mx-auto px-6">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl font-bold text-gray-800 mb-4">Perguntas Frequentes</h2>
-                        <p className="text-gray-600">Tire suas dúvidas sobre como contratar pela ACI Empregos.</p>
+                        <p className="text-gray-600">Tire suas dúvidas sobre como contratar pela ACI Vagas.</p>
                     </div>
 
                     <div className="flex flex-col gap-4">

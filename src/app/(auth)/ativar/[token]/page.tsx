@@ -11,7 +11,7 @@ import {
 } from "react-icons/hi";
 import api from "@/src/services/api";
 
-import Logo from "@/src/assets/logos/logo-transparente.png";
+import Logo from "@/src/assets/logos/logo-transparente.webp";
 
 export default function AtivarContaPage({
   params,
@@ -65,7 +65,7 @@ useEffect(() => {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-gray-100 transition-all duration-300">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Image src={Logo} alt="Logo ACI Empregos" className="h-12 w-auto" />
+          <Image src={Logo} alt="Logo " className="h-12 w-auto" />
         </div>
 
         {/* --- ESTADO: CARREGANDO --- */}
@@ -92,7 +92,7 @@ useEffect(() => {
               Conta Ativada!
             </h1>
             <p className="text-gray-600 mb-6">
-              Sua conta na ACI Empregos foi ativada com sucesso. Você será
+              Sua conta na ACI Vagas foi ativada com sucesso. Você será
               redirecionado para o login em instantes...
             </p>
 

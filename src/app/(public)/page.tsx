@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import SearchBar from "@/src/components/SearchBar";
-import heroBgImage from "@/src/assets/backgrounds/bg-1.png";
+import heroBgImage from "@/src/assets/backgrounds/bg-1.webp";
 import { ButtonType } from "@/src/components/ButtonType";
 import { RandomDesignImage } from "./RandomDesignImagem";
 import FAQ from "@/src/components/FAQ";

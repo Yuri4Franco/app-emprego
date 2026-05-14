@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 // Importando todas as imagens estaticamente para o Next.js otimizar elas
-import Img1 from "@/src/assets/designs/1.png";
-import Img2 from "@/src/assets/designs/2.png";
-import Img3 from "@/src/assets/designs/3.png";
-import Img4 from "@/src/assets/designs/4.png";
-import Img5 from "@/src/assets/designs/5.png";
-import Img6 from "@/src/assets/designs/6.png";
+import Img1 from "@/src/assets/designs/1.webp";
+import Img2 from "@/src/assets/designs/2.webp";
+import Img3 from "@/src/assets/designs/3.webp";
+import Img4 from "@/src/assets/designs/4.webp";
+import Img5 from "@/src/assets/designs/5.webp";
+import Img6 from "@/src/assets/designs/6.webp";
 
 // Array com todas as opções
 const designs = [Img1, Img2, Img3, Img4, Img5, Img6];

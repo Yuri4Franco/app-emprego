@@ -17,8 +17,8 @@ import { ButtonType } from "@/src/components/ButtonType";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 
 // A  ssets e Configurações
-import bgAuth from "@/src/assets/backgrounds/bg-login.jpg";
-import logo from "@/src/assets/logos/logo-transparente.png";
+import bgAuth from "@/src/assets/backgrounds/bg-login.webp";
+import logo from "@/src/assets/logos/logo-transparente.webp";
 import api from "@/src/services/api";
 
 const loginSchema = z.object({
@@ -122,7 +122,7 @@ export default function LoginPage() {
             <Link href="/" className="inline-block mb-6">
               <Image
                 src={logo}
-                alt="Logo ACI Empregos"
+                alt="Logo ACI Vagas"
                 className="w-48 mx-auto"
               />
             </Link>
@@ -213,14 +213,17 @@ export default function LoginPage() {
 
       {/* LADO DIREITO: BRANDING */}
       <div className="hidden lg:block w-1/2 relative bg-gray-900">
-        <div className="absolute inset-0 bg-blue-900 z-10 mix-blend-multiply opacity-60"></div>
+        <div className="absolute inset-0 bg-primary z-10 mix-blend-multiply"></div>
         <Image
           src={bgAuth}
-          alt="Imagem de Fundo ACI Empregos"
+          alt="Imagem de Fundo ACI Vagas"
           fill
           className="object-cover w-full h-full opacity-70"
           priority
         />
+
+        <div className="absolute inset-0 bg-cover bg-center"></div>
+
         <div className="relative z-20 h-full flex flex-col justify-end p-16 text-white">
           <blockquote className="space-y-4">
             <p className="text-2xl font-medium leading-relaxed">

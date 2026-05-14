@@ -25,6 +25,7 @@ interface EmpresaPerfil {
   status: string;
   creditos_vagas: number;
   creditos_curriculos: number;
+  slug: string;
 }
 
 interface PerfilCompleto {

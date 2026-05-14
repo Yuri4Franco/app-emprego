@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/src/AuthContext";
-import Logo from "@/src/assets/logos/logo-transparente-branca.png";
+import Logo from "@/src/assets/logos/logo-transparente-branca.webp";
 import {
   HiOutlineHome,
   HiOutlineDocumentText,

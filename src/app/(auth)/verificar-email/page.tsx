@@ -7,7 +7,7 @@ import { HiOutlineMailOpen, HiArrowLeft } from "react-icons/hi";
 import toast from "react-hot-toast";
 import api from "@/src/services/api";
 
-import Logo from "@/src/assets/logos/logo-transparente.png";
+import Logo from "@/src/assets/logos/logo-transparente.webp";
 
 export default function VerificarEmailPage() {
   const [emailPendente, setEmailPendente] = useState<string | null>(null);
@@ -51,7 +51,7 @@ export default function VerificarEmailPage() {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-gray-100">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <Image src={Logo} alt="Logo ACI Empregos" className="h-12 w-auto" />
+          <Image src={Logo} alt="Logo ACI Vagas" className="h-12 w-auto" />
         </div>
 
         {/* Ícone de E-mail */}
