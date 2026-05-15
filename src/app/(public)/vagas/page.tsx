@@ -3,7 +3,7 @@ import { mapearVagaBackendParaFrontend } from "@/src/utils/vaga-adapter";
 
 async function getVagasIniciais() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vagas?pagina=1&limite=9`, {
-        next: { revalidate: 0 }
+        next: { revalidate: 1800 }
     });
 
     if (!res.ok) return { dados: [], paginacao: { total: 0, total_paginas: 0, pagina_atual: 1 } };
