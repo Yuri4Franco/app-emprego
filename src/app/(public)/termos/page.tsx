@@ -167,14 +167,14 @@ export default function TermosDeUsoPage() {
                   <HiOutlineEye className="text-blue-500 mb-3" size={28} />
                   <h4 className="font-black text-gray-900 mb-2">Perfil Visível (Ativo)</h4>
                   <p className="text-sm text-gray-600">
-                    O seu currículo será apresentado nas pesquisas das empresas. O seu nome e dados de contacto permanecerão ocultos até que uma empresa parceira ou pagante decida "desbloquear" o seu perfil para o contactar.
+                    O seu currículo será apresentado nas pesquisas das empresas. O seu nome e dados de contato permanecerão ocultos até que uma empresa parceira ou pagante decida "desbloquear" o seu perfil para o contactar.
                   </p>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200">
                   <HiOutlineEye className="text-gray-400 mb-3" size={28} />
                   <h4 className="font-black text-gray-900 mb-2">Perfil Oculto (Pausado)</h4>
                   <p className="text-sm text-gray-600">
-                    O currículo não aparecerá em novas pesquisas. As empresas que já o tinham desbloqueado anteriormente mantêm acesso aos seus contactos na respetiva área de "Salvos".
+                    O currículo não aparecerá em novas pesquisas. As empresas que já o tinham desbloqueado anteriormente mantêm acesso aos seus contatos na respetiva área de "Salvos".
                   </p>
                 </div>
               </div>
