@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/src/AuthContext";
 import Logo from "@/src/assets/logos/logo-transparente-branca.webp";
+import LogoCor from "@/src/assets/logos/logo-transparente.webp";
 import {
   HiOutlineHome,
   HiOutlineDocumentText,
@@ -77,7 +78,7 @@ const MENU_CONFIG = {
       href: "/empresa/dashboard",
       icon: <HiOutlineChartBar size={22} />,
     },
-        {
+    {
       label: "Perfil da Empresa",
       href: "/empresa/minhas-informacoes",
       icon: <HiOutlineOfficeBuilding size={22} />,
@@ -236,17 +237,18 @@ export function Sidebar() {
 
       {/* 2. BARRA FLUTUANTE MOBILE (Com esconderijo automático) */}
       <div
-        className={`md:hidden fixed top-0 left-0 w-full z-40 bg-white border-b border-gray-200 p-4 flex items-center justify-between transition-transform duration-300 ease-in-out ${
-          isVisible ? "translate-y-0" : "-translate-y-full"
-        }`}
+        className={`md:hidden fixed top-0 left-0 w-full z-40 bg-white border-b border-gray-200 p-4 flex items-center justify-between transition-transform duration-300 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"
+          }`}
       >
-        <Image
-          src={Logo}
-          alt="Logo ACI Panambi"
-          width={120}
-          height={30}
-          className="object-contain filter invert brightness-0"
-        />
+        <div className="h-14 relative shrink-0">
+          {/* Adicionei onClick={closeMenu} aqui na logo também por garantia */}
+            <Image
+              src={LogoCor}
+              alt="ACI Vagas Logo"
+              className="h-full w-auto object-contain"
+              priority
+            />
+        </div>
         <div className="flex items-center gap-3">
           <button
             onClick={handleOpenNotifications}
@@ -292,12 +294,12 @@ export function Sidebar() {
 
         {/* Header da Sidebar (Mais compacto) */}
         <div className="p-6 pb-2 mt-4 md:mt-0">
-          <div className="relative h-10 w-full mb-6">
+          <div className="relative h-14 w-full mb-6">
             <Image
               src={Logo}
               alt="Logo ACI Panambi"
               fill
-              className="object-contain object-left md:object-center lg:object-left"
+              className="object-contain object-center md:object-center lg:object-left"
               priority
             />
           </div>
@@ -351,11 +353,10 @@ export function Sidebar() {
         <div className="p-5 space-y-1 border-t border-white/5 shrink-0">
           <Link
             href="/configuracoes"
-            className={`w-full flex items-center gap-3 px-5 py-3 rounded-2xl transition-all font-bold text-xs uppercase tracking-wider ${
-              isActive("/configuracoes")
-                ? "bg-white/10 text-white"
-                : "text-white/50 hover:text-white hover:bg-white/5"
-            }`}
+            className={`w-full flex items-center gap-3 px-5 py-3 rounded-2xl transition-all font-bold text-xs uppercase tracking-wider ${isActive("/configuracoes")
+              ? "bg-white/10 text-white"
+              : "text-white/50 hover:text-white hover:bg-white/5"
+              }`}
           >
             <HiOutlineCog size={20} /> Configurações
           </Link>
@@ -374,9 +375,8 @@ export function Sidebar() {
 
       {/* 5. DRAWER DE NOTIFICAÇÕES (Desliza da Direita) */}
       <div
-        className={`fixed top-0 right-0 h-[100dvh] w-full max-w-sm bg-white shadow-[0_0_40px_rgba(0,0,0,0.1)] z-50 transform transition-transform duration-300 ease-out flex flex-col ${
-          isNotificationsOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-[100dvh] w-full max-w-sm bg-white shadow-[0_0_40px_rgba(0,0,0,0.1)] z-50 transform transition-transform duration-300 ease-out flex flex-col ${isNotificationsOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div>
@@ -417,11 +417,10 @@ export function Sidebar() {
                 return (
                   <div
                     key={notif.id_notificacao}
-                    className={`relative p-4 rounded-[20px] transition-colors ${
-                      !notif.lida
-                        ? "bg-white shadow-sm border border-blue-100"
-                        : "hover:bg-gray-50 border border-transparent"
-                    }`}
+                    className={`relative p-4 rounded-[20px] transition-colors ${!notif.lida
+                      ? "bg-white shadow-sm border border-blue-100"
+                      : "hover:bg-gray-50 border border-transparent"
+                      }`}
                   >
                     {!notif.lida && (
                       <div className="absolute top-6 left-2 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
@@ -475,11 +474,10 @@ function MenuLink({ href, icon, label, active, badge }: any) {
   return (
     <Link
       href={href}
-      className={`flex items-center justify-between px-5 py-3 rounded-2xl font-bold text-sm transition-all relative group ${
-        active
-          ? "bg-white text-primary shadow-lg shadow-black/20"
-          : "text-white/60 hover:text-white hover:bg-white/5"
-      }`}
+      className={`flex items-center justify-between px-5 py-3 rounded-2xl font-bold text-sm transition-all relative group ${active
+        ? "bg-white text-primary shadow-lg shadow-black/20"
+        : "text-white/60 hover:text-white hover:bg-white/5"
+        }`}
     >
       <div className="flex items-center gap-3">
         {active && (

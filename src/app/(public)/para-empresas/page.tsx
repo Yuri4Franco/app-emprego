@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ButtonType } from "@/src/components/ButtonType";
 import BgImagem from "@/src/assets/backgrounds/bg-t1.webp";
+import FtPainel from "@/src/assets/designs/foto-painel.webp";
 import {
     HiOutlineOfficeBuilding,
     HiOutlineUserGroup,
@@ -20,12 +21,12 @@ import ContatoEmpresaForm from "@/src/components/ContatoEmpresaForm";
 
 const faqData = [
     {
-        question: "Preciso ser associado da ACI- Panambi?",
-        answer: "Embora a plataforma seja uma iniciativa da ACI, oferecemos planos especiais para associados. Entre em contato para entender as condições exclusivas para membros e as opções para não-sócios."
+        question: "Preciso ser associado da ACI-Panambi?",
+        answer: "Não precisa ser nosso associado para utilizar a plataforma. Entre em contato para entender as condições exclusivas para membros e as opções para não-sócios."
     },
     {
         question: "Tem algum custo?",
-        answer: "Para empresas associadas, o uso da plataforma pode estar incluso na mensalidade ou ter um custo simbólico. Para não associados, trabalhamos com planos de assinatura ou por vaga avulsa. Fale com nosso consultor para uma proposta personalizada."
+        answer: "Apenas para não associados. Nós oferecemos pacotes de curriculos e pagamentos por vagas avulsas. Entre em contato conosco para saber mais."
     },
     {
         question: "É só para empresas de Panambi?",
@@ -33,12 +34,8 @@ const faqData = [
     },
     {
         question: "É para empresas de todos os portes?",
-        answer: "Com certeza! Desde o MEI que precisa contratar seu primeiro ajudante até grandes indústrias com processos seletivos contínuos. A plataforma se adapta à sua necessidade."
+        answer: "Com certeza! Desde o pequenas empresas com uma demanda pontual de talento até grandes indústrias com processos seletivos contínuos. A plataforma se adapta à sua necessidade."
     },
-    {
-        question: "Como faço para publicar uma vaga?",
-        answer: "É simples: Primeiro, preencha o formulário abaixo para ativar seu acesso. Nossa equipe validará seu cadastro e liberará seu painel administrativo. Lá, você poderá criar vagas em poucos cliques."
-    }
 ];
 
 export default function EmpresasPage() {
@@ -206,15 +203,10 @@ export default function EmpresasPage() {
                         </div>
 
                         {/* Imagem / Visual Ilustrativo */}
-                        <div className="w-full md:w-1/2 bg-gray-100 rounded-3xl min-h-[400px] flex items-center justify-center relative overflow-hidden">
+                        <div className="w-full md:w-1/2 min-h-[400px] flex items-center justify-center relative overflow-hidden">
                             {/* Aqui você colocaria uma imagem real. Como placeholder, uso um padrão abstrato */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10"></div>
-                            <div className="relative z-10 text-center p-8">
-                                <HiOutlineUserGroup className="text-6xl text-primary/20 mx-auto mb-4" />
-                                <p className="text-gray-400 font-medium">Imagem do Painel Administrativo<br />ou Ambiente Corporativo</p>
-                            </div>
+                            <Image src={FtPainel} alt="Ilustração de RH" className="w-full h-auto object-cover rounded-2xl shadow-lg" />
                         </div>
-
                     </div>
                 </div>
             </section>
@@ -223,18 +215,6 @@ export default function EmpresasPage() {
             <section className="bg-primary py-16 text-white">
                 <div className="max-w-7xl mx-auto px-6 md:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-white/20">
-                        <div className="py-4">
-                            <div className="text-5xl font-bold mb-2">+5000</div>
-                            <div className="text-blue-200 text-lg font-medium">Currículos Cadastrados</div>
-                        </div>
-                        <div className="py-4">
-                            <div className="text-5xl font-bold mb-2">+300</div>
-                            <div className="text-blue-200 text-lg font-medium">Empresas Parceiras</div>
-                        </div>
-                        <div className="py-4">
-                            <div className="text-5xl font-bold mb-2">+30</div>
-                            <div className="text-blue-200 text-lg font-medium">Vagas Divulgadas Hoje</div>
-                        </div>
                     </div>
                 </div>
             </section>

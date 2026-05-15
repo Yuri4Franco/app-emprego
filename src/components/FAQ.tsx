@@ -4,46 +4,87 @@ import { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
 
 const faqData = [
+
     {
+
         question: "O que é a ACI Vagas?",
+
         answer: "A ACI Vagas é uma plataforma online desenvolvida pela ACI - Panambi que conecta candidatos a emprego com empresas da região de Panambi. Nosso objetivo é facilitar o processo de recrutamento, oferecendo uma experiência intuitiva tanto para quem busca uma vaga quanto para as empresas que desejam contratar talentos locais."
+
     },
+
     {
+
         question: "O cadastro é gratuito?",
+
         answer: "Sim! O cadastro de currículos na ACI Vagas é totalmente gratuito para candidatos. Nossa missão é conectar talentos às melhores oportunidades de Panambi e região sem custos para quem busca emprego."
+
     },
+
     {
+
         question: "Como faço cadastrar meu currículo?",
+
         answer: "Para cadastrar seu currículo, clique no botão 'Área do Candidato' no topo da página. Se for seu primeiro acesso, selecione 'Cadastre-se', preencha seus dados pessoais e profissionais e pronto! Seu perfil já estará apto para se candidatar às vagas disponíveis."
+
     },
+
     {
+
         question: "Como as empresas entram em contato comigo?",
+
         answer: "As empresas podem visualizar seu currículo quando você se candidata a uma vaga. Se o seu perfil for compatível com os requisitos da vaga, a empresa poderá entrar em contato diretamente através dos dados fornecidos no seu cadastro. Se o seu curriculo estiver visível em nosso banco de talentos, recrutadores também podem encontrá-lo e entrar em contato proativamente."
+
     },
+
     {
+
         question: "Posso atualizar meu currículo depois de cadastrado?",
+
         answer: "Sim! Você pode atualizar seu currículo a qualquer momento acessando 'Meu Currículo' na Área do Candidato. Mantenha seus dados sempre atualizados para aumentar suas chances de ser encontrado pelas empresas."
+
     },
+
     {
+
         question: "O que é o Banco de Talentos da ACI - Panambi?",
+
         answer: "O Banco de Talentos da ACI - Panambi é uma funcionalidade que permite aos candidatos cadastrarem seus currículos em nossa plataforma, mesmo sem se candidatar a uma vaga específica. Isso aumenta suas chances de serem encontrados por recrutadores das maiores empresas de Panambi e região, que frequentemente buscam talentos diretamente em nosso banco."
+
     },
+
     {
+
         question: "Como participar do Banco de Talentos da ACI - Panambi?",
+
         answer: "Para participar do Banco de Talentos, basta se cadastrar na Área do Candidato e preencher seu currículo. Certifique-se de marcar a opção 'Participar do Banco de Talentos' durante o cadastro ou na seção 'Meu Currículo'. Assim, seu perfil ficará disponível para recrutadores que buscam talentos na nossa plataforma."
+
     },
+
     {
+
         question: "Por quanto tempo meu currículo ficará disponível no Banco de Talentos?",
+
         answer: "Seu currículo permanecerá por até 6 meses da data de cadastro, após isso ele será desativado automaticamente. Mas não se preocupe, nós entraremos em contato com você 20 dias antes do desativamento. Você pode ativar, desativar ou remover seu currículo a qualquer momento na seção 'Meu Currículo'."
+
     },
+
     {
+
         question: "Esqueci minha senha, e agora?",
+
         answer: "Sem problemas! Na página de login da Área do Candidato, clique em 'Esqueci minha senha'. Enviaremos um link de recuperação para o e-mail cadastrado em sua conta."
+
     },
+
     {
+
         question: "Posso me candidatar a mais de uma vaga?",
+
         answer: "Com certeza. Você pode se candidatar a quantas vagas desejar, desde que seu perfil seja compatível com os requisitos solicitados pela empresa."
+
     }
+
 ];
 
 export default function FAQ() {
@@ -82,8 +123,8 @@ export default function FAQ() {
                                 // Fechado: bg-white/5 (Translúcido), Borda transparente, Sem sombra
                                 // Aberto: bg-surface (Branco puro), Borda branca, Sombra
                                 className={`rounded-2xl border transition-all duration-300 ${isOpen
-                                        ? 'bg-surface border-white shadow-lg'
-                                        : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30'
+                                    ? 'bg-surface border-white shadow-lg'
+                                    : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30'
                                     }`}
                             >
                                 {/* Botão da Pergunta */}

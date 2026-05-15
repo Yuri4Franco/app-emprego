@@ -23,7 +23,7 @@ import { ButtonType } from "@/src/components/ButtonType";
 const trocarSenhaSchema = z
     .object({
         senha_atual: z.string().min(1, "A senha atual é obrigatória"),
-        nova_senha: z.string().min(6, "A nova senha deve ter no mínimo 6 caracteres"),
+        nova_senha: z.string().min(8, "A nova senha deve ter no mínimo 8 caracteres"),
         confirmar_senha: z.string().min(1, "Confirme a nova senha"),
     })
     .refine((data) => data.nova_senha === data.confirmar_senha, {
@@ -110,7 +110,7 @@ export default function ConfiguracoesConta() {
         try {
             // O axios.delete usa 'data' para passar o body
             await api.delete("/usuario/conta", {
-                data: { senha: deleteSenha }
+                data: { senha_confirmacao: deleteSenha }
             });
 
             toast.success("Sua conta foi excluída permanentemente.");
@@ -162,7 +162,7 @@ export default function ConfiguracoesConta() {
                         <Input
                             label="Nova Senha"
                             type="password"
-                            placeholder="No mínimo 6 caracteres"
+                            placeholder="No mínimo 8 caracteres"
                             {...registerSenha("nova_senha")}
                             error={errorsSenha.nova_senha?.message}
                         />
