@@ -101,7 +101,7 @@ export function BotaoCandidaturaDinamico({ idVaga, tituloVaga }: BotaoProps) {
                 onClick={handleAction}
                 className="w-full md:w-auto px-10 py-4 rounded-[20px] shadow-lg flex items-center justify-center gap-2 text-lg transition-all hover:scale-[1.02]"
             >
-                Candidatar-se agora
+                Quero me candidatar
             </ButtonType>
 
             {/* MODAL (Refatorado para ser mais clean) */}

@@ -17,6 +17,7 @@ import {
   HiOutlineInformationCircle,
   HiOutlineHeart, // <-- IMPORT NOVO PARA O CARD DE FAVORITOS
 } from "react-icons/hi";
+import toast from "react-hot-toast";
 
 // Tipagens Atualizadas
 interface Metricas {
@@ -123,7 +124,8 @@ export default function DashboardCandidatoPage() {
 
   const handleToggleVisibilidade = async () => {
     const novoStatus = !isVisivel;
-    setIsVisivel(novoStatus); // Atualização Otimista
+    setIsVisivel(novoStatus);
+    toast.success(`Perfil ${novoStatus ? "visível" : "invisível"} para empresas!`, { duration: 3000 });
     try {
       await api.patch("/candidato/visibilidade", {
         perfil_visivel_empresas: novoStatus,

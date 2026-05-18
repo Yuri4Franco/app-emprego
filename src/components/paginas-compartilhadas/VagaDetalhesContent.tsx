@@ -209,13 +209,13 @@ export default function VagaDetalhesContent({
                   <div className="space-y-1.5 pt-1">
                     <h4 className="font-black text-sm md:text-base tracking-tight">
                       {vaga.tipo_diversidade === "EXCLUSIVA_PCD"
-                        ? "Vaga de Ação Afirmativa: Exclusiva para PcD"
-                        : "Esta vaga também aceita candidaturas de PcDs"}
+                        ? "Vaga exclusiva para PcDs e neurodivergentes"
+                        : "Espaço para Todos os Talentos"}
                     </h4>
                     <p className="text-xs md:text-sm text-gray-700 leading-relaxed font-medium">
                       {vaga.tipo_diversidade === "EXCLUSIVA_PCD"
-                        ? "Esta oportunidade é destinada exclusivamente a pessoas com deficiência. O processo seletivo e o ambiente de trabalho são adaptados para garantir o seu desenvolvimento profissional."
-                        : "A empresa valoriza a diversidade e acolhe profissionais com deficiência. Todos os candidatos participarão do mesmo processo seletivo, com igualdade de condições."}
+                        ? "O processo seletivo e o ambiente de trabalho são adaptados para garantir o seu desenvolvimento profissional."
+                        : "A diversidade é valorizada neste ambiente de trabalho. A organização incentiva a candidatura de pessoas com deficiência (PcD) e neurodivergentes, garantindo um processo seletivo justo, acessível e com igualdade de oportunidades."}
                     </p>
                   </div>
                 </div>
@@ -261,7 +261,7 @@ export default function VagaDetalhesContent({
                 )}
               </div>
             ) : (
-              <div className="max-w-md mx-auto w-full">{botaoAcao}</div>
+              <div className="max-w-md mx-auto w-full flex items-center justify-center">{botaoAcao}</div>
             )}
           </div>
         </div>

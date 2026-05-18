@@ -306,7 +306,7 @@ export default function TabPrincipal({ areas }: TabPrincipalProps) {
               <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed font-medium">
                 Marque esta opção se você usa sistemas de recrutamento próprios
                 (Gupy, Sólides, etc.) ou prefere receber os currículos por
-                e-mail.
+                e-mail/WhatsApp.
               </p>
             </div>
           </label>

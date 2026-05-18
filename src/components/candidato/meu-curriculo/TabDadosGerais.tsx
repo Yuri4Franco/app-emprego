@@ -84,7 +84,9 @@ export default function TabDadosGerais({
       objetivo_profissional: dadosIniciais?.objetivo_profissional || "",
       resumo_profissional: dadosIniciais?.resumo_profissional || "",
       pretensao_salarial: dadosIniciais?.pretensao_salarial || "",
-      tipo_contato: dadosIniciais?.tipo_contato || "WHATSAPP",
+      tipo_contato: Array.isArray(dadosIniciais?.tipo_contato)
+        ? dadosIniciais.tipo_contato
+        : (dadosIniciais?.tipo_contato ? [dadosIniciais.tipo_contato] : ["WHATSAPP"]),
       sem_pretensao: !dadosIniciais?.pretensao_salarial,
       pcd: dadosIniciais?.pcd || false,
       tipo_pcd: dadosIniciais?.tipo_pcd || "",
@@ -464,6 +466,9 @@ export default function TabDadosGerais({
                   {areasSelecionadas.length}/10
                 </span>
               </label>
+              <p className="text-[11px] md:text-xs text-gray-500 mt-1 leading-relaxed">
+                Selecione até 10 áreas que mais se encaixam com seu perfil e com seus interesses. Isso ajuda os recrutadores a encontrarem seu currículo em nosso Banco de Talentos!
+              </p>
             </div>
             <div className="relative group z-20">
               <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 z-10" />
@@ -475,11 +480,10 @@ export default function TabDadosGerais({
                     : "Buscar área (Ex: TI, RH...)"
                 }
                 disabled={areasSelecionadas.length >= 10}
-                className={`w-full pl-12 pr-4 py-3.5 md:py-4 border rounded-[20px] md:rounded-[24px] outline-none text-sm transition-all disabled:opacity-50 ${
-                  erroAreas
-                    ? "bg-red-50/30 border-red-500 focus:ring-4 focus:ring-red-500/20"
-                    : "bg-gray-50 border-gray-100 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500"
-                }`}
+                className={`w-full pl-12 pr-4 py-3.5 md:py-4 border rounded-[20px] md:rounded-[24px] outline-none text-sm transition-all disabled:opacity-50 ${erroAreas
+                  ? "bg-red-50/30 border-red-500 focus:ring-4 focus:ring-red-500/20"
+                  : "bg-gray-50 border-gray-100 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500"
+                  }`}
                 value={searchTermArea}
                 onChange={(e) => {
                   setSearchTermArea(e.target.value);
@@ -545,20 +549,20 @@ export default function TabDadosGerais({
 
           {(!watch("resumo_profissional") ||
             !watch("objetivo_profissional")) && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50/50 p-4 rounded-2xl border border-blue-100 flex items-start gap-3 animate-in fade-in duration-500">
-              <span className="text-xl shrink-0">💡</span>
-              <div>
-                <h4 className="text-xs md:text-sm font-black text-blue-900">
-                  Dica de Ouro para chegar aos 100%
-                </h4>
-                <p className="text-[11px] md:text-xs text-blue-800/80 mt-0.5 leading-relaxed font-medium">
-                  Estes dois campos abaixo são opcionais, mas preenchê-los
-                  garante a pontuação máxima do seu currículo. Recrutadores
-                  adoram ler um bom resumo antes de olhar as experiências!
-                </p>
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50/50 p-4 rounded-2xl border border-blue-100 flex items-start gap-3 animate-in fade-in duration-500">
+                <span className="text-xl shrink-0">💡</span>
+                <div>
+                  <h4 className="text-xs md:text-sm font-black text-blue-900">
+                    Dica de Ouro para chegar aos 100%
+                  </h4>
+                  <p className="text-[11px] md:text-xs text-blue-800/80 mt-0.5 leading-relaxed font-medium">
+                    Estes dois campos abaixo são opcionais, mas preenchê-los
+                    garante a pontuação máxima do seu currículo. Recrutadores
+                    adoram ler um bom resumo antes de olhar as experiências!
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div className="space-y-2">
             <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
@@ -698,23 +702,49 @@ export default function TabDadosGerais({
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {[
+                  { id: "QUALQUER_UM", label: "Qualquer um" },
                   { id: "WHATSAPP", label: "WhatsApp" },
                   { id: "EMAIL", label: "E-mail" },
                   { id: "LIGACAO", label: "Ligação" },
-                  { id: "QUALQUER_UM", label: "Qualquer um" },
-                ].map((metodo) => (
-                  <label key={metodo.id} className="cursor-pointer w-full">
-                    <input
-                      type="radio"
-                      value={metodo.id}
-                      {...register("tipo_contato")}
-                      className="sr-only peer"
-                    />
-                    <div className="w-full h-full flex items-center justify-center text-center px-2 py-3 rounded-xl border border-gray-200 bg-white text-[11px] md:text-xs font-bold text-gray-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 peer-checked:border-emerald-300 hover:border-blue-200 transition-all shadow-sm">
-                      {metodo.label}
-                    </div>
-                  </label>
-                ))}
+                ].map((metodo) => {
+                  const contatosSelecionados = watch("tipo_contato") || [];
+                  const isChecked = contatosSelecionados.includes(metodo.id as any);
+
+                  const handleContatoChange = (
+                    e: React.ChangeEvent<HTMLInputElement>
+                  ) => {
+                    if (e.target.checked) {
+                      if (metodo.id === "QUALQUER_UM") {
+                        setValue("tipo_contato", ["QUALQUER_UM"]);
+                      } else {
+                        setValue("tipo_contato", [
+                          ...contatosSelecionados.filter((c: string) => c !== "QUALQUER_UM"),
+                          metodo.id as any,
+                        ]);
+                      }
+                    } else {
+                      // Se desmarcou, remove da lista
+                      const filtrado = contatosSelecionados.filter((c: string) => c !== metodo.id);
+                      // Se a lista ficar vazia, volta pro padrão "Qualquer um"
+                      setValue("tipo_contato", filtrado.length === 0 ? ["QUALQUER_UM"] : filtrado);
+                    }
+                  };
+
+                  return (
+                    <label key={metodo.id} className="cursor-pointer w-full">
+                      <input
+                        type="checkbox"
+                        value={metodo.id}
+                        checked={isChecked}
+                        onChange={handleContatoChange}
+                        className="sr-only peer"
+                      />
+                      <div className="w-full h-full flex items-center justify-center text-center px-2 py-3 rounded-xl border border-gray-200 bg-white text-[11px] md:text-xs font-bold text-gray-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 peer-checked:border-emerald-300 hover:border-blue-200 transition-all shadow-sm">
+                        {metodo.label}
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
