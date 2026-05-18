@@ -143,7 +143,7 @@ export default function TermosDeUsoPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <HiOutlineExclamationCircle className="text-amber-500 shrink-0 mt-1" size={20} />
-                  <span><strong>Veracidade dos Dados:</strong> A ACI reserva-se o direito de suspender ou eliminar perfis que contenham informações comprovadamente falsas, ofensivas ou que violem a legislação em vigor.</span>
+                  <span><strong>Veracidade dos Dados:</strong> A ACI-Panambi reserva-se o direito de suspender ou eliminar perfis que contenham informações comprovadamente falsas, ofensivas ou que violem a legislação em vigor.</span>
                 </li>
               </ul>
             </div>
@@ -210,17 +210,17 @@ export default function TermosDeUsoPage() {
             <div className="space-y-4 text-sm md:text-base leading-relaxed font-medium">
               <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100 mb-4">
                 <p className="text-amber-800 text-sm">
-                  <strong>Importante:</strong> A ACI atua exclusivamente como uma ponte tecnológica entre as empresas (empregadores) e os profissionais (candidatos).
+                  <strong>Importante:</strong> A ACI-Panambi atua exclusivamente como uma ponte tecnológica entre as empresas (empregadores) e os profissionais (candidatos).
                 </p>
               </div>
               <ul className="space-y-3 pl-2">
                 <li className="flex items-start gap-3">
                   <HiOutlineBriefcase className="text-gray-400 shrink-0 mt-1" size={20} />
-                  <span>A ACI <strong>não garante</strong> a contratação, entrevista ou resposta por parte das empresas cadastradas no portal.</span>
+                  <span>A ACI-Panambi <strong>não garante</strong> a contratação, entrevista ou resposta por parte das empresas cadastradas no portal.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <HiOutlineBriefcase className="text-gray-400 shrink-0 mt-1" size={20} />
-                  <span>A ACI não tem interferência nos critérios de seleção, testes ou etapas de recrutamento conduzidas pelas empresas.</span>
+                  <span>A ACI-Panambi não tem interferência nos critérios de seleção, testes ou etapas de recrutamento conduzidas pelas empresas.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <HiOutlineBriefcase className="text-gray-400 shrink-0 mt-1" size={20} />
@@ -239,7 +239,7 @@ export default function TermosDeUsoPage() {
               Disposições Finais
             </h2>
             <div className="space-y-4 text-sm md:text-base leading-relaxed font-medium">
-              <p><strong>Atualizações:</strong> A ACI poderá alterar estes Termos de Uso a qualquer momento. Modificações substanciais serão notificadas no portal. O uso contínuo da plataforma implica a aceitação das novas regras.</p>
+              <p><strong>Atualizações:</strong> A ACI-Panambi poderá alterar estes Termos de Uso a qualquer momento. Modificações substanciais serão notificadas no portal. O uso contínuo da plataforma implica a aceitação das novas regras.</p>
               <p><strong>Cancelamento:</strong> O Candidato pode solicitar a exclusão definitiva da sua conta e currículo a qualquer momento, através das configurações do seu perfil, sendo os dados eliminados conforme estipulado na Política de Privacidade.</p>
               
               <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 mt-6 text-sm">

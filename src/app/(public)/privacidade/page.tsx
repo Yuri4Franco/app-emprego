@@ -109,7 +109,7 @@ export default function PoliticaPrivacidadePage() {
                                 A ASSOCIAÇÃO COMERCIAL E INDUSTRIAL DE PANAMBI (ACI), inscrita no Cadastro Nacional de Pessoa Jurídica (CNPJ) n° 91.986.257/0001-10, com sede na Avenida Konrad Adenauer, n° 555, no centro, do município de Panambi, RS, de CEP 98280-000, vem instituir sua Política de Privacidade, Cookies e Proteção de Dados, em conformidade com a Lei Geral de Proteção de Dados (LGPD).
                             </p>
                             <p>
-                                Esta Política se destina a todas as pessoas físicas que são ou foram nossos consumidores, bem como aos empregados, parceiros, associados, diretores e fornecedores, os quais declaram sua concordância com o tratamento dos dados ao utilizar as plataformas físicas e virtuais da associação.
+                                Esta Política se destina a todas as pessoas físicas que são ou foram nossos consumidores, bem como aos empregados, parceiros, associados, diretores e fornecedores, os quais declaram sua concordância com o tratamento dos dados ao utilizar as plataformas físicas e virtuais da ACI-Panambi.
                             </p>
                         </div>
 
@@ -117,7 +117,7 @@ export default function PoliticaPrivacidadePage() {
                         <div className="mt-8 bg-blue-50/50 p-6 rounded-3xl border border-blue-100">
                             <h3 className="text-sm font-black text-blue-900 mb-2">Fale com nosso DPO</h3>
                             <p className="text-sm text-blue-700 mb-5">
-                                Caso deseje saber informações relacionadas a seus dados pessoais, você pode entrar em contato com o Encarregado pelo Tratamento e Proteção de Dados Pessoais (DPO) designado pela associação:
+                                Caso deseje saber informações relacionadas a seus dados pessoais, você pode entrar em contato com o Encarregado pelo Tratamento e Proteção de Dados Pessoais (DPO) designado pela ACI-Panambi:
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4">
                                 <a href="mailto:dpo@acipanambi.com.br" className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-blue-100 shadow-sm hover:shadow-md transition-shadow text-sm font-bold text-gray-800">
@@ -167,7 +167,7 @@ export default function PoliticaPrivacidadePage() {
 
                             <h3 className="text-lg font-black text-gray-800 mt-6 pt-4">Base Legal do Tratamento</h3>
                             <p>
-                                A associação identifica o <strong>Legítimo Interesse</strong> como base legal para o tratamento dos dados pessoais, previsto no artigo 7°, inciso IX, da Lei 13.709/2018, sem prejuízo das demais bases legais contidas na LGPD, CLT e em seu Estatuto Social.
+                                A ACI-Panambi identifica o <strong>Legítimo Interesse</strong> como base legal para o tratamento dos dados pessoais, previsto no artigo 7°, inciso IX, da Lei 13.709/2018, sem prejuízo das demais bases legais contidas na LGPD, CLT e em seu Estatuto Social.
                             </p>
                         </div>
                     </section>
@@ -185,7 +185,7 @@ export default function PoliticaPrivacidadePage() {
                             <p>Os dados são coletados diretamente do titular através do site, e-mail, telefone, redes sociais e de forma presencial na sede da ACI, em feiras e eventos. Coletamos apenas os dados estritamente necessários para cada atendimento. Dados de menores de idade somente são coletados com o consentimento do responsável legal.</p>
 
                             <h3 className="text-lg font-black text-gray-800 mt-6 pt-4">Finalidades do Tratamento</h3>
-                            <p>A associação trata os dados coletados afim de:</p>
+                            <p>A ACI-Panambi trata os dados coletados afim de:</p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 pl-2">
                                 <ul className="space-y-3">
                                     <li className="flex items-start gap-2"><span className="text-primary font-black mt-0.5">•</span> Efetivar propostas e contratos.</li>
@@ -234,7 +234,7 @@ export default function PoliticaPrivacidadePage() {
                             Direitos do Titular e Armazenamento
                         </h2>
                         <div className="space-y-4 text-sm md:text-base leading-relaxed font-medium">
-                            <p>A associação está comprometida em garantir os direitos estabelecidos pela LGPD, possibilitando aos titulares :</p>
+                            <p>A ACI-Panambi está comprometida em garantir os direitos estabelecidos pela LGPD, possibilitando aos titulares :</p>
                             <ul className="space-y-2 pl-2">
                                 <li className="flex items-start gap-2"><span className="text-emerald-500 font-black mt-0.5">✓</span> Confirmar a existência de tratamento e acessar os dados.</li>
                                 <li className="flex items-start gap-2"><span className="text-emerald-500 font-black mt-0.5">✓</span> Corrigir dados incompletos ou desatualizados .</li>
@@ -286,7 +286,7 @@ export default function PoliticaPrivacidadePage() {
                             Disposições Finais
                         </h2>
                         <div className="space-y-4 text-sm md:text-base leading-relaxed font-medium">
-                            <p><strong>Propriedade Intelectual:</strong> As informações e imagens pertencem à associação, não sendo permitidas cópias ou reproduções sem consentimento prévio.</p>
+                            <p><strong>Propriedade Intelectual:</strong> As informações e imagens pertencem à ACI-Panambi, não sendo permitidas cópias ou reproduções sem consentimento prévio.</p>
                             <p><strong>Links Externos:</strong> O site contém links para parceiros e terceiros. Não nos responsabilizamos pelos dados coletados por eles.</p>
                             <p><strong>Extensão dos Efeitos:</strong> Os termos aplicam-se exclusivamente aos dados disponibilizados pelo Titular para a utilização de nossos serviços.</p>
                             <p><strong>Tolerância:</strong> Eventuais tolerâncias ao cumprimento desta Política não constituirão novação ou renúncia de direitos.</p>
