@@ -646,7 +646,7 @@ export default function TabDadosGerais({
           />
           <div className="md:col-span-2">
             <Input
-              label="Logradouro (Rua)"
+              label="Logradouro (Rua/Avenida)"
               className={getFieldStatus("logradouro")}
               {...register("logradouro")}
             />
