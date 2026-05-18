@@ -242,7 +242,7 @@ export default function TabFormacao({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 mt-1 md:mt-0 w-full md:w-auto md:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-2 mt-1 md:mt-0 w-full md:w-auto">
                       <button
                         onClick={() => abrirFormFormacao(f)}
                         className="flex-1 md:flex-none flex justify-center items-center px-6 py-2.5 md:py-2 text-xs font-black uppercase tracking-widest text-gray-600 bg-white border border-gray-200 hover:border-blue-300 hover:text-primary hover:bg-blue-50 rounded-xl md:rounded-full transition-colors"

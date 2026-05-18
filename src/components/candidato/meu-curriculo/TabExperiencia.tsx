@@ -334,7 +334,7 @@ export default function TabExperiencia({
                               )}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 mt-4 md:mt-0 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-2 mt-4">
                         <button
                           onClick={() => abrirFormExperiencia(exp)}
                           className="flex-1 sm:flex-none justify-center flex px-4 py-2 text-xs font-bold text-gray-600 bg-white border border-gray-200 hover:border-blue-300 hover:text-primary rounded-full transition-colors"
