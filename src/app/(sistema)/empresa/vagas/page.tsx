@@ -270,10 +270,17 @@ export default function GestaoVagasPage() {
                     </span>
                     <span className="flex items-center gap-1.5 text-gray-400">
                       <HiOutlineClock size={14} />
-                      {vaga.status === "RASCUNHO"
-                        ? "Criada em"
-                        : "Publicada em"}{" "}
-                      {new Date(vaga.data_criacao).toLocaleDateString("pt-BR")}
+                      {vaga.status === "ATIVA"
+                        ? "Publicada em"
+                        : "Criada em"}{" "}
+                      {vaga.data_publicacao &&
+                      !isNaN(new Date(vaga.data_publicacao).getTime())
+                        ? new Date(vaga.data_publicacao).toLocaleDateString(
+                            "pt-BR",
+                          )
+                        : new Date(
+                            vaga.createdAt || vaga.criado_em || new Date(),
+                          ).toLocaleDateString("pt-BR")}
                     </span>
                   </div>
                 </div>

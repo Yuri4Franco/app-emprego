@@ -26,7 +26,7 @@ export default function Footer() {
                             />
                         </div>
                         <p className="text-gray-500 text-sm leading-relaxed pt-1">
-                            Conectando talentos e empresas para impulsionar o desenvolvimento de Panambi e região. Uma iniciativa da Associação Comercial e Industrial.
+                            Conectando talentos e empresas para impulsionar o desenvolvimento de Panambi e região. Uma iniciativa da Associação Comercial e Industrial de Panambi/RS.
                         </p>
                         <div className="flex items-center gap-4">
                             {/* Redes Sociais com Hover na cor da marca */}
@@ -56,7 +56,7 @@ export default function Footer() {
                                 <Link href="/empresas" className="text-gray-600 hover:text-[#1459ad] transition-colors">Para Empresas</Link>
                             </li>
                             <li>
-                                <Link href="https://acipanambi.com/" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#1459ad] transition-colors">Sobre a ACI <FaExternalLinkAlt className="inline text-[10px] relative -top-0.5" /> </Link>
+                                <Link href="https://acipanambi.com/" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#1459ad] transition-colors">Sobre a ACI - Panambi<FaExternalLinkAlt className="inline text-[10px] relative -top-0.5" /> </Link>
                             </li>
                             <li>
                                 <Link href="/entrar" className="text-gray-600 hover:text-[#1459ad] transition-colors">Área do Candidato</Link>
@@ -110,7 +110,7 @@ export default function Footer() {
                 {/* --- RODAPÉ INFERIOR (Copyright) --- */}
                 <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
                     <p className="text-sm text-gray-500 text-center md:text-left">
-                        &copy; {currentYear} ACI Panambi. Todos os direitos reservados.
+                        &copy; {currentYear} ACI - Panambi. Todos os direitos reservados.
                     </p>
 
                     <p className="text-sm text-gray-400 flex items-center gap-1">

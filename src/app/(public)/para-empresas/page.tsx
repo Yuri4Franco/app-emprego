@@ -90,14 +90,14 @@ export default function EmpresasPage() {
                             Publique sua vaga em minutos e encontre o talento certo.
                         </h1>
                         <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed max-w-2xl">
-                            Chega de currículos perdidos em caixas de e-mail ou redes sociais. A ACI Vagas é a nova plataforma oficial da Associação Comercial e Industrial de panambi para centralizar e profissionalizar o recrutamento na nossa cidade. Conectamos sua empresa diretamente aos candidatos locais de forma organizada, ágil e confiável.
+                            Chega de currículos perdidos em caixas de e-mail ou redes sociais. A ACI Vagas é a nova plataforma oficial da Associação Comercial e Industrial de Panambi para centralizar e profissionalizar o recrutamento na nossa cidade. Conectamos sua empresa diretamente aos candidatos locais de forma organizada, ágil e confiável.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <ButtonType href="#contato" variant="secondary" size="lg" className="shadow-lg shadow-blue-900/20">
                                 Falar com um consultor
                             </ButtonType>
                             <ButtonType href="https://acipanambi.com/" variant="outline" size="lg" className="border-blue-200 text-blue-100 hover:bg-white/10 hover:border-white">
-                                Conhecer a ACI
+                                Conhecer a ACI - Panambi
                             </ButtonType>
                         </div>
                     </div>
@@ -195,8 +195,8 @@ export default function EmpresasPage() {
                                         <HiOutlineOfficeBuilding />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-gray-800 text-lg">Selo de confiança ACI</h3>
-                                        <p className="text-gray-600 mt-1">Sua vaga tem mais credibilidade e alcance ao ser divulgada na plataforma oficial da Associação Comercial.</p>
+                                        <h3 className="font-bold text-gray-800 text-lg">Selo de confiança ACI - Panambi</h3>
+                                        <p className="text-gray-600 mt-1">Sua vaga tem mais credibilidade e alcance ao ser divulgada na plataforma oficial da Associação Comercial de Industrial de Panambi.</p>
                                     </div>
                                 </div>
                             </div>
