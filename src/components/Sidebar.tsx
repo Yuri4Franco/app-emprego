@@ -57,18 +57,18 @@ const MENU_CONFIG = {
       icon: <HiOutlineChartBar size={22} />,
     },
     {
-      label: "Vagas",
+      label: "Gestão de Vagas",
       href: "/admin/vagas",
       icon: <HiOutlineBriefcase size={22} />,
     },
     {
-      label: "Empresas",
+      label: "Gestão de Empresas",
       href: "/admin/empresas",
       icon: <HiOutlineOfficeBuilding size={22} />,
     },
     {
-      label: "Candidatos",
-      href: "/admin/candidatos",
+      label: "Gestão de Usuarios",
+      href: "/admin/usuarios",
       icon: <HiOutlineUsers size={22} />,
     },
   ],
