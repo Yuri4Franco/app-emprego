@@ -119,6 +119,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, isAuthenticated, perfil, isLoading]);
 
+  useEffect(() => {
+    // Só faz a verificação depois que o carregamento inicial (isLoading) terminar
+    if (!isLoading && isAuthenticated && user) {
+      if (user.exigir_troca_senha && pathname !== "/trocar-senha") {
+        // Se exige troca e ele NÃO está na página de troca, chuta ele pra lá
+        router.push("/trocar-senha");
+      }
+    }
+  }, [isLoading, isAuthenticated, user, pathname, router]);
+
   // 3. FLUXO DE LOGIN ASSÍNCRONO
   const login = async (token: string) => {
     setIsLoading(true);

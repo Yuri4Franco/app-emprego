@@ -67,7 +67,7 @@ const MENU_CONFIG = {
       icon: <HiOutlineOfficeBuilding size={22} />,
     },
     {
-      label: "Gestão de Usuarios",
+      label: "Base de Usuários",
       href: "/admin/usuarios",
       icon: <HiOutlineUsers size={22} />,
     },

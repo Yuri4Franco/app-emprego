@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { HiOutlineBadgeCheck, HiOutlinePlusCircle, HiOutlineX } from "react-icons/hi";
+import { HiOutlineBadgeCheck, HiOutlineX, HiOutlineTicket } from "react-icons/hi";
 import api from "@/src/services/api";
 import toast from "react-hot-toast";
 import { Input } from "@/src/components/Input";
@@ -16,30 +16,28 @@ interface ModalProps {
 
 export function ModalGerenciarCreditos({ isOpen, onClose, idEmpresa, onSuccess }: ModalProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [vagas, setVagas] = useState<number>(0);
     const [curriculos, setCurriculos] = useState<number>(0);
 
     if (!isOpen) return null;
 
     const handleConfirmar = async () => {
-        if (vagas === 0 && curriculos === 0) {
-            return toast.error("Informe ao menos um valor para adicionar.");
+        if (curriculos <= 0) {
+            return toast.error("Informe um valor maior que zero para adicionar.");
         }
 
         setIsLoading(true);
 
         const payload = {
-            creditos_vagas: vagas,
+            creditos_vagas: 0, // Removido da interface, mas mantido como 0 para o backend
             creditos_curriculos: curriculos,
-            modo: "SOMAR" // Travamos no modo SOMAR como você sugeriu
+            modo: "SOMAR"
         };
 
         await toast.promise(
             api.patch(`/admin/empresas/${idEmpresa}/creditos`, payload),
             {
-                loading: "Atualizando saldo...",
+                loading: "Processando nova carga de créditos...",
                 success: () => {
-                    setVagas(0);
                     setCurriculos(0);
                     onSuccess();
                     onClose();
@@ -52,59 +50,57 @@ export function ModalGerenciarCreditos({ isOpen, onClose, idEmpresa, onSuccess }
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
-            <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-sm rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
 
-                <div className="p-6 border-b border-gray-50 flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                        <HiOutlineBadgeCheck className="text-blue-600" /> Adicionar Créditos
-                    </h2>
+                {/* Header Estilizado */}
+                <div className="px-8 pt-8 pb-4 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
+                            <HiOutlineBadgeCheck size={24} />
+                        </div>
+                        <h2 className="text-lg font-black text-gray-900">Adicionar Créditos</h2>
+                    </div>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
                         <HiOutlineX size={20} />
                     </button>
                 </div>
 
-                <div className="p-8 space-y-6">
-                    <p className="text-sm text-gray-500 italic">
-                        Os valores informados abaixo serão **somados** ao saldo atual da empresa.
+                <div className="px-8 pb-8 space-y-6">
+                    <p className="text-sm text-gray-500 font-medium">
+                        Adicione novos créditos de currículos ao saldo da empresa.
                     </p>
 
-                    <div className="space-y-4">
-                        <div className="relative">
-                            <Input
-                                label="Novos Créditos de Vagas"
-                                type="number"
-                                min="0"
-                                value={vagas}
-                                onChange={(e) => setVagas(Number(e.target.value))}
-                            />
-                            <HiOutlinePlusCircle className="absolute right-4 top-[38px] text-blue-200" size={20} />
+                    <div className="bg-emerald-50 border border-emerald-100 p-6 rounded-3xl space-y-4">
+                        <div className="flex items-center gap-2 text-emerald-800 font-black text-xs uppercase tracking-widest mb-2">
+                            <HiOutlineTicket size={16} /> Quantidade
                         </div>
 
                         <div className="relative">
-                            <Input
-                                label="Novos Créditos de Currículos"
+                            <input
                                 type="number"
                                 min="0"
                                 value={curriculos}
                                 onChange={(e) => setCurriculos(Number(e.target.value))}
+                                className="w-full text-4xl font-black text-gray-900 bg-transparent border-none outline-none text-center p-0 placeholder:text-gray-300"
+                                placeholder="0"
                             />
-                            <HiOutlinePlusCircle className="absolute right-4 top-[38px] text-emerald-200" size={20} />
+                            <p className="text-center text-xs font-bold text-emerald-600 mt-2">currículos desbloqueáveis</p>
                         </div>
                     </div>
 
-                    <div className="pt-4 flex flex-col gap-3">
+                    <div className="space-y-3">
                         <ButtonType
                             onClick={handleConfirmar}
                             variant="primary"
-                            disabled={isLoading}
-                            className="w-full py-4 shadow-lg shadow-blue-100"
+                            disabled={isLoading || curriculos <= 0}
+                            className="w-full py-4 shadow-lg shadow-blue-500/20 font-black"
                         >
                             {isLoading ? "Processando..." : "Confirmar Adição"}
                         </ButtonType>
                         <button
                             onClick={onClose}
-                            className="text-sm font-bold text-gray-400 hover:text-gray-600 transition-all py-2"
+                            className="w-full text-sm font-bold text-gray-400 hover:text-gray-600 transition-all py-2"
                         >
                             Cancelar
                         </button>
