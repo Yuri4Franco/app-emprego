@@ -45,7 +45,8 @@ export function ModalEditarUsuario({ isOpen, onClose, usuario, onSuccess }: Moda
                 nome: usuario.nome,
                 email: usuario.email,
             });
-            setNovaSenha(""); // Limpa o campo de senha ao abrir
+            setNovaSenha("");
+
         }
     }, [usuario, reset, isOpen]);
 

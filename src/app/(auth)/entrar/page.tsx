@@ -236,7 +236,7 @@ function LoginForm() {
           className="w-full py-4 text-lg font-bold shadow-xl shadow-blue-600/10"
           disabled={isLoading}
         >
-          {isLoading ? "Validando acesso..." : "Entrar na Plataforma"}
+          {isLoading ? "Validando acesso..." : "Entrar"}
         </ButtonType>
       </form>
 
