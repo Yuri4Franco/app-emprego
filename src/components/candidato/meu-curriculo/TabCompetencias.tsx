@@ -195,14 +195,11 @@ export default function TabCompetencias({
                 O que são Habilidades?
               </h4>
               <p className="text-xs text-blue-800/80 leading-relaxed font-medium">
-                Misture <strong>Hard Skills</strong> (ex: Pacote Office,
-                Empilhadeira, React, Inglês) com <strong>Soft Skills</strong>{" "}
-                (ex: Comunicação, Liderança, Trabalho em Equipe) para destacar
-                seu perfil!
+                Fortaleça seu perfil destacando suas tecnologias dominadas e as
+                competências estratégicas que impulsionam suas entregas.
               </p>
             </div>
           </div>
-
           <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-2xl flex items-start gap-3">
             <HiOutlineInformationCircle
               className="text-amber-500 shrink-0 mt-0.5"
@@ -216,7 +213,7 @@ export default function TabCompetencias({
                 Nosso banco de dados está em fase de crescimento. Se você não
                 encontrar a sua habilidade na busca,{" "}
                 <strong>basta sugerir</strong>! Ela entra no seu currículo e a
-                equipe da ACI revisa.
+                equipe da ACI-Panambi revisa.
               </p>
             </div>
           </div>

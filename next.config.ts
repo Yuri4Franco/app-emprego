@@ -2,6 +2,7 @@ import { withSentryConfig } from '@sentry/nextjs';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    qualities: [60, 75],
     remotePatterns: [
       {
         protocol: 'https',
