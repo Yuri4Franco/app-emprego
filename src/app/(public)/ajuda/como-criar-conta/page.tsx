@@ -126,23 +126,13 @@ export default function TutorialCadastroPage() {
         ))}
       </div>
 
-      {/* CARD DE SUCESSO NO FINAL */}
-      <div className="bg-blue-600 rounded-[32px] p-8 md:p-12 text-white shadow-xl shadow-blue-500/20 text-center space-y-5 relative overflow-hidden max-w-3xl ml-6 mt-12">
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-5 rounded-full blur-xl"></div>
-        <HiOutlineShieldCheck size={56} className="mx-auto text-blue-200" />
-        <h2 className="text-2xl font-black">Tudo pronto para começar?</h2>
-        <p className="text-base text-blue-100 max-w-lg mx-auto font-medium">
-          Criar sua conta é o primeiro passo para grandes oportunidades. Faça o
-          cadastro, preencha o seu currículo e seja visto por dezenas de
-          empresas em Panambi.
-        </p>
-        <button
-          onClick={() => router.push("/entrar")}
-          className="inline-flex items-center gap-2 px-8 py-4 mt-2 bg-white text-blue-700 font-black rounded-xl text-base hover:bg-blue-50 transition-all shadow-md active:scale-95"
-        >
-          <HiOutlineUserPlus size={20} /> Acessar Área do Candidato
-        </button>
-      </div>
+      <button
+        onClick={() => router.push("/ajuda/curriculo-100")}
+        className="inline-flex items-center gap-2 px-8 py-4 bg-white text-blue-700 font-black rounded-xl text-base hover:bg-blue-50 transition-all shadow-md"
+      >
+        Próximo Guia: Deixar Currículo 100% →
+      </button>
+
     </div>
   );
 }
