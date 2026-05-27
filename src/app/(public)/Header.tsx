@@ -125,9 +125,8 @@ export default function Header() {
 
       {/* --- MENU MOBILE --- */}
       <div
-        className={`fixed inset-0 bg-white z-[60] flex flex-col items-center justify-start transition-transform duration-300 ease-in-out md:hidden h-[100dvh] w-screen overflow-hidden ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed inset-0 bg-white z-[60] flex flex-col items-center justify-start transition-transform duration-300 ease-in-out md:hidden h-[100dvh] w-screen overflow-hidden ${isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex flex-col items-center w-full h-full p-8 pt-24 space-y-12 overflow-y-auto pb-10">
           {/* Logo dentro do menu */}
@@ -164,8 +163,8 @@ export default function Header() {
               Área do Candidato
             </ButtonType>
 
-            <ButtonType href="/entrar?tab=empresa" variant="primary" size="md">
-              Área do Candidato
+            <ButtonType href="/entrar?tab=empresa" className="w-full py-4 text-lg" variant="outline" size="md">
+              Área da Empresa
             </ButtonType>
           </div>
         </div>
