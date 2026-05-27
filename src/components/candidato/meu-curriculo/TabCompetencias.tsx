@@ -220,7 +220,7 @@ export default function TabCompetencias({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
+      <div className="flex flex-col md:gap-10">
         {/* LADO ESQUERDO: BUSCA E SELEÇÃO */}
         <div className="space-y-4">
           <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
@@ -338,8 +338,8 @@ export default function TabCompetencias({
           )}
         </div>
 
-        {/* LADO DIREITO: MOSTRUÁRIO DE HABILIDADES SALVAS */}
-        <div className="bg-gray-50 border border-gray-100 rounded-[24px] md:rounded-[32px] p-5 md:p-6 h-[300px] md:h-[400px] overflow-y-auto">
+        {/* MOSTRUÁRIO DE HABILIDADES SALVAS */}
+        <div className="bg-gray-50 border border-gray-100 rounded-[24px] md:rounded-[32px] p-5 md:p-6  overflow-y-auto">
           <h3 className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-widest mb-4 ml-1 md:ml-2">
             Suas Seleções
           </h3>
