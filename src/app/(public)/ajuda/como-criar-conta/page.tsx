@@ -73,7 +73,7 @@ export default function TutorialCadastroPage() {
       <div className="flex items-center gap-4 border-b border-gray-200/60 pb-6">
         <button
           onClick={() => router.back()}
-          className="p-3 bg-white border border-gray-200 hover:border-blue-200 hover:bg-blue-50 rounded-2xl transition-all text-gray-500 hover:text-blue-600 shadow-sm group shrink-0"
+          className="p-3 bg-white border border-gray-200 hover:border-blue-200 hover:bg-blue-50 rounded-2xl transition-all text-gray-500 hover:text-primary shadow-sm group shrink-0"
         >
           <HiOutlineArrowLeft
             size={20}
@@ -82,7 +82,7 @@ export default function TutorialCadastroPage() {
         </button>
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mb-1 flex items-center gap-2">
-            <HiOutlineSparkles className="text-blue-600" size={28} /> Guia de
+            <HiOutlineSparkles className="text-primary" size={28} /> Guia de
             Cadastro
           </h1>
           <p className="text-sm text-gray-500 font-medium">
@@ -97,14 +97,14 @@ export default function TutorialCadastroPage() {
         {passos.map((passo) => (
           <div key={passo.id} className="relative pl-6 md:pl-12 group">
             {/* Indicador visual da Timeline */}
-            <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-white border-4 border-gray-200 group-hover:border-blue-500 transition-colors flex items-center justify-center z-10">
-              <div className="w-1.5 h-1.5 bg-transparent rounded-full group-hover:bg-blue-500 transition-colors" />
+            <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-white border-4 border-gray-200 group-hover:border-primary transition-colors flex items-center justify-center z-10">
+              <div className="w-1.5 h-1.5 bg-transparent rounded-full group-hover:bg-primary transition-colors" />
             </div>
 
             {/* Conteúdo do Passo */}
             <div className="space-y-5">
               <div className="space-y-2">
-                <h3 className="text-xl font-black text-gray-900 group-hover:text-blue-600 transition-colors">
+                <h3 className="text-xl font-black text-gray-900 group-hover:text-primary transition-colors">
                   {passo.titulo}
                 </h3>
                 <p className="text-base text-gray-600 font-medium leading-relaxed max-w-3xl">

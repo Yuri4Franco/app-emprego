@@ -257,7 +257,7 @@ export default function GuiaCurriculoPage() {
       <div className="flex items-center gap-4 border-b border-gray-200/60 pb-6">
         <button
           onClick={() => router.back()}
-          className="p-3 bg-white border border-gray-200 hover:border-blue-200 hover:bg-blue-50 rounded-2xl transition-all text-gray-500 hover:text-blue-600 shadow-sm group shrink-0"
+          className="p-3 bg-white border border-gray-200 hover:border-blue-200 hover:bg-blue-50 rounded-2xl transition-all text-gray-500 hover:text-primary shadow-sm group shrink-0"
         >
           <HiOutlineArrowLeft
             size={20}
@@ -266,7 +266,7 @@ export default function GuiaCurriculoPage() {
         </button>
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight mb-1 flex items-center gap-2">
-            <HiDocumentText className="text-blue-600" size={28} /> Currículo 100%
+            <HiDocumentText className="text-primary" size={28} /> Currículo 100%
           </h1>
           <p className="text-sm text-gray-500 font-medium">
             O guia definitivo para destacar seu perfil e conquistar as melhores oportunidades da região.
@@ -280,14 +280,14 @@ export default function GuiaCurriculoPage() {
           <div key={passo.id} className="relative pl-6 md:pl-12 group">
 
             {/* Indicador visual da Timeline */}
-            <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-white border-4 border-gray-200 group-hover:border-blue-500 transition-colors flex items-center justify-center z-10">
-              <div className="w-1.5 h-1.5 bg-transparent rounded-full group-hover:bg-blue-500 transition-colors" />
+            <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-white border-4 border-gray-200 group-hover:border-primary transition-colors flex items-center justify-center z-10">
+              <div className="w-1.5 h-1.5 bg-transparent rounded-full group-hover:bg-primary transition-colors" />
             </div>
 
             {/* Conteúdo do Passo */}
             <div className="space-y-5">
               <div className="space-y-3">
-                <h3 className="text-xl font-black text-gray-900 group-hover:text-blue-600 transition-colors">
+                <h3 className="text-xl font-black text-gray-900 group-hover:text-primary transition-colors">
                   {passo.titulo}
                 </h3>
                 <div className="text-base text-gray-600 font-medium leading-relaxed max-w-3xl">
@@ -307,22 +307,6 @@ export default function GuiaCurriculoPage() {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* CARD DE SUCESSO NO FINAL */}
-      <div className="bg-blue-600 rounded-[32px] p-8 md:p-12 text-white shadow-xl shadow-blue-500/20 text-center space-y-5 relative overflow-hidden max-w-3xl ml-6 mt-12">
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-5 rounded-full blur-xl"></div>
-        <HiOutlineShieldCheck size={56} className="mx-auto text-blue-200" />
-        <h2 className="text-2xl font-black">Pronto para ser encontrado?</h2>
-        <p className="text-base text-blue-100 max-w-xl mx-auto font-medium">
-          Um currículo em 100% não é apenas um número, é o seu passaporte para o mercado de trabalho. Com todos os campos preenchidos, você ganha destaque automático no radar das melhores empresas da nossa região.
-        </p>
-        <button
-          onClick={() => router.push("/candidato/curriculo")}
-          className="inline-flex items-center gap-2 px-8 py-4 mt-2 bg-white text-blue-700 font-black rounded-xl text-base hover:bg-blue-50 transition-all shadow-md active:scale-95"
-        >
-          <HiOutlineDocumentText size={20} /> Preencher Meu Currículo Agora
-        </button>
       </div>
     </div>
   );

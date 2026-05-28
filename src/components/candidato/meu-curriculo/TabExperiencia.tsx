@@ -69,70 +69,30 @@ export default function TabExperiencia({
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const isChecked = e.target.checked;
-    setPrimeiroEmprego(isChecked);
-
     const toastId = toast.loading("Salvando preferência...");
 
+    // UI Otimista: Já vira a chavinha na tela para o usuário não sentir lentidão
+    setPrimeiroEmprego(isChecked);
+
     try {
-      // Recriamos o payload completo para o backend aceitar o PUT
-      const payload = {
-        cpf: dadosIniciais?.cpf,
-        data_nascimento: dadosIniciais?.data_nascimento,
-        genero: dadosIniciais?.genero,
-        telefone: dadosIniciais?.telefone,
-        whatsapp: dadosIniciais?.whatsapp,
-        link_linkedin: dadosIniciais?.link_linkedin,
-        link_portfolio: dadosIniciais?.link_portfolio,
-        link_outro: dadosIniciais?.link_outro,
-        objetivo_profissional: dadosIniciais?.objetivo_profissional,
-        resumo_profissional: dadosIniciais?.resumo_profissional,
-        pretensao_salarial: dadosIniciais?.pretensao_salarial,
-        pcd: dadosIniciais?.pcd,
-        tipo_pcd: dadosIniciais?.tipo_pcd,
-        necessidade: dadosIniciais?.necessidade,
-        tipo_contato: dadosIniciais?.tipo_contato,
-        disponibilidade_viagem: dadosIniciais?.disponibilidade_viagem,
-        disponibilidade_mudanca: dadosIniciais?.disponibilidade_mudanca,
-        disponibilidade_sabados: dadosIniciais?.disponibilidade_sabados,
-        turno_preferido: dadosIniciais?.turno_preferido,
-        cnh: dadosIniciais?.cnh,
-        endereco: {
-          cep: dadosIniciais?.endereco?.cep,
-          logradouro: dadosIniciais?.endereco?.logradouro,
-          numero: dadosIniciais?.endereco?.numero,
-          complemento: dadosIniciais?.endereco?.complemento,
-          bairro: dadosIniciais?.endereco?.bairro,
-          cidade: dadosIniciais?.endereco?.cidade,
-          uf: dadosIniciais?.endereco?.uf,
-        },
-        primeiro_emprego: isChecked, // ✨ A única coisa que realmente muda
-      };
+      // O payload agora tem literalmente apenas 1 linha! ✨
+      const res = await api.patch("/candidato/primeiro-emprego", {
+        primeiro_emprego: isChecked,
+      });
 
-      await api.put("/candidato/meu-curriculo", payload);
+      // Usamos a mensagem que o nosso backend devolveu
+      toast.success(res.data.message, { id: toastId });
 
-      // Sincroniza as áreas de atuação novamente para não perder
-      const areasSalvas =
-        dadosIniciais?.areas_atuacao ||
-        dadosIniciais?.candidatoAreaAtuacao ||
-        [];
-      const areas_ids = areasSalvas.map(
-        (a: any) => a.id_area || a.area?.id_area,
-      );
-      if (areas_ids.length > 0) {
-        await api.put("/candidato/areas/sync", { areas_ids });
+      // Atualiza a barra de progresso de preenchimento do currículo
+      if (onAtualizarProgresso) {
+        onAtualizarProgresso();
       }
-
-      toast.success(
-        isChecked
-          ? "Salvo! Marcado como 1º Emprego."
-          : "Opção de 1º Emprego desmarcada.",
-        { id: toastId },
-      );
-      onAtualizarProgresso();
     } catch (error: any) {
+      // Se a API falhar, desfazemos a chavinha otimista
       setPrimeiroEmprego(!isChecked);
       toast.error(
-        "Para ativar essa opção, preencha primeiro os Dados Básicos.",
+        error.response?.data?.error ||
+          "Erro ao atualizar a preferência de primeiro emprego.",
         { id: toastId },
       );
     }

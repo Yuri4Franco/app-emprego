@@ -69,7 +69,7 @@ export default function Footer() {
                         <h3 className="text-gray-900 font-bold mb-6">Suporte</h3>
                         <ul className="space-y-4 text-sm">
                             <li>
-                                <Link href="/faq" className="text-gray-600 hover:text-[#1459ad] transition-colors">Dúvidas Frequentes</Link>
+                                <Link href="/ajuda" className="text-gray-600 hover:text-[#1459ad] transition-colors">Preciso de Ajuda</Link>
                             </li>
                             <li>
                                 <Link href="/termos" className="text-gray-600 hover:text-[#1459ad] transition-colors">Termos de Uso</Link>

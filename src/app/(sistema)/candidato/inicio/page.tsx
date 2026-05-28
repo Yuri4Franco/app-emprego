@@ -125,14 +125,20 @@ export default function DashboardCandidatoPage() {
   const handleToggleVisibilidade = async () => {
     const novoStatus = !isVisivel;
     setIsVisivel(novoStatus);
-    toast.success(`Perfil ${novoStatus ? "visível" : "invisível"} para empresas!`, { duration: 3000 });
     try {
       await api.patch("/candidato/visibilidade", {
         perfil_visivel_empresas: novoStatus,
       });
+      toast.success(novoStatus ? "Perfil visível!" : "Perfil oculto.");
     } catch (error: any) {
-      setIsVisivel(!novoStatus); // Se der erro, desfaz
-      console.error("Erro ao alterar visibilidade");
+      setIsVisivel(!novoStatus);
+
+      const mensagemErro =
+        error.response?.data?.error ||
+        error.message ||
+        "Erro ao alterar visibilidade.";
+
+      toast.error(mensagemErro);
     }
   };
 

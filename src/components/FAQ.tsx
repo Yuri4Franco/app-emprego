@@ -164,18 +164,6 @@ export default function FAQ() {
                     })}
                 </div>
 
-                {/* Call to Action Final */}
-                <div className="mt-12 text-center">
-                    <a href="/faq" className="text-hover-button font-bold hover:underline hover:text-white transition-colors">Ver todas as perguntas</a>
-                    <p className="text-white/80">
-                        Ainda tem dúvidas?{' '}
-                        {/* Link usando a cor de hover-button para destaque */}
-                        <a href="/contato" className="text-hover-button font-bold hover:underline hover:text-white transition-colors">
-                            Entre em contato com a gente
-                        </a>
-                    </p>
-                </div>
-
             </div>
         </section>
     );
