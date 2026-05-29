@@ -47,12 +47,12 @@ export default function TabRevisao({
           </div>
 
           <h2 className="text-2xl md:text-3xl font-black text-emerald-900 tracking-tight mb-4">
-            Parabéns! Seu currículo está impecável! 🚀
+            Parabéns! Seu currículo está completo!
           </h2>
 
           <p className="text-sm md:text-base font-medium text-emerald-700/80 max-w-xl mx-auto leading-relaxed mb-8">
             Você completou 100% do seu perfil e ele já está ativo no nosso Banco
-            de Talentos. Agora as empresas parceiras da ACI já podem encontrar o
+            de Talentos. Agora as empresas já podem encontrar o
             seu perfil. Desejamos muito sucesso e boas entrevistas!
           </p>
 
@@ -89,7 +89,7 @@ export default function TabRevisao({
           </div>
 
           <h2 className="text-2xl md:text-3xl font-black text-amber-900 tracking-tight mb-4">
-            Um currículo incrível... que ninguém pode ver! 🙈
+            Um currículo incrível... que ninguém pode ver!
           </h2>
 
           <p className="text-sm md:text-base font-medium text-amber-800/80 max-w-xl mx-auto leading-relaxed mb-8">

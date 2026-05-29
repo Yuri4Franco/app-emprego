@@ -120,7 +120,13 @@ export default function MeuCurriculoRefatoradoPage() {
       toast.success(novoStatus ? "Perfil visível!" : "Perfil oculto.");
     } catch (error: any) {
       setIsVisivel(!novoStatus);
-      toast.error("Erro ao alterar visibilidade.");
+
+      const mensagemErro =
+        error.response?.data?.error ||
+        error.message ||
+        "Erro ao alterar visibilidade.";
+
+      toast.error(mensagemErro);
     }
   };
 

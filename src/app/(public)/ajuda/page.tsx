@@ -40,7 +40,7 @@ export default function CentralAjudaPage() {
         <div className="pb-24 animate-in fade-in duration-500">
 
             {/* BANNER PRINCIPAL (HERO) */}
-            <section className="bg-blue-600 px-4 py-16 md:py-20 relative overflow-hidden">
+            <section className="bg-primary px-4 py-16 md:py-20 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                     <div className="absolute -top-24 -left-24 w-96 h-96 bg-white opacity-5 rounded-full blur-3xl"></div>
                     <div className="absolute bottom-10 -right-10 w-64 h-64 bg-white opacity-10 rounded-full blur-2xl"></div>
@@ -73,7 +73,7 @@ export default function CentralAjudaPage() {
                 {/* SEÇÃO DE TRILHAS / GUIAS COMPLETOS */}
                 <section className="space-y-6">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
+                        <div className="p-2.5 bg-blue-50 text-primary rounded-xl border border-blue-100">
                             <HiOutlineSparkles size={20} />
                         </div>
                         <h2 className="text-xl font-black text-gray-900 tracking-tight">Guias Passo a Passo</h2>
@@ -83,33 +83,33 @@ export default function CentralAjudaPage() {
 
                         {/* CARD 1: CRIAR CONTA */}
                         <Link href="/ajuda/como-criar-conta" className="group bg-white p-6 rounded-[24px] border border-gray-200/60 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center text-center gap-4">
-                            <div className="w-14 h-14 bg-gray-50 group-hover:bg-blue-50 group-hover:scale-105 transition-all rounded-2xl flex items-center justify-center text-blue-600 border border-gray-100">
+                            <div className="w-14 h-14 bg-gray-50 group-hover:bg-blue-50 group-hover:scale-105 transition-all rounded-2xl flex items-center justify-center text-primary border border-gray-100">
                                 <HiOutlineUserPlus size={28} />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Como criar sua conta</h3>
+                                <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Como criar sua conta</h3>
                                 <p className="text-xs text-gray-500 font-medium leading-relaxed">O início de tudo. Aprenda a se registrar e validar seu acesso pelo PC ou celular.</p>
                             </div>
                         </Link>
 
                         {/* CARD 2: CURRÍCULO 100% */}
                         <Link href="/ajuda/curriculo-100" className="group bg-white p-6 rounded-[24px] border border-gray-200/60 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center text-center gap-4">
-                            <div className="w-14 h-14 bg-gray-50 group-hover:bg-blue-50 group-hover:scale-105 transition-all rounded-2xl flex items-center justify-center text-blue-600 border border-gray-100">
+                            <div className="w-14 h-14 bg-gray-50 group-hover:bg-blue-50 group-hover:scale-105 transition-all rounded-2xl flex items-center justify-center text-primary border border-gray-100">
                                 <HiOutlineDocumentText size={28} />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Currículo 100%</h3>
+                                <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Currículo 100%</h3>
                                 <p className="text-xs text-gray-500 font-medium leading-relaxed">Preencha seus dados, experiências e habilidades para atingir a pontuação máxima.</p>
                             </div>
                         </Link>
 
                         {/* CARD 3: BUSCAR VAGAS */}
                         <Link href="/ajuda/como-buscar-vagas" className="group bg-white p-6 rounded-[24px] border border-gray-200/60 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center text-center gap-4">
-                            <div className="w-14 h-14 bg-gray-50 group-hover:bg-blue-50 group-hover:scale-105 transition-all rounded-2xl flex items-center justify-center text-blue-600 border border-gray-100">
+                            <div className="w-14 h-14 bg-gray-50 group-hover:bg-blue-50 group-hover:scale-105 transition-all rounded-2xl flex items-center justify-center text-primary border border-gray-100">
                                 <HiOutlineBriefcase size={28} />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Buscar e se Candidatar</h3>
+                                <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Buscar e se Candidatar</h3>
                                 <p className="text-xs text-gray-500 font-medium leading-relaxed">Como utilizar os filtros inteligentes para achar e disputar as vagas ideais.</p>
                             </div>
                         </Link>
@@ -142,7 +142,7 @@ export default function CentralAjudaPage() {
                                         <span className="font-bold text-gray-800 text-sm pr-4">{faq.pergunta}</span>
                                         <HiOutlineChevronDown
                                             size={18}
-                                            className={`text-gray-400 transition-transform duration-300 ${faqAberto === faq.id ? "rotate-180 text-blue-600" : ""}`}
+                                            className={`text-gray-400 transition-transform duration-300 ${faqAberto === faq.id ? "rotate-180 text-primary" : ""}`}
                                         />
                                     </button>
 

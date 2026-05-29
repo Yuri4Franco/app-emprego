@@ -28,6 +28,7 @@ import {
   dadosGeraisSchema,
   DadosGeraisData,
 } from "@/src/schemas/curriculoSchemas";
+import { ESTADOS_BRASIL } from "@/src/schemas/vagaSchemas";
 
 interface TabDadosGeraisProps {
   dadosIniciais: any;
@@ -89,7 +90,9 @@ export default function TabDadosGerais({
       pretensao_salarial: dadosIniciais?.pretensao_salarial || "",
       tipo_contato: Array.isArray(dadosIniciais?.tipo_contato)
         ? dadosIniciais.tipo_contato
-        : (dadosIniciais?.tipo_contato ? [dadosIniciais.tipo_contato] : ["WHATSAPP"]),
+        : dadosIniciais?.tipo_contato
+          ? [dadosIniciais.tipo_contato]
+          : ["WHATSAPP"],
       sem_pretensao: !dadosIniciais?.pretensao_salarial,
       pcd: dadosIniciais?.pcd || false,
       tipo_pcd: dadosIniciais?.tipo_pcd || "",
@@ -281,7 +284,7 @@ export default function TabDadosGerais({
       </div>
 
       {/* ========================================================================= */}
-      {/* 1. DADOS PESSOAIS E FOTO */}
+      {/* DADOS PESSOAIS E FOTO */}
       {/* ========================================================================= */}
       <div className="bg-white rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 overflow-hidden">
         <div className="flex flex-col items-center justify-center p-6 md:p-10 bg-gradient-to-b from-blue-50/80 to-white border-b border-gray-50">
@@ -455,7 +458,68 @@ export default function TabDadosGerais({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. PERFIL PROFISSIONAL & PRETENSÃO */}
+      {/* ENDEREÇO */}
+      {/* ========================================================================= */}
+      <div className="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-5 md:space-y-6">
+        <h2 className="text-lg md:text-xl font-black text-gray-800">
+          Endereço
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Input
+            label="CEP"
+            placeholder="00000-000"
+            className={getFieldStatus("cep")}
+            {...register("cep", {
+              onChange: (e) => (e.target.value = maskCEP(e.target.value)),
+            })}
+          />
+          <div className="md:col-span-2">
+            <Input
+              label="Logradouro (Rua/Avenida)"
+              className={getFieldStatus("logradouro")}
+              {...register("logradouro")}
+            />
+          </div>
+          <Input
+            label="Número"
+            className={getFieldStatus("numero")}
+            {...register("numero")}
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Input
+            label="Complemento"
+            className={getFieldStatus("complemento")}
+            {...register("complemento")}
+          />
+          <Input
+            label="Bairro"
+            className={getFieldStatus("bairro")}
+            {...register("bairro")}
+          />
+          <Input
+            label="Cidade"
+            className={getFieldStatus("cidade")}
+            {...register("cidade")}
+          />
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-sm font-bold text-gray-700 ml-2">UF</label>
+            <select
+              {...register("uf")}
+              className={`w-full h-[52px] px-4 rounded-[20px] outline-none text-sm transition-all border ${getFieldStatus("uf")}`}
+            >
+              {ESTADOS_BRASIL.map((uf) => (
+                <option key={uf} value={uf}>
+                  {uf}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* PERFIL PROFISSIONAL & PRETENSÃO */}
       {/* ========================================================================= */}
       <div className="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6 md:space-y-8">
         <h2 className="text-lg md:text-xl font-black text-gray-800">
@@ -474,7 +538,9 @@ export default function TabDadosGerais({
                 </span>
               </label>
               <p className="text-[11px] md:text-xs text-gray-500 mt-1 leading-relaxed">
-                Selecione até 10 áreas que mais se encaixam com seu perfil e com seus interesses. Isso ajuda os recrutadores a encontrarem seu currículo em nosso Banco de Talentos!
+                Selecione até 10 áreas que mais se encaixam com seu perfil e com
+                seus interesses. Isso ajuda os recrutadores a encontrarem seu
+                currículo em nosso Banco de Talentos!
               </p>
             </div>
             <div className="relative group z-20">
@@ -487,10 +553,11 @@ export default function TabDadosGerais({
                     : "Buscar área (Ex: TI, RH...)"
                 }
                 disabled={areasSelecionadas.length >= 10}
-                className={`w-full pl-12 pr-4 py-3.5 md:py-4 border rounded-[20px] md:rounded-[24px] outline-none text-sm transition-all disabled:opacity-50 ${erroAreas
-                  ? "bg-red-50/30 border-red-500 focus:ring-4 focus:ring-red-500/20"
-                  : "bg-gray-50 border-gray-100 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500"
-                  }`}
+                className={`w-full pl-12 pr-4 py-3.5 md:py-4 border rounded-[20px] md:rounded-[24px] outline-none text-sm transition-all disabled:opacity-50 ${
+                  erroAreas
+                    ? "bg-red-50/30 border-red-500 focus:ring-4 focus:ring-red-500/20"
+                    : "bg-gray-50 border-gray-100 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500"
+                }`}
                 value={searchTermArea}
                 onChange={(e) => {
                   setSearchTermArea(e.target.value);
@@ -556,20 +623,20 @@ export default function TabDadosGerais({
 
           {(!watch("resumo_profissional") ||
             !watch("objetivo_profissional")) && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50/50 p-4 rounded-2xl border border-blue-100 flex items-start gap-3 animate-in fade-in duration-500">
-                <span className="text-xl shrink-0">💡</span>
-                <div>
-                  <h4 className="text-xs md:text-sm font-black text-blue-900">
-                    Dica de Ouro para chegar aos 100%
-                  </h4>
-                  <p className="text-[11px] md:text-xs text-blue-800/80 mt-0.5 leading-relaxed font-medium">
-                    Estes dois campos abaixo são opcionais, mas preenchê-los
-                    garante a pontuação máxima do seu currículo. Recrutadores
-                    adoram ler um bom resumo antes de olhar as experiências!
-                  </p>
-                </div>
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50/50 p-4 rounded-2xl border border-blue-100 flex items-start gap-3 animate-in fade-in duration-500">
+              <span className="text-xl shrink-0">💡</span>
+              <div>
+                <h4 className="text-xs md:text-sm font-black text-blue-900">
+                  Dica de Ouro para chegar aos 100%
+                </h4>
+                <p className="text-[11px] md:text-xs text-blue-800/80 mt-0.5 leading-relaxed font-medium">
+                  Estes dois campos abaixo são opcionais, mas preenchê-los
+                  garante a pontuação máxima do seu currículo. Recrutadores
+                  adoram ler um bom resumo antes de olhar as experiências!
+                </p>
               </div>
-            )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
@@ -636,60 +703,7 @@ export default function TabDadosGerais({
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. ENDEREÇO */}
-      {/* ========================================================================= */}
-      <div className="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-5 md:space-y-6">
-        <h2 className="text-lg md:text-xl font-black text-gray-800">
-          Endereço
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Input
-            label="CEP"
-            placeholder="00000-000"
-            className={getFieldStatus("cep")}
-            {...register("cep", {
-              onChange: (e) => (e.target.value = maskCEP(e.target.value)),
-            })}
-          />
-          <div className="md:col-span-2">
-            <Input
-              label="Logradouro (Rua/Avenida)"
-              className={getFieldStatus("logradouro")}
-              {...register("logradouro")}
-            />
-          </div>
-          <Input
-            label="Número"
-            className={getFieldStatus("numero")}
-            {...register("numero")}
-          />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Input
-            label="Complemento"
-            className={getFieldStatus("complemento")}
-            {...register("complemento")}
-          />
-          <Input
-            label="Bairro"
-            className={getFieldStatus("bairro")}
-            {...register("bairro")}
-          />
-          <Input
-            label="Cidade"
-            className={getFieldStatus("cidade")}
-            {...register("cidade")}
-          />
-          <Input
-            label="UF"
-            className={getFieldStatus("uf")}
-            {...register("uf")}
-          />
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 4. PREFERÊNCIAS & DIVERSIDADE */}
+      {/* PREFERÊNCIAS & DIVERSIDADE */}
       {/* ========================================================================= */}
       <div className="bg-white p-5 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6 md:space-y-8">
         <h2 className="text-lg md:text-xl font-black text-gray-800 border-b border-gray-50 pb-3 md:pb-4">
@@ -715,25 +729,34 @@ export default function TabDadosGerais({
                   { id: "LIGACAO", label: "Ligação" },
                 ].map((metodo) => {
                   const contatosSelecionados = watch("tipo_contato") || [];
-                  const isChecked = contatosSelecionados.includes(metodo.id as any);
+                  const isChecked = contatosSelecionados.includes(
+                    metodo.id as any,
+                  );
 
                   const handleContatoChange = (
-                    e: React.ChangeEvent<HTMLInputElement>
+                    e: React.ChangeEvent<HTMLInputElement>,
                   ) => {
                     if (e.target.checked) {
                       if (metodo.id === "QUALQUER_UM") {
                         setValue("tipo_contato", ["QUALQUER_UM"]);
                       } else {
                         setValue("tipo_contato", [
-                          ...contatosSelecionados.filter((c: string) => c !== "QUALQUER_UM"),
+                          ...contatosSelecionados.filter(
+                            (c: string) => c !== "QUALQUER_UM",
+                          ),
                           metodo.id as any,
                         ]);
                       }
                     } else {
                       // Se desmarcou, remove da lista
-                      const filtrado = contatosSelecionados.filter((c: string) => c !== metodo.id);
+                      const filtrado = contatosSelecionados.filter(
+                        (c: string) => c !== metodo.id,
+                      );
                       // Se a lista ficar vazia, volta pro padrão "Qualquer um"
-                      setValue("tipo_contato", filtrado.length === 0 ? ["QUALQUER_UM"] : filtrado);
+                      setValue(
+                        "tipo_contato",
+                        filtrado.length === 0 ? ["QUALQUER_UM"] : filtrado,
+                      );
                     }
                   };
 

@@ -69,11 +69,10 @@ export default function TabExperiencia({
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const isChecked = e.target.checked;
-    setPrimeiroEmprego(isChecked);
-
     const toastId = toast.loading("Salvando preferência...");
 
     try {
+      // Recriamos o payload completo para o backend aceitar o PUT
       const payload = {
         cpf: dadosIniciais?.cpf,
         data_nascimento: dadosIniciais?.data_nascimento,
@@ -104,11 +103,12 @@ export default function TabExperiencia({
           cidade: dadosIniciais?.endereco?.cidade,
           uf: dadosIniciais?.endereco?.uf,
         },
-        primeiro_emprego: isChecked,
+        primeiro_emprego: isChecked, // ✨ A única coisa que realmente muda
       };
 
       await api.put("/candidato/meu-curriculo", payload);
 
+      // Sincroniza as áreas de atuação novamente para não perder
       const areasSalvas =
         dadosIniciais?.areas_atuacao ||
         dadosIniciais?.candidatoAreaAtuacao ||
@@ -122,15 +122,17 @@ export default function TabExperiencia({
 
       toast.success(
         isChecked
-          ? "Sinalizado como Primeiro Emprego!"
-          : "Opção de Primeiro Emprego desmarcada.",
+          ? "Salvo! Marcado como 1º Emprego."
+          : "Opção de 1º Emprego desmarcada.",
         { id: toastId },
       );
       onAtualizarProgresso();
     } catch (error: any) {
+      // Se a API falhar, desfazemos a chavinha otimista
       setPrimeiroEmprego(!isChecked);
       toast.error(
-        "Para ativar essa opção, preencha primeiro os Dados Básicos.",
+        error.response?.data?.error ||
+          "Erro ao atualizar a preferência de primeiro emprego.",
         { id: toastId },
       );
     }
