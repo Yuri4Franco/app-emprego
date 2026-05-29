@@ -26,10 +26,10 @@ import { FaWhatsapp, FaLinkedin, FaGithub } from "react-icons/fa";
 // Dicionário de Turnos para exibição
 const turnoLabels: Record<string, string> = {
   QUALQUER_TURNO: "Qualquer Turno",
-  HORARIO_COMERCIAL: "Horário Comercial",
-  PRIMEIRO_TURNO: "1º Turno (Manhã)",
-  SEGUNDO_TURNO: "2º Turno (Tarde)",
-  TERCEIRO_TURNO: "3º Turno (Noite)",
+  COMERCIAL: "Horário Comercial",
+  MANHÃ: "Manhã (Manhã)",
+  TARDE: "Tarde (Tarde)",
+  NOITE: "Noite (Noite)",
 };
 
 export default function DetalhesCurriculoPage() {

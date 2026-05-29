@@ -195,8 +195,7 @@ export default function TabCompetencias({
                 O que são Habilidades?
               </h4>
               <p className="text-xs text-blue-800/80 leading-relaxed font-medium">
-                Fortaleça seu perfil destacando suas tecnologias dominadas e as
-                competências estratégicas que impulsionam suas entregas.
+                Mostre o que você sabe fazer de melhor. Liste as ferramentas que domina e os talentos que fazem o seu trabalho dar certo todos os dias.
               </p>
             </div>
           </div>
@@ -226,6 +225,9 @@ export default function TabCompetencias({
           <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
             Buscar ou Sugerir Habilidade
           </label>
+          <p className="text-xs text-gray-500 leading-relaxed font-medium mb-2  ml-1">
+            Digite o nome da habilidade que deseja adicionar. Caso não encontre, use a opção de sugerir para que ela seja avaliada pela equipe da ACI e adicionada ao seu perfil.
+          </p>
           <div className="relative group">
             <HiOutlineSearch
               className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 z-10"

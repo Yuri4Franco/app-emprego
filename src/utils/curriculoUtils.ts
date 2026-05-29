@@ -42,10 +42,10 @@ export const mesAnoRegex = /^(0[1-9]|1[0-2])\/\d{4}$/;
 
 export const descricoesTurno: Record<string, string> = {
   QUALQUER_TURNO: "Disponível para trabalhar em qualquer turno.",
-  HORARIO_COMERCIAL: "Trabalho durante o horário comercial padrão (Manhã e Tarde).",
-  PRIMEIRO_TURNO: "Trabalho no 1º turno (geralmente manhã/início da tarde).",
-  SEGUNDO_TURNO: "Trabalho no 2º turno (geralmente tarde/noite).",
-  TERCEIRO_TURNO: "Trabalho no 3º turno (geralmente madrugada).",
+  COMERCIAL: "Trabalho durante o horário comercial padrão (Manhã e Tarde).",
+  MANHÃ: "Trabalho no Manhã (geralmente manhã/início da tarde).",
+  TARDE: "Trabalho no Tarde (geralmente tarde/noite).",
+  NOITE: "Trabalho no Noite (geralmente madrugada).",
 };
 
 export const descricoesCnh: Record<string, string> = {

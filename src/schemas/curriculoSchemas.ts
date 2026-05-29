@@ -61,10 +61,10 @@ export const dadosGeraisSchema = z.object({
   turno_preferido: z
     .array(
       z.enum([
-        "PRIMEIRO_TURNO",
-        "SEGUNDO_TURNO",
-        "TERCEIRO_TURNO",
-        "HORARIO_COMERCIAL",
+        "MANHÃ",
+        "TARDE",
+        "NOITE",
+        "COMERCIAL",
         "QUALQUER_TURNO",
       ]),
     )

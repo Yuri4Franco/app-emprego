@@ -11,6 +11,7 @@ import {
   HiOutlineSearch,
   HiOutlineX,
   HiOutlineSave,
+  HiOutlineArrowRight,
 } from "react-icons/hi";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
@@ -30,12 +31,14 @@ import {
 
 interface TabDadosGeraisProps {
   dadosIniciais: any;
-  onAtualizarProgresso: () => void; // Para avisar o pai que salvou
+  onAtualizarProgresso: () => void;
+  onNextTab: () => void;
 }
 
 export default function TabDadosGerais({
   dadosIniciais,
   onAtualizarProgresso,
+  onNextTab,
 }: TabDadosGeraisProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [fotoUrl, setFotoUrl] = useState<string | null>(
@@ -214,6 +217,10 @@ export default function TabDadosGerais({
       // Avisa o componente Pai (page.tsx) para buscar os dados frescos.
       // Isso vai atualizar a barra de progresso e o botãozinho toggle do cabeçalho sozinhos!
       onAtualizarProgresso();
+
+      if (onNextTab) {
+        onNextTab();
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Erro ao salvar os dados.", {
         id: toastId,
@@ -787,50 +794,6 @@ export default function TabDadosGerais({
                 </label>
               </div>
             </div>
-
-            <div
-              className={`p-4 md:p-6 rounded-[20px] md:rounded-[24px] border transition-all shadow-sm ${watch("pcd") ? "bg-blue-50/50 border-blue-200" : "bg-gray-50 border-gray-100"}`}
-            >
-              <label className="flex items-start gap-3 cursor-pointer group">
-                <div className="pt-0.5">
-                  <input
-                    type="checkbox"
-                    {...register("pcd")}
-                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <span className="block text-xs md:text-sm font-black text-gray-800 group-hover:text-primary transition-colors">
-                    Me identifico como PcD ou Neurodivergente
-                  </span>
-                  <span className="block text-[10px] md:text-xs text-gray-500 mt-0.5 leading-relaxed">
-                    Preenchimento opcional. Ajuda as empresas a promoverem
-                    ambientes mais inclusivos.
-                  </span>
-                </div>
-              </label>
-
-              {watch("pcd") && (
-                <div className="mt-5 space-y-5 animate-in slide-in-from-top-4 pt-5 border-t border-blue-100">
-                  <Input
-                    label="Como você descreve sua condição?"
-                    placeholder="Ex: Física, Auditiva, TEA..."
-                    {...register("tipo_pcd")}
-                  />
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] md:text-xs font-bold text-gray-700 ml-1">
-                      Como podemos tornar o processo seletivo mais acessível
-                      para você?
-                    </label>
-                    <textarea
-                      {...register("necessidade")}
-                      className="w-full p-4 bg-white shadow-sm rounded-xl h-24 outline-none text-xs focus:ring-4 resize-none border border-gray-200"
-                      placeholder="Ex: Rampa de acesso, intérprete..."
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
 
           <div className="space-y-6 md:space-y-8">
@@ -854,10 +817,10 @@ export default function TabDadosGerais({
                     label: "Sem Preferência",
                     colSpan: "col-span-2 sm:col-span-3",
                   },
-                  { id: "HORARIO_COMERCIAL", label: "Comercial", colSpan: "" },
-                  { id: "PRIMEIRO_TURNO", label: "1º Turno", colSpan: "" },
-                  { id: "SEGUNDO_TURNO", label: "2º Turno", colSpan: "" },
-                  { id: "TERCEIRO_TURNO", label: "3º Turno", colSpan: "" },
+                  { id: "COMERCIAL", label: "Comercial", colSpan: "" },
+                  { id: "MANHÃ", label: "Manhã", colSpan: "" },
+                  { id: "TARDE", label: "Tarde", colSpan: "" },
+                  { id: "NOITE", label: "Noite", colSpan: "" },
                 ].map((turno) => {
                   const turnosSelecionados = watch("turno_preferido") || [];
                   const isChecked = turnosSelecionados.includes(
@@ -976,17 +939,66 @@ export default function TabDadosGerais({
               </div>
             </div>
           </div>
+
+          <div
+            className={`md:col-span-2 p-4 md:p-6 rounded-[20px] md:rounded-[24px] border transition-all shadow-sm ${watch("pcd") ? "bg-blue-50/50 border-blue-200" : "bg-gray-50 border-gray-100"}`}
+          >
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <div className="pt-0.5">
+                <input
+                  type="checkbox"
+                  {...register("pcd")}
+                  className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <span className="block text-xs md:text-sm font-black text-gray-800 group-hover:text-primary transition-colors">
+                  Me identifico como PcD ou neurodivergente
+                </span>
+                <span className="block text-[10px] md:text-xs text-gray-500 mt-0.5 leading-relaxed">
+                  Preenchimento opcional. Ajuda as empresas a promoverem
+                  ambientes mais inclusivos.
+                </span>
+              </div>
+            </label>
+
+            {watch("pcd") && (
+              <div className="mt-5 space-y-5 animate-in slide-in-from-top-4 pt-5 border-t border-blue-100">
+                <Input
+                  label="Como você descreve sua condição?"
+                  placeholder="Ex: Física, Auditiva, TEA..."
+                  {...register("tipo_pcd")}
+                />
+                <div className="space-y-1.5">
+                  <label className="text-[11px] md:text-xs font-bold text-gray-700 ml-1">
+                    Como podemos tornar o processo seletivo mais acessível
+                    para você?
+                  </label>
+                  <textarea
+                    {...register("necessidade")}
+                    className="w-full p-4 bg-white shadow-sm rounded-xl h-24 outline-none text-xs focus:ring-4 resize-none border border-gray-200"
+                    placeholder="Ex: Rampa de acesso, intérprete..."
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-center md:justify-end pt-4 md:pt-8 w-full">
+      <div className="flex justify-center pt-8 mt-8 border-t border-gray-100 w-full animate-in slide-in-from-bottom-4">
         <ButtonType
           type="submit"
           disabled={isSaving}
-          className="w-full md:w-auto px-6 md:px-10 py-4 md:py-5 rounded-full md:rounded-[24px] flex items-center justify-center gap-2 shadow-lg shadow-blue-100 text-base md:text-lg"
+          className="w-full md:w-auto px-10 md:px-16 py-4 md:py-5 rounded-full md:rounded-[24px] flex items-center justify-center gap-3 shadow-xl shadow-blue-500/20 text-base md:text-lg font-black transition-all hover:scale-105 active:scale-95 group"
         >
-          <HiOutlineSave size={24} />
-          {isSaving ? "Salvando..." : "Salvar Dados Básicos"}
+          {isSaving ? (
+            "Salvando os dados..."
+          ) : (
+            <>
+              Salvar e ir para a próxima etapa <HiOutlineArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
+            </>
+          )}
         </ButtonType>
       </div>
     </form>

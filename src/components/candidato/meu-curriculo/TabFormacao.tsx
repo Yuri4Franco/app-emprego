@@ -19,11 +19,13 @@ import { formacaoSchema, FormacaoData } from "@/src/schemas/curriculoSchemas";
 interface TabFormacaoProps {
   dadosIniciais: any;
   onAtualizarProgresso: () => void;
+  onFormOpenChange?: (isOpen: boolean) => void;
 }
 
 export default function TabFormacao({
   dadosIniciais,
   onAtualizarProgresso,
+  onFormOpenChange
 }: TabFormacaoProps) {
   // Estados Locais
   const [formacoes, setFormacoes] = useState<any[]>(
@@ -76,6 +78,7 @@ export default function TabFormacao({
       });
     }
     setShowFormFormacao(true);
+    if (onFormOpenChange) onFormOpenChange(true);
   };
 
   const salvarFormacao = async (data: FormacaoData) => {
@@ -111,22 +114,29 @@ export default function TabFormacao({
             f.id_formacao === editingFormId ? res.data.data : f,
           ),
         );
-        toast.success("Escolaridade atualizada!");
+        toast.success("Formação atualizada!");
       } else {
         const res = await api.post("/candidato/formacoes", payload);
         setFormacoes((prev) => [...prev, res.data.data]);
-        toast.success("Escolaridade adicionada!");
+        toast.success("Formação adicionada!");
       }
 
       setShowFormFormacao(false);
+      if (onFormOpenChange) onFormOpenChange(false);
       onAtualizarProgresso();
     } catch (error: any) {
       toast.error(
-        error.response?.data?.error || "Erro ao salvar escolaridade.",
+        error.response?.data?.error || "Erro ao salvar formação.",
       );
     } finally {
       setIsSavingForm(false);
     }
+  };
+
+  const fecharFormFormacao = () => {
+    setShowFormFormacao(false);
+    setEditingFormId(null);
+    if (onFormOpenChange) onFormOpenChange(false);
   };
 
   const excluirFormacao = async (id: number) => {
@@ -149,14 +159,14 @@ export default function TabFormacao({
   return (
     <div className="space-y-6 animate-in slide-in-from-bottom-4 pt-4">
       {/* ========================================================================= */}
-      {/* LISTAGEM DAS ESCOLARIDADES */}
+      {/* LISTAGEM DAS FORMAÇÕES */}
       {/* ========================================================================= */}
       {!showFormFormacao && (
         <div className="bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6 md:space-y-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
-                Escolaridade e Cursos
+                Formação Acadêmica
               </h2>
               <p className="text-sm text-gray-500 mt-1 font-medium">
                 Adicione seu nível de ensino, graduações ou cursos técnicos.
@@ -182,15 +192,13 @@ export default function TabFormacao({
                 <HiOutlineAcademicCap size={32} className="md:w-10 md:h-10" />
               </div>
               <h3 className="text-lg md:text-xl font-black text-gray-800">
-                Nenhuma escolaridade cadastrada
+                Nenhuma Formação Cadastrada
               </h3>
               <p className="text-sm text-gray-500 mt-1.5 font-medium max-w-sm mx-auto">
-                Adicione seu nível de ensino atual, cursos técnicos ou
-                graduações para destacar seu perfil.
+                Clique aqui para começar a adicionar suas formações. Quanto mais adicionar, melhor!
               </p>
             </div>
           ) : (
-            /* Lista Preenchida */
             <div className="grid grid-cols-1 gap-4">
               {formacoes.map((f: any) => {
                 const isBasico =
@@ -252,7 +260,7 @@ export default function TabFormacao({
                       <button
                         onClick={() => excluirFormacao(f.id_formacao)}
                         className="flex items-center justify-center p-2.5 md:p-2 bg-white border border-gray-200 hover:border-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl md:rounded-full transition-colors shrink-0"
-                        title="Excluir escolaridade"
+                        title="Excluir formação"
                       >
                         <HiOutlineTrash size={18} className="md:w-4 md:h-4" />
                       </button>
@@ -277,10 +285,10 @@ export default function TabFormacao({
 
           <div className="relative z-10 border-b border-gray-200/60 pb-4 md:pb-5">
             <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
-              {editingFormId ? "Editar Escolaridade" : "Nova Escolaridade"}
+              {editingFormId ? "Editar Formação Acadêmica" : "Adicionar Formação Acadêmica"}
             </h2>
             <p className="text-sm text-gray-500 mt-1 font-medium">
-              Preencha as informações abaixo para atualizar seu perfil.
+              Preencha as informações solicitadas abaixo e clique em salvar para adicionar a formação no seu currículo.
             </p>
           </div>
 
@@ -374,7 +382,7 @@ export default function TabFormacao({
           <div className="relative z-10 flex flex-col-reverse md:flex-row justify-center md:justify-end gap-3 pt-8 mt-4 border-t border-gray-200/60">
             <button
               type="button"
-              onClick={() => setShowFormFormacao(false)}
+              onClick={fecharFormFormacao}
               className="w-full md:w-auto px-8 py-4 font-black text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-full md:rounded-2xl border border-gray-200 transition-all uppercase tracking-widest text-xs"
             >
               Cancelar
@@ -384,7 +392,7 @@ export default function TabFormacao({
               disabled={isSavingForm}
               className="w-full md:w-auto px-10 py-4 rounded-full md:rounded-2xl shadow-lg shadow-blue-500/20 flex justify-center uppercase tracking-widest text-xs font-black transition-all hover:scale-105 active:scale-95 disabled:hover:scale-100"
             >
-              {isSavingForm ? "Salvando..." : "Salvar Escolaridade"}
+              {isSavingForm ? "Salvando..." : "Salvar"}
             </ButtonType>
           </div>
         </form>

@@ -36,6 +36,28 @@ export default function MeuCurriculoRefatoradoPage() {
     competencias: false,
   });
 
+  const tabsOrdem = ["dados", "experiencia", "formacao", "competencias", "revisao"];
+  const currentTabIndex = tabsOrdem.indexOf(activeTab);
+  const [isSubFormOpen, setIsSubFormOpen] = useState(false);
+
+  const irParaProxima = () => {
+    if (currentTabIndex < tabsOrdem.length - 1) {
+      setActiveTab(tabsOrdem[currentTabIndex + 1]);
+      window.scrollTo({ top: 0, behavior: "smooth" }); // Rola pro topo suavemente
+    }
+  };
+
+  const irParaAnterior = () => {
+    if (currentTabIndex > 0) {
+      setActiveTab(tabsOrdem[currentTabIndex - 1]);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  useEffect(() => {
+    setIsSubFormOpen(false);
+  }, [activeTab]);
+
   // Função que avalia o que falta no currículo
   const avaliarProgresso = (dados: any) => {
     if (!dados) return;
@@ -215,11 +237,10 @@ export default function MeuCurriculoRefatoradoPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${
-              activeTab === tab.id
-                ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
-                : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
-            }`}
+            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${activeTab === tab.id
+              ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
+              : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
+              }`}
           >
             <span className="flex items-center gap-1.5 md:gap-2 relative z-10">
               {tab.icon} {tab.label}
@@ -239,18 +260,21 @@ export default function MeuCurriculoRefatoradoPage() {
           <TabDadosGerais
             dadosIniciais={dadosCandidato}
             onAtualizarProgresso={carregarCurriculo}
+            onNextTab={irParaProxima}
           />
         )}
         {activeTab === "experiencia" && (
           <TabExperiencia
             dadosIniciais={dadosCandidato}
             onAtualizarProgresso={carregarCurriculo}
+            onFormOpenChange={setIsSubFormOpen}
           />
         )}
         {activeTab === "formacao" && (
           <TabFormacao
             dadosIniciais={dadosCandidato}
             onAtualizarProgresso={carregarCurriculo}
+            onFormOpenChange={setIsSubFormOpen}
           />
         )}
         {activeTab === "competencias" && (
@@ -267,6 +291,27 @@ export default function MeuCurriculoRefatoradoPage() {
             onToggleVisibilidade={handleToggleVisibilidade}
             setActiveTab={setActiveTab}
           />
+        )}
+        {activeTab !== "dados" && !isSubFormOpen && (
+          <div className="flex items-center justify-between pt-10 mt-8 border-t border-gray-200/60 w-full animate-in slide-in-from-bottom-4 duration-300">
+            {currentTabIndex > 0 ? (
+              <button
+                onClick={irParaAnterior}
+                className="flex items-center gap-2 px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-900 bg-white border border-gray-200 hover:border-gray-300 rounded-full transition-all group shadow-sm"
+              >
+                <span className="text-lg group-hover:-translate-x-1 transition-transform">←</span> Etapa Anterior
+              </button>
+            ) : <div />}
+
+            {currentTabIndex < tabsOrdem.length - 1 ? (
+              <button
+                onClick={irParaProxima}
+                className="flex items-center gap-2 px-8 py-3 text-sm font-black text-white bg-blue-600 hover:bg-blue-700 border border-blue-600 rounded-full transition-all group shadow-md shadow-blue-500/20"
+              >
+                Próxima Etapa <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
+              </button>
+            ) : <div />}
+          </div>
         )}
       </div>
     </div>

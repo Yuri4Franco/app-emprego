@@ -48,10 +48,10 @@ interface Competencia {
 
 // TEXTOS ENCURTADOS PARA ECONOMIZAR ESPAÇO NO LAYOUT
 const turnosOptions = [
-  { value: "HORARIO_COMERCIAL", label: "Comercial" },
-  { value: "PRIMEIRO_TURNO", label: "1ºT" },
-  { value: "SEGUNDO_TURNO", label: "2ºT" },
-  { value: "TERCEIRO_TURNO", label: "3ºT" },
+  { value: "COMERCIAL", label: "Comercial" },
+  { value: "MANHÃ", label: "1ºT" },
+  { value: "TARDE", label: "2ºT" },
+  { value: "NOITE", label: "3ºT" },
 ];
 
 const escolaridadeOptions = [
@@ -691,7 +691,7 @@ function VitrineConteudo() {
                         color: "bg-gray-50 text-gray-600 border-gray-200",
                       });
                     } else {
-                      // Converte os IDs de turno ("PRIMEIRO_TURNO") para os nomes curtos ("1ºT")
+                      // Converte os IDs de turno ("MANHÃ") para os nomes curtos ("1ºT")
                       const turnosNomes = candidato.turno_preferido
                         .map(
                           (t) =>

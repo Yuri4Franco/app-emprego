@@ -18,10 +18,10 @@ import { FaWhatsapp, FaLinkedin, FaGithub } from "react-icons/fa";
 
 const turnoLabels: Record<string, string> = {
   QUALQUER_TURNO: "Qualquer Turno",
-  HORARIO_COMERCIAL: "Horário Comercial",
-  PRIMEIRO_TURNO: "1º Turno",
-  SEGUNDO_TURNO: "2º Turno",
-  TERCEIRO_TURNO: "3º Turno",
+  COMERCIAL: "Horário Comercial",
+  MANHÃ: "Manhã",
+  TARDE: "Tarde",
+  NOITE: "Noite",
 };
 
 const contatoLabels: Record<string, string> = {

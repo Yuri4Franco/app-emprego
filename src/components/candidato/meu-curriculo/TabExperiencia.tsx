@@ -24,13 +24,14 @@ import {
 interface TabExperienciaProps {
   dadosIniciais: any;
   onAtualizarProgresso: () => void;
+  onFormOpenChange?: (isOpen: boolean) => void;
 }
 
 export default function TabExperiencia({
   dadosIniciais,
   onAtualizarProgresso,
+  onFormOpenChange
 }: TabExperienciaProps) {
-  // Estados Locais
   const [experiencias, setExperiencias] = useState<any[]>(
     dadosIniciais?.experiencias || [],
   );
@@ -38,7 +39,6 @@ export default function TabExperiencia({
   const [editingExpId, setEditingExpId] = useState<number | null>(null);
   const [isSavingExp, setIsSavingExp] = useState(false);
 
-  // O estado do 1º emprego agora vive aqui e inicializa com o dado do backend
   const [primeiroEmprego, setPrimeiroEmprego] = useState<boolean>(
     dadosIniciais?.primeiro_emprego || false,
   );
@@ -63,7 +63,7 @@ export default function TabExperiencia({
   });
 
   // =========================================================================
-  // LÓGICA DO 1º EMPREGO
+  // LÓGICA DO 1º EMPREGO (Salva automático ao clicar)
   // =========================================================================
   const handleTogglePrimeiroEmprego = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -74,7 +74,6 @@ export default function TabExperiencia({
     const toastId = toast.loading("Salvando preferência...");
 
     try {
-      // Recriamos o payload completo para o backend aceitar o PUT
       const payload = {
         cpf: dadosIniciais?.cpf,
         data_nascimento: dadosIniciais?.data_nascimento,
@@ -105,12 +104,11 @@ export default function TabExperiencia({
           cidade: dadosIniciais?.endereco?.cidade,
           uf: dadosIniciais?.endereco?.uf,
         },
-        primeiro_emprego: isChecked, // ✨ A única coisa que realmente muda
+        primeiro_emprego: isChecked,
       };
 
       await api.put("/candidato/meu-curriculo", payload);
 
-      // Sincroniza as áreas de atuação novamente para não perder
       const areasSalvas =
         dadosIniciais?.areas_atuacao ||
         dadosIniciais?.candidatoAreaAtuacao ||
@@ -124,8 +122,8 @@ export default function TabExperiencia({
 
       toast.success(
         isChecked
-          ? "Salvo! Marcado como 1º Emprego."
-          : "Opção de 1º Emprego desmarcada.",
+          ? "Sinalizado como Primeiro Emprego!"
+          : "Opção de Primeiro Emprego desmarcada.",
         { id: toastId },
       );
       onAtualizarProgresso();
@@ -171,11 +169,13 @@ export default function TabExperiencia({
       });
     }
     setShowExpForm(true);
+    if (onFormOpenChange) onFormOpenChange(true);
   };
 
   const fecharFormExperiencia = () => {
     setShowExpForm(false);
     setEditingExpId(null);
+    if (onFormOpenChange) onFormOpenChange(false);
   };
 
   const salvarExperiencia = async (data: ExperienciaData) => {
@@ -233,157 +233,191 @@ export default function TabExperiencia({
 
   return (
     <div className="space-y-6 animate-in slide-in-from-bottom-4 pt-4">
-      {/* LISTAGEM DE EXPERIÊNCIAS (Se o formulário estiver fechado) */}
+      {/* ========================================================================= */}
+      {/* LISTAGEM DE EXPERIÊNCIAS E BANNER */}
+      {/* ========================================================================= */}
       {!showExpForm && (
-        <div className="bg-white p-6 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6 md:space-y-8">
+
+          {/* HEADER DA SEÇÃO */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg md:text-xl font-black text-gray-800">
+              <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
                 Histórico Profissional
               </h2>
-              <p className="text-xs md:text-sm text-gray-500">
-                Adicione suas experiências mais relevantes.
+              <p className="text-sm text-gray-500 mt-1 font-medium">
+                Adicione suas experiências
               </p>
             </div>
 
-            {/* TOGGLE 1º EMPREGO */}
-            <label className="w-full sm:w-auto flex items-center justify-between gap-3 cursor-pointer group bg-blue-50/50 px-4 md:px-5 py-3 rounded-[16px] md:rounded-[20px] border border-blue-100 hover:bg-blue-50 transition-colors">
-              <span className="text-xs md:text-sm font-black text-blue-900">
-                Busco meu 1º Emprego
-              </span>
-              <div className="relative inline-flex items-center">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={primeiroEmprego}
-                  onChange={handleTogglePrimeiroEmprego}
-                />
-                <div className="w-10 h-5 md:w-11 md:h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 md:after:h-5 md:after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-              </div>
-            </label>
+            <div className="flex flex-col items-end gap-6">
+              <label className="w-full sm:w-auto flex items-center justify-between gap-3 cursor-pointer group bg-blue-50/50 px-4 md:px-5 py-3 rounded-[16px] md:rounded-[20px] border border-blue-100 hover:bg-blue-50 transition-colors">
+                <span className="text-xs md:text-sm font-black text-blue-900 tracking-wider">
+                  Busco Meu 1º Emprego
+                </span>
+                <div className="relative inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={primeiroEmprego}
+                    onChange={handleTogglePrimeiroEmprego}
+                  />
+                  <div className="w-10 h-5 md:w-11 md:h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 md:after:h-5 md:after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                </div>
+              </label>
+
+              {/* Botão de Adicionar sempre visível se houver experiências */}
+              {experiencias.length > 0 && (
+                <button
+                  onClick={() => abrirFormExperiencia()}
+                  className="hidden md:flex justify-center items-center gap-2 bg-blue-50 text-primary px-5 py-3 md:py-2.5 rounded-full text-sm font-bold hover:bg-blue-100 transition-colors"
+                >
+                  <HiOutlinePlus size={18} /> Adicionar
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* ESTADO: 1º EMPREGO MARCADO */}
-          {primeiroEmprego ? (
-            <div className="p-6 md:p-10 rounded-[24px] md:rounded-[32px] bg-gradient-to-br from-emerald-50 to-teal-50/30 border border-emerald-100 text-center animate-in zoom-in-95 duration-300">
-              <div className="w-12 h-12 md:w-16 md:h-16 bg-white text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 shadow-sm border border-emerald-50">
-                <HiOutlineLightningBolt size={24} className="md:w-7 md:h-7" />
+          {/* BANNER 1º EMPREGO (Não oculta a lista mais, só encoraja) */}
+          {primeiroEmprego && (
+            <div className="p-6 md:p-8 rounded-[24px] md:rounded-[32px] bg-gradient-to-br from-emerald-50 to-teal-50/30 border border-emerald-100 text-center animate-in zoom-in-95 duration-300">
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-white text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 shadow-sm border border-emerald-50">
+                <HiOutlineLightningBolt size={24} />
               </div>
               <h3 className="text-lg md:text-xl font-black text-emerald-900 mb-2">
                 Todo grande talento tem um começo!
               </h3>
-              <p className="text-xs md:text-sm font-medium text-emerald-700/80 max-w-md mx-auto leading-relaxed">
-                Empresas estão em busca de pessoas com vontade de aprender.
-                Capriche nas abas de <b>Formação</b> e <b>Habilidades</b>!
+              <p className="text-xs md:text-sm font-medium text-emerald-700/90 max-w-lg mx-auto leading-relaxed">
+                As empresas de Panambi valorizam a vontade de aprender. E lembre-se: se você já fez <b>Jovem Aprendiz, Estágios, Trabalhos Voluntários ou Projetos Livres</b>, adicione-os abaixo! Eles contam muito.
               </p>
             </div>
-          ) : (
-            /* ESTADO: LISTA DE EMPREGOS */
-            <div className="space-y-4 md:space-y-6">
-              {experiencias.length > 0 && (
-                <div className="flex justify-center sm:justify-end border-t border-gray-50 pt-4">
-                  <button
-                    onClick={() => abrirFormExperiencia()}
-                    className="w-full sm:w-auto flex justify-center items-center gap-2 bg-blue-50 text-primary px-5 py-3 md:py-2.5 rounded-full text-sm font-bold hover:bg-blue-100 transition-colors"
-                  >
-                    <HiOutlinePlus size={18} /> Adicionar Experiência
-                  </button>
-                </div>
-              )}
+          )}
 
-              {experiencias.length === 0 ? (
-                <div
-                  onClick={() => abrirFormExperiencia()}
-                  className="p-10 md:p-16 rounded-[24px] md:rounded-[32px] border-2 border-dashed border-gray-200 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-all group"
-                >
-                  <div className="w-14 h-14 md:w-16 md:h-16 bg-gray-50 text-gray-400 group-hover:text-blue-500 group-hover:bg-blue-100 transition-colors rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <HiOutlineBriefcase size={24} className="md:w-7 md:h-7" />
-                  </div>
-                  <h3 className="text-base md:text-lg font-bold text-gray-700">
-                    Nenhuma experiência cadastrada
-                  </h3>
-                  <p className="text-xs md:text-sm text-gray-400 mt-1">
-                    Clique aqui para adicionar seu emprego anterior ou atual.
-                  </p>
+          {/* ESTADO VAZIO OU LISTA DE EXPERIÊNCIAS */}
+          <div className="space-y-4 md:space-y-6">
+            {experiencias.length === 0 ? (
+              <div
+                onClick={() => abrirFormExperiencia()}
+                className="p-10 md:p-16 rounded-[24px] md:rounded-[32px] border-2 border-dashed border-gray-200 bg-gray-50/50 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50/50 transition-all group"
+              >
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-white text-gray-400 shadow-sm border border-gray-100 group-hover:text-blue-500 group-hover:border-blue-200 transition-colors rounded-full flex items-center justify-center mx-auto mb-4 md:mb-5">
+                  <HiOutlineBriefcase size={32} className="md:w-10 md:h-10" />
                 </div>
-              ) : (
-                <div className="space-y-3 md:space-y-4">
-                  {experiencias.map((exp: any) => (
-                    <div
-                      key={exp.id_experiencia}
-                      className="flex flex-col md:flex-row md:items-center justify-between p-5 md:p-6 bg-gray-50 border border-gray-100 rounded-[20px] md:rounded-[24px] group hover:border-blue-200 transition-colors"
-                    >
-                      <div className="space-y-1">
-                        <h4 className="font-bold text-gray-800 text-base md:text-lg leading-tight">
+                {/* Texto adaptável dependendo se é primeiro emprego ou não */}
+                <h3 className="text-lg md:text-xl font-black text-gray-800">
+                  {primeiroEmprego ? "Nenhum estágio ou projeto cadastrado" : "Nenhuma experiência cadastrada"}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1.5 font-medium max-w-sm mx-auto">
+                  {primeiroEmprego
+                    ? "Clique aqui para registrar estágios, trabalhos voluntários ou Jovem Aprendiz."
+                    : "Clique aqui para começar a adicionar suas experiências profissionais."}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {experiencias.map((exp: any) => (
+                  <div
+                    key={exp.id_experiencia}
+                    className="group relative flex flex-col md:flex-row md:items-center justify-between p-5 md:p-6 bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-200 rounded-[24px] transition-all gap-5"
+                  >
+                    <div className="flex items-start gap-4 md:gap-5">
+                      <div className="w-12 h-12 md:w-14 md:h-14 shrink-0 bg-gray-50 group-hover:bg-blue-50 border border-gray-100 group-hover:border-blue-100 text-gray-400 group-hover:text-blue-500 rounded-full flex items-center justify-center transition-colors">
+                        <HiOutlineBriefcase size={24} />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <h4 className="font-black text-gray-900 text-base md:text-lg leading-tight group-hover:text-blue-600 transition-colors">
                           {exp.cargo}
                         </h4>
-                        <p className="text-xs md:text-sm font-medium text-primary">
+
+                        <p className="text-xs md:text-sm font-bold text-gray-500 line-clamp-1">
                           {exp.empresa}
                         </p>
-                        <p className="text-[11px] md:text-xs text-gray-400 font-medium">
-                          {new Date(exp.data_inicio).toLocaleDateString(
-                            "pt-BR",
-                            { month: "short", year: "numeric" },
-                          )}{" "}
-                          -{" "}
-                          {exp.atual
-                            ? "Atual"
-                            : new Date(exp.data_fim).toLocaleDateString(
+
+                        <div>
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-100/50">
+                            {new Date(exp.data_inicio).toLocaleDateString(
+                              "pt-BR",
+                              { month: "short", year: "numeric" },
+                            )}{" "}
+                            -{" "}
+                            {exp.atual
+                              ? "Atual"
+                              : new Date(exp.data_fim).toLocaleDateString(
                                 "pt-BR",
                                 { month: "short", year: "numeric" },
                               )}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 mt-4">
-                        <button
-                          onClick={() => abrirFormExperiencia(exp)}
-                          className="flex-1 sm:flex-none justify-center flex px-4 py-2 text-xs font-bold text-gray-600 bg-white border border-gray-200 hover:border-blue-300 hover:text-primary rounded-full transition-colors"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => excluirExperiencia(exp.id_experiencia)}
-                          className="p-2 flex items-center justify-center bg-white border border-gray-200 hover:border-red-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                        >
-                          <HiOutlineTrash size={16} />
-                        </button>
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+
+                    <div className="flex items-center gap-2 mt-1 md:mt-0 w-full md:w-auto">
+                      <button
+                        onClick={() => abrirFormExperiencia(exp)}
+                        className="flex-1 md:flex-none flex justify-center items-center px-6 py-2.5 md:py-2 text-xs font-black uppercase tracking-widest text-gray-600 bg-white border border-gray-200 hover:border-blue-300 hover:text-primary hover:bg-blue-50 rounded-xl md:rounded-full transition-colors"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => excluirExperiencia(exp.id_experiencia)}
+                        className="flex items-center justify-center p-2.5 md:p-2 bg-white border border-gray-200 hover:border-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl md:rounded-full transition-colors shrink-0"
+                        title="Excluir experiência"
+                      >
+                        <HiOutlineTrash size={18} className="md:w-4 md:h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Botão mobile de adicionar */}
+                <button
+                  onClick={() => abrirFormExperiencia()}
+                  className="mt-2 md:hidden w-full flex justify-center items-center gap-2 bg-blue-50 text-primary px-5 py-3 rounded-full text-sm font-bold hover:bg-blue-100 transition-colors"
+                >
+                  <HiOutlinePlus size={18} /> Adicionar Nova
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* FORMULÁRIO DE EXPERIÊNCIA (INSERIR / EDITAR) */}
+      {/* FORMULÁRIO DINÂMICO (INSERIR / EDITAR) */}
       {/* ========================================================================= */}
       {showExpForm && (
         <form
           onSubmit={handleSubmitExp(salvarExperiencia)}
-          className="bg-white p-6 md:p-8 rounded-[24px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6"
+          className="bg-gray-50/50 p-6 md:p-10 rounded-[32px] md:rounded-[40px] shadow-inner border border-gray-100 space-y-6 md:space-y-8 relative overflow-hidden"
         >
-          <h2 className="text-lg md:text-xl font-black text-gray-800 border-b border-gray-100 pb-3 md:pb-4">
-            {editingExpId ? "Editar Experiência" : "Nova Experiência"}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50 pointer-events-none"></div>
+
+          <div className="relative z-10 border-b border-gray-200/60 pb-4 md:pb-5">
+            <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
+              {editingExpId ? "Editar Experiência Profissional" : "Adicionar Experiência Profissional"}
+            </h2>
+            <p className="text-sm text-gray-500 mt-1 font-medium">
+              Preencha os dados do cargo e as suas principais atividades.
+            </p>
+          </div>
+
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
             <Input
-              label="Empresa"
-              placeholder="Ex: ACI Panambi"
+              label="Nome da Empresa"
+              placeholder="Ex: ACI Panambi ou Trabalho Voluntário"
               {...registerExp("empresa")}
               error={errorsExp.empresa?.message}
             />
             <Input
-              label="Cargo"
-              placeholder="Ex: Analista de Sistemas"
+              label="Cargo que Ocupava"
+              placeholder="Ex: Auxiliar Administrativo, Estagiário..."
               {...registerExp("cargo")}
               error={errorsExp.cargo?.message}
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
             <Input
               label="Data de Início (mês/ano)"
               type="text"
@@ -397,9 +431,9 @@ export default function TabExperiencia({
 
             <div className="space-y-2">
               <Input
-                label="Data de Fim (mês/ano)"
+                label="Data de Saída (mês/ano)"
                 type="text"
-                placeholder={watchExp("atual") ? "Trabalho atual" : "MM/AAAA"}
+                placeholder={watchExp("atual") ? "Cargo atual" : "MM/AAAA"}
                 maxLength={7}
                 disabled={watchExp("atual")}
                 className={watchExp("atual") ? "opacity-50 bg-gray-100" : ""}
@@ -426,38 +460,39 @@ export default function TabExperiencia({
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
+          <div className="relative z-10 space-y-1.5 pt-2 flex flex-col">
+            <label className="text-xs md:text-sm font-black text-gray-700 ml-1 uppercase tracking-widest">
               Atividades e Conquistas
             </label>
             <textarea
               {...registerExp("atividades")}
-              className="w-full p-4 md:p-6 bg-gray-50 border border-gray-100 rounded-[20px] md:rounded-[32px] h-32 outline-none text-sm focus:ring-4 focus:ring-blue-500/5 resize-none"
-              placeholder="Descreva suas responsabilidades e resultados..."
+              className="w-full p-4 md:p-6 bg-white border border-gray-200 rounded-[20px] h-32 outline-none text-sm focus:border-primary focus:ring-4 focus:ring-blue-500/10 transition-all shadow-sm resize-none"
+              placeholder="Descreva as suas responsabilidades, o que aprendeu e ferramentas que utilizou..."
             />
             {errorsExp.atividades && (
-              <p className="text-[11px] md:text-xs text-red-500 ml-2 font-bold">
+              <p className="text-[11px] font-bold text-red-500 ml-2 mt-1">
                 {errorsExp.atividades.message}
               </p>
             )}
           </div>
 
-          <div className="flex flex-col-reverse md:flex-row justify-center md:justify-end gap-3 pt-6 border-t border-gray-100">
+          <div className="relative z-10 flex flex-col-reverse md:flex-row justify-center md:justify-end gap-3 pt-8 mt-4 border-t border-gray-200/60">
             <button
               type="button"
               onClick={fecharFormExperiencia}
               disabled={isSavingExp}
-              className="w-full md:w-auto px-8 py-3.5 md:py-4 rounded-full md:rounded-[24px] font-bold text-gray-500 hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200"
+              className="w-full md:w-auto px-8 py-4 font-black text-gray-500 hover:text-gray-700 bg-white hover:bg-gray-100 rounded-full md:rounded-2xl border border-gray-200 transition-all uppercase tracking-widest text-xs"
             >
               Cancelar
             </button>
             <ButtonType
               type="submit"
               disabled={isSavingExp}
-              className="w-full md:w-auto px-10 py-3.5 md:py-4 rounded-full md:rounded-[24px] flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
+              className="w-full md:w-auto px-10 py-4 rounded-full md:rounded-2xl shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 uppercase tracking-widest text-xs font-black transition-all hover:scale-105 active:scale-95 disabled:hover:scale-100"
             >
-              <HiOutlineSave size={20} />{" "}
-              {isSavingExp ? "Salvando..." : "Salvar Experiência"}
+              {isSavingExp ? "Salvando..." : (
+                <><HiOutlineSave size={18} /> Salvar</>
+              )}
             </ButtonType>
           </div>
         </form>
