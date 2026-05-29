@@ -51,9 +51,8 @@ export default function TabRevisao({
           </h2>
 
           <p className="text-sm md:text-base font-medium text-emerald-700/80 max-w-xl mx-auto leading-relaxed mb-8">
-            Você completou 100% do seu perfil e ele já está ativo no nosso Banco
-            de Talentos. Agora as empresas já podem encontrar o
-            seu perfil. Desejamos muito sucesso e boas entrevistas!
+            Você completou 100% do seu currículo e ele está ativo no nosso Banco
+            de Talentos. Desejamos muito sucesso e boas entrevistas!
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
