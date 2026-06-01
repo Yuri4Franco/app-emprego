@@ -177,7 +177,7 @@ export default function TabFormacao({
                 onClick={() => abrirFormFormacao()}
                 className="w-full sm:w-auto flex justify-center items-center gap-2 bg-blue-50 text-primary px-5 py-3 md:py-2.5 rounded-full text-sm font-bold hover:bg-blue-100 transition-colors"
               >
-                <HiOutlinePlus size={18} /> Adicionar
+                <HiOutlinePlus size={18} /> Adicionar Mais Formações
               </button>
             )}
           </div>

@@ -65,7 +65,7 @@ const faqData = [
 
         question: "Por quanto tempo meu currículo ficará disponível no Banco de Talentos?",
 
-        answer: "Seu currículo permanecerá por até 6 meses da data de cadastro, após isso ele será desativado automaticamente. Mas não se preocupe, nós entraremos em contato com você 20 dias antes do desativamento. Você pode ativar, desativar ou remover seu currículo a qualquer momento na seção 'Meu Currículo'."
+        answer: "Seu currículo permanecerá por até 6 meses após o último acesso, após isso ele será desativado automaticamente. Mas não se preocupe, nós entraremos em contato com você 20 dias antes do desativamento. Você pode ativar, desativar ou remover seu currículo a qualquer momento na seção 'Meu Currículo'."
 
     },
 

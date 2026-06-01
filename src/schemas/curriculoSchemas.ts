@@ -99,15 +99,36 @@ export const experienciaSchema = z
     data_fim: z.string().optional().nullable(),
     atual: z.boolean().default(false),
   })
+  // Refine 1: Exige a data final se não for o trabalho atual
   .refine(
     (data) => {
       if (!data.atual && (!data.data_fim || !mesAnoRegex.test(data.data_fim)))
         return false;
       return true;
     },
-    { message: "Data final é obrigatória (MM/AAAA)", path: ["data_fim"] },
-  );
+    { message: "Data final é obrigatória (MM/AAAA)", path: ["data_fim"] }
+  )
+  // Refine 2: Verifica a ordem cronológica
+  .refine(
+    (data) => {
+      // Se for o trabalho atual ou se as datas não estiverem preenchidas, ignora essa validação
+      if (data.atual || !data.data_inicio || !data.data_fim) return true;
 
+      // Só tenta validar se ambas baterem com o regex para evitar quebrar o split
+      if (!mesAnoRegex.test(data.data_inicio) || !mesAnoRegex.test(data.data_fim)) return true;
+
+      const [mesInicio, anoInicio] = data.data_inicio.split("/");
+      const [mesFim, anoFim] = data.data_fim.split("/");
+
+      // Transforma "05/2024" em 202405
+      const valorInicio = parseInt(anoInicio) * 100 + parseInt(mesInicio);
+      const valorFim = parseInt(anoFim) * 100 + parseInt(mesFim);
+
+      return valorFim >= valorInicio;
+    },
+    { message: "A data final não pode ser anterior à data inicial", path: ["data_fim"] }
+  );
+  
 export type ExperienciaData = z.infer<typeof experienciaSchema>;
 
 export const formacaoSchema = z

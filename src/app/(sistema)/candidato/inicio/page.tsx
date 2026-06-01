@@ -56,33 +56,33 @@ interface VagaRecomendada {
 
 // Dicionário Visual de Status
 const statusConfig: Record<string, { label: string; cor: string; bg: string }> =
-  {
-    INSCRITO: {
-      label: "Inscrito",
-      cor: "text-blue-700",
-      bg: "bg-blue-50 border-blue-100",
-    },
-    EM_TRIAGEM: {
-      label: "Em Triagem",
-      cor: "text-amber-700",
-      bg: "bg-amber-50 border-amber-100",
-    },
-    ENTREVISTA: {
-      label: "Entrevista Marcada",
-      cor: "text-purple-700",
-      bg: "bg-purple-50 border-purple-100",
-    },
-    APROVADO: {
-      label: "Aprovado!",
-      cor: "text-emerald-700",
-      bg: "bg-emerald-50 border-emerald-100",
-    },
-    REPROVADO: {
-      label: "Não Avançou",
-      cor: "text-gray-500",
-      bg: "bg-gray-100 border-gray-200",
-    },
-  };
+{
+  INSCRITO: {
+    label: "Inscrito",
+    cor: "text-blue-700",
+    bg: "bg-blue-50 border-blue-100",
+  },
+  EM_TRIAGEM: {
+    label: "Em Triagem",
+    cor: "text-amber-700",
+    bg: "bg-amber-50 border-amber-100",
+  },
+  ENTREVISTA: {
+    label: "Entrevista Marcada",
+    cor: "text-purple-700",
+    bg: "bg-purple-50 border-purple-100",
+  },
+  APROVADO: {
+    label: "Aprovado!",
+    cor: "text-emerald-700",
+    bg: "bg-emerald-50 border-emerald-100",
+  },
+  REPROVADO: {
+    label: "Não Avançou",
+    cor: "text-gray-500",
+    bg: "bg-gray-100 border-gray-200",
+  },
+};
 
 export default function DashboardCandidatoPage() {
   const { user, perfil } = useAuth();
@@ -217,8 +217,13 @@ export default function DashboardCandidatoPage() {
 
         {/* Bloco de Saúde do Currículo */}
         {metricas && (
-          <div className="p-8 md:p-10 lg:w-2/5 bg-gray-50 border-l border-gray-100 flex flex-col justify-center">
-            <div className="flex items-start gap-5">
+          <div className="p-8 md:p-10 lg:w-2/5 bg-gray-50 border-l border-gray-100 flex flex-col justify-center relative overflow-hidden">
+            {/* Efeito de urgência / drama no background se tiver 100% mas invisível */}
+            {metricas.saude_curriculo === 100 && !isVisivel && (
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-60"></div>
+            )}
+
+            <div className="flex items-start gap-5 relative z-10">
               <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
                 <svg
                   className="w-full h-full transform -rotate-90"
@@ -254,30 +259,47 @@ export default function DashboardCandidatoPage() {
                 <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest mb-1">
                   O seu Currículo
                 </h3>
+
                 {metricas.saude_curriculo === 100 ? (
-                  <>
-                    <p className="text-xs text-gray-500 font-medium mb-3">
-                      Está perfeito! Currículos completos aparecem no topo das
-                      buscas do RH.
-                    </p>
-                    <Link
-                      href="/candidato/meu-curriculo"
-                      className="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition-colors flex items-center gap-1"
-                    >
-                      Visualizar ou editar dados <HiOutlineArrowRight />
-                    </Link>
-                  </>
+                  isVisivel ? (
+                    /* 100% E VISÍVEL = Tudo perfeito */
+                    <>
+                      <p className="text-xs text-gray-500 font-medium mb-3">
+                        Está perfeito! Currículos completos aparecem no topo das
+                        buscas do RH.
+                      </p>
+                      <Link
+                        href="/candidato/meu-curriculo"
+                        className="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition-colors flex items-center gap-1 group"
+                      >
+                        Revisar ou editar dados <HiOutlineArrowRight className="group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    </>
+                  ) : (
+                    /* 100% MAS INVISÍVEL = O Drama + Solução Imediata */
+                    <>
+                      <p className="text-xs text-amber-700 font-bold mb-3 leading-relaxed">
+                        Seu currículo está incrível, mas <span className="underline decoration-amber-300 decoration-2 underline-offset-2">ninguém pode ver!</span> As empresas não conseguem te encontrar.
+                      </p>
+                      <button
+                        onClick={handleToggleVisibilidade}
+                        className="text-xs font-black px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all inline-flex items-center gap-2 shadow-md shadow-amber-500/20 hover:scale-[1.02] active:scale-95"
+                      >
+                        Ativar Visibilidade Agora
+                      </button>
+                    </>
+                  )
                 ) : (
+                  /* INCOMPLETO = Call to Action com mais destaque */
                   <>
                     <p className="text-xs text-gray-500 font-medium mb-3">
-                      Um currículo incompleto diminui suas chances. Preencha as
-                      informações que faltam!
+                      Um currículo incompleto diminui drasticamente suas chances nas vagas.
                     </p>
                     <Link
                       href="/candidato/meu-curriculo"
-                      className="text-xs font-bold px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-xl transition-colors inline-block text-center"
+                      className="text-xs font-black px-5 py-2.5 bg-primary hover:bg-blue-700 text-white rounded-xl transition-all inline-flex items-center gap-2 shadow-md shadow-blue-500/20 hover:scale-[1.02] active:scale-95"
                     >
-                      Preencher currículo
+                      Preencher currículo agora
                     </Link>
                   </>
                 )}

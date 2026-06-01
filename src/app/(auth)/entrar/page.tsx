@@ -125,7 +125,7 @@ export default function LoginCandidatoPage() {
             <Link href="/" className="inline-block mb-6">
               <Image
                 src={logo}
-                alt="Logo ACI Empregos"
+                alt="Logo ACI Vagas"
                 className="w-48 mx-auto"
               />
             </Link>
@@ -224,7 +224,7 @@ export default function LoginCandidatoPage() {
         <div className="absolute inset-0 bg-primary z-10 mix-blend-multiply opacity-90"></div>
         <Image
           src={bgAuth}
-          alt="Imagem de Fundo ACI Empregos"
+          alt="Imagem de Fundo ACI Vagas"
           fill
           className="object-cover w-full h-full opacity-60"
           priority

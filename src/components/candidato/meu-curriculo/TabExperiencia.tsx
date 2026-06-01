@@ -206,8 +206,8 @@ export default function TabExperiencia({
               <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
                 Histórico Profissional
               </h2>
-              <p className="text-sm text-gray-500 mt-1 font-medium">
-                Adicione suas experiências
+              <p className="text-sm text-gray-500 mt-1 font-medium max-w-lg">
+                Adicione suas experiências profissionais (estágios, trabalhos voluntários, Jovem Aprendiz ou empregos formais). Quanto mais completo, melhor!
               </p>
             </div>
 

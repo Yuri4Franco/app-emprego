@@ -1,3 +1,4 @@
+import { Metadata } from "next"
 import Image from "next/image";
 import Link from "next/link";
 import SearchBar from "@/src/components/SearchBar";
@@ -5,6 +6,31 @@ import heroBgImage from "@/src/assets/backgrounds/bg-1.webp";
 import { ButtonType } from "@/src/components/ButtonType";
 import { RandomDesignImage } from "./RandomDesignImagem";
 import FAQ from "@/src/components/FAQ";
+
+export const metadata: Metadata = {
+  title: "ACI Vagas | Vagas e Banco de Talentos em Panambi",
+  description: "Encontre as melhores oportunidades de emprego e conecte-se com as maiores empresas de Panambi e região. Cadastre seu currículo no Banco de Talentos da ACI.",
+  keywords: ["vagas de emprego", "Panambi", "ACI-Panambi", "banco de talentos", "trabalho", "oportunidades", "empregos na região"],
+  authors: [{ name: "ACI - Panambi" }],
+  openGraph: {
+    title: "ACI Vagas | Oportunidades Profissionais em Panambi e região",
+    description: "Sua próxima conquista profissional começa aqui. Cadastre-se no nosso banco de talentos.",
+    url: "https://acivagas.com.br", // Substitua pelo domínio oficial
+    siteName: "ACI Vagas",
+    locale: "pt_BR",
+    type: "website", },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
 
 export default function Home() {
   return (

@@ -274,6 +274,36 @@ export default function VerCurriculoPage() {
         )}
 
         {/* ========================================= */}
+        {/* PERFIL INCLUSIVO                          */}
+        {/* ========================================= */}
+        {dados.pcd && (
+          <section className="mb-8 print:mb-6 print:break-inside-avoid">
+            <h3 className="text-lg print:text-base font-black text-gray-900 uppercase tracking-widest mb-4 flex items-center gap-3">
+              <span className="w-1.5 h-6 bg-emerald-500 print:bg-gray-800 rounded-full"></span>{" "}
+              Perfil Inclusivo
+            </h3>
+
+            <div className="bg-emerald-50/50 print:bg-transparent p-5 rounded-2xl border border-emerald-100 print:border-none print:p-0 space-y-2">
+              <p className="text-sm md:text-base print:text-[13px] text-gray-700 font-medium">
+                <span className="font-black text-gray-900">Identificação:</span> Pessoa com Deficiência (PcD) ou Neurodivergente
+                {dados.tipo_pcd && <span className="text-gray-600"> — {dados.tipo_pcd}</span>}
+              </p>
+
+              {dados.necessidade && (
+                <div className="pt-2 mt-2 border-t border-emerald-200/60 print:border-gray-200">
+                  <p className="text-[11px] md:text-xs text-gray-500 print:text-gray-600 font-bold uppercase tracking-wider mb-1">
+                    Acessibilidade para Entrevista / Trabalho
+                  </p>
+                  <p className="text-sm md:text-base print:text-[13px] text-gray-800 font-medium leading-relaxed">
+                    {dados.necessidade}
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* ========================================= */}
         {/* EXPERIÊNCIA PROFISSIONAL                  */}
         {/* ========================================= */}
         {(dados.experiencias?.length > 0 || dados.primeiro_emprego) && (
@@ -327,9 +357,9 @@ export default function VerCurriculoPage() {
                           {exp.atual
                             ? "O Momento"
                             : new Date(exp.data_fim).toLocaleDateString(
-                                "pt-BR",
-                                { month: "short", year: "numeric" },
-                              )}
+                              "pt-BR",
+                              { month: "short", year: "numeric" },
+                            )}
                         </span>
                       </div>
                     </div>
@@ -434,8 +464,8 @@ export default function VerCurriculoPage() {
                   </span>
                   <span className="font-bold text-gray-900 text-right max-w-[140px] md:max-w-[200px] truncate">
                     {dados.cnh &&
-                    dados.cnh.length > 0 &&
-                    !dados.cnh.includes("NAO_POSSUO")
+                      dados.cnh.length > 0 &&
+                      !dados.cnh.includes("NAO_POSSUO")
                       ? dados.cnh.join(", ")
                       : "Não possui"}
                   </span>
@@ -471,10 +501,10 @@ export default function VerCurriculoPage() {
                   </span>
                   <span className="font-bold text-gray-900 text-right leading-snug break-words">
                     {Array.isArray(dados.turno_preferido) &&
-                    dados.turno_preferido.length > 0
+                      dados.turno_preferido.length > 0
                       ? dados.turno_preferido
-                          .map((t: string) => turnoLabels[t] || t)
-                          .join(", ")
+                        .map((t: string) => turnoLabels[t] || t)
+                        .join(", ")
                       : "Sem Preferência"}
                   </span>
                 </li>
@@ -493,35 +523,13 @@ export default function VerCurriculoPage() {
                   </span>
                   <span className="font-bold text-blue-600 print:text-gray-900 text-right max-w-[140px] md:max-w-[200px] truncate">
                     {Array.isArray(dados.tipo_contato) &&
-                    dados.tipo_contato.length > 0
+                      dados.tipo_contato.length > 0
                       ? dados.tipo_contato
-                          .map((t: string) => contatoLabels[t] || t)
-                          .join(", ")
+                        .map((t: string) => contatoLabels[t] || t)
+                        .join(", ")
                       : "Qualquer canal"}
                   </span>
                 </li>
-                {dados.pcd && (
-                  <>
-                    <li className="flex justify-between items-center border-b border-gray-200/60 print:border-none pb-2 print:pb-0">
-                      <span className="text-gray-500 print:text-gray-600">
-                        Perfil Inclusivo:
-                      </span>
-                      <span className="font-bold text-gray-900 truncate max-w-[120px]">
-                        PcD ({dados.tipo_pcd})
-                      </span>
-                    </li>
-                    {dados.necessidade && (
-                      <li className="flex flex-col gap-1 mt-2 print:mt-1">
-                        <span className="text-gray-500 print:text-gray-600 text-[11px] md:text-xs">
-                          Necessidade p/ entrevista:
-                        </span>
-                        <span className="font-bold text-gray-900 leading-snug">
-                          {dados.necessidade}
-                        </span>
-                      </li>
-                    )}
-                  </>
-                )}
               </ul>
             </div>
           </div>

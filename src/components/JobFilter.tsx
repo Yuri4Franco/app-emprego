@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { BiSearchAlt, BiSliderAlt, BiTrash } from "react-icons/bi";
+import { useSearchParams } from "next/navigation";
 import { IoClose } from "react-icons/io5";
 import { ButtonType } from "@/src/components/ButtonType";
 import { FilterSelect } from "@/src/components/FilterSelect";
@@ -63,8 +64,13 @@ export function JobFilter({
   isLoading,
   onFilterChange,
 }: JobFilterProps) {
-  const [busca, setBusca] = useState("");
-  const [termoBuscado, setTermoBuscado] = useState("");
+ const searchParams = useSearchParams();
+  const buscaInicialUrl = searchParams.get("busca") || "";
+
+  // INJETAR O VALOR DA URL NOS ESTADOS
+  const [busca, setBusca] = useState(buscaInicialUrl);
+  const [termoBuscado, setTermoBuscado] = useState(buscaInicialUrl);
+  
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [pcdOnly, setPcdOnly] = useState(false);
   const [filtrosAvancados, setFiltrosAvancados] = useState<AdvancedFilterData | null>(null);
@@ -75,7 +81,7 @@ export function JobFilter({
   const [opcoesModelos, setOpcoesModelos] = useState<string[]>([]);
   const [opcoesContratos, setOpcoesContratos] = useState<string[]>([]);
   const [opcoesAreas, setOpcoesAreas] = useState<any[]>([]);
-  const [opcoesNiveis, setOpcoesNiveis] = useState<string[]>([]); // <-- ADICIONADO AQUI
+  const [opcoesNiveis, setOpcoesNiveis] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchOpcoesDinamicas() {

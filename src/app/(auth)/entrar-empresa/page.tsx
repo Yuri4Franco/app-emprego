@@ -119,7 +119,7 @@ export default function LoginEmpresaPage() {
             <Link href="/" className="inline-block mb-6">
               <Image
                 src={logo}
-                alt="Logo ACI Empregos"
+                alt="Logo ACI Vagas"
                 className="w-48 mx-auto"
               />
             </Link>
@@ -219,7 +219,7 @@ export default function LoginEmpresaPage() {
         <div className="absolute inset-0 bg-blue-600 z-10 mix-blend-multiply opacity-90"></div>
         <Image
           src={bgAuth}
-          alt="Imagem de Fundo ACI Empregos"
+          alt="Imagem de Fundo ACI Vagas"
           fill
           className="object-cover w-full h-full opacity-60"
           priority
