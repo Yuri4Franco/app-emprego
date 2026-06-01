@@ -221,7 +221,7 @@ export default function LoginCandidatoPage() {
 
       {/* LADO DIREITO: BRANDING */}
       <div className="hidden lg:block w-1/2 relative bg-gray-900">
-        <div className="absolute inset-0 bg-blue-600 z-10 mix-blend-multiply opacity-90"></div>
+        <div className="absolute inset-0 bg-primary z-10 mix-blend-multiply opacity-90"></div>
         <Image
           src={bgAuth}
           alt="Imagem de Fundo ACI Empregos"

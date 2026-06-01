@@ -22,7 +22,7 @@ export default function CentralAjudaPage() {
         {
             id: 1,
             pergunta: "Esqueci a minha senha, o que faço?",
-            resposta: "Na tela de login, clique em 'Esqueci minha senha'. Enviaremos um link de recuperação para o seu e-mail cadastrado imediatamente."
+            resposta: "Na tela de Entrar, clique em 'Esqueci minha senha'. Enviaremos um link de recuperação para o seu e-mail cadastrado imediatamente."
         },
         {
             id: 2,
@@ -53,17 +53,6 @@ export default function CentralAjudaPage() {
                     <p className="text-blue-100 text-base md:text-lg font-medium max-w-xl mx-auto">
                         Encontre guias visuais passo a passo e respostas rápidas para tirar o máximo proveito do nosso portal de vagas.
                     </p>
-
-                    <div className="max-w-xl mx-auto pt-4 relative">
-                        <HiOutlineSearch className="absolute left-4 top-[34px] -translate-y-1/2 text-gray-400" size={22} />
-                        <input
-                            type="text"
-                            placeholder="Busque por dúvidas (ex: currículo, senha)..."
-                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-400/20 transition-all text-sm text-gray-700 placeholder-gray-400"
-                            value={busca}
-                            onChange={(e) => setBusca(e.target.value)}
-                        />
-                    </div>
                 </div>
             </section>
 
@@ -71,7 +60,7 @@ export default function CentralAjudaPage() {
             <div className="max-w-5xl mx-auto p-4 md:p-8 -mt-6 relative z-20 space-y-16">
 
                 {/* SEÇÃO DE TRILHAS / GUIAS COMPLETOS */}
-                <section className="space-y-6">
+                <section className="space-y-6 pt-10">
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 bg-blue-50 text-primary rounded-xl border border-blue-100">
                             <HiOutlineSparkles size={20} />
@@ -98,22 +87,10 @@ export default function CentralAjudaPage() {
                                 <HiOutlineDocumentText size={28} />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Currículo 100%</h3>
+                                <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Como cadastrar seu currículo</h3>
                                 <p className="text-xs text-gray-500 font-medium leading-relaxed">Preencha seus dados, experiências e habilidades para atingir a pontuação máxima.</p>
                             </div>
                         </Link>
-
-                        {/* CARD 3: BUSCAR VAGAS */}
-                        <Link href="/ajuda/como-buscar-vagas" className="group bg-white p-6 rounded-[24px] border border-gray-200/60 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center text-center gap-4">
-                            <div className="w-14 h-14 bg-gray-50 group-hover:bg-blue-50 group-hover:scale-105 transition-all rounded-2xl flex items-center justify-center text-primary border border-gray-100">
-                                <HiOutlineBriefcase size={28} />
-                            </div>
-                            <div className="space-y-1">
-                                <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">Buscar e se Candidatar</h3>
-                                <p className="text-xs text-gray-500 font-medium leading-relaxed">Como utilizar os filtros inteligentes para achar e disputar as vagas ideais.</p>
-                            </div>
-                        </Link>
-
                     </div>
                 </section>
 
