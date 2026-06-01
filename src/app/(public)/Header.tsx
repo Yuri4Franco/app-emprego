@@ -89,7 +89,7 @@ export default function Header() {
 
         {/* GRUPO DE BOTÕES DE ACESSO */}
         <div className="flex items-center gap-3 border-l border-gray-100 pl-6">
-          <ButtonType href="/entrar?tab=empresa" variant="outline" size="md">
+          <ButtonType href="/entrar-empresa" variant="outline" size="md">
             Área da Empresa
           </ButtonType>
           <ButtonType href="/entrar" variant="primary" size="md">
@@ -163,7 +163,7 @@ export default function Header() {
               Área do Candidato
             </ButtonType>
 
-            <ButtonType href="/entrar?tab=empresa" className="w-full py-4 text-lg" variant="outline" size="md">
+            <ButtonType href="/entrar-empresa" className="w-full py-4 text-lg" variant="outline" size="md">
               Área da Empresa
             </ButtonType>
           </div>

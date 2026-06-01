@@ -33,7 +33,7 @@ export const dadosGeraisSchema = z.object({
     .or(z.literal("")),
   objetivo_profissional: z
     .string()
-    .max(200, "Tente ser mais direto no objetivo (máx 200 caracteres)")
+    .max(300, "Tente ser mais direto no objetivo (máx 300 caracteres)")
     .optional()
     .nullable()
     .or(z.literal("")),

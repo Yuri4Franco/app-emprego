@@ -11,8 +11,8 @@ import { HiOutlineUserPlus } from "react-icons/hi2";
 
 // Importação estática das imagens da pasta assets
 import imgPasso1 from "@/src/assets/faq/registro-1.webp";
-import imgPasso2_1 from "@/src/assets/faq/registro-1-android.webp";
-import imgPasso2 from "@/src/assets/faq/registro-2.webp";
+import imgPasso2 from "@/src/assets/faq/registro-1-android.webp";
+import imgPasso2_1 from "@/src/assets/faq/registro-2.webp";
 import imgPasso3 from "@/src/assets/faq/registro-3.webp";
 import imgPasso4 from "@/src/assets/faq/registro-4.webp";
 import imgPasso6 from "@/src/assets/faq/registro-5.webp";

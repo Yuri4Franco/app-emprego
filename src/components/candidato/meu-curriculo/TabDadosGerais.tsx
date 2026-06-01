@@ -343,7 +343,7 @@ export default function TabDadosGerais({
                 error={errors.cpf?.message}
               />
               <Input
-                label="Nascimento"
+                label="Data de Nascimento"
                 type="date"
                 className={getFieldStatus("data_nascimento")}
                 {...register("data_nascimento")}
@@ -388,7 +388,7 @@ export default function TabDadosGerais({
               />
               <Input
                 label="Telefone / Celular (opcional)"
-                placeholder="(55) 9999-9999"
+                placeholder="(55) 99999-9999"
                 className={getFieldStatus("telefone")}
                 {...register("telefone", {
                   onChange: (e) =>

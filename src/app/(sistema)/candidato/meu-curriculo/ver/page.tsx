@@ -76,9 +76,12 @@ export default function VerCurriculoPage() {
         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mb-6">
           <HiOutlinePrinter size={32} />
         </div>
-        <h2 className="text-xl font-black text-gray-800 mb-2">Currículo Vazio</h2>
+        <h2 className="text-xl font-black text-gray-800 mb-2">
+          Currículo Vazio
+        </h2>
         <p className="text-gray-500 font-medium mb-8 max-w-md leading-relaxed">
-          Não encontramos seus dados. Para visualizar e imprimir seu currículo, você precisa preenchê-lo primeiro.
+          Não encontramos seus dados. Para visualizar e imprimir seu currículo,
+          você precisa preenchê-lo primeiro.
         </p>
         <Link
           href="/candidato/meu-curriculo"
@@ -94,7 +97,6 @@ export default function VerCurriculoPage() {
     <div className="max-w-4xl pt-10 mx-auto pb-20 animate-in fade-in duration-700 px-4 sm:px-6">
       {/* BARRA DE AÇÕES FLUTUANTE (Oculta na impressão) */}
       <div className="sticky top-4 md:top-8 z-50 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 mb-8 print:hidden bg-white/80 backdrop-blur-md p-3 md:p-4 rounded-3xl md:rounded-full border border-gray-200/80 shadow-lg shadow-gray-200/40">
-
         {/* Botão Secundário: Voltar */}
         <Link
           href="/candidato/meu-curriculo"
@@ -168,28 +170,40 @@ export default function VerCurriculoPage() {
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-5 gap-y-2 mt-5 pt-5 border-t border-gray-50 print:border-gray-100 text-sm print:text-[13px] text-gray-600 font-medium">
               {dados.usuario?.email && (
                 <div className="flex items-center gap-1.5">
-                  <HiOutlineMail className="text-gray-400 print:text-gray-500 shrink-0" size={18} />
+                  <HiOutlineMail
+                    className="text-gray-400 print:text-gray-500 shrink-0"
+                    size={18}
+                  />
                   <span>{dados.usuario.email}</span>
                 </div>
               )}
 
               {dados.whatsapp && (
                 <div className="flex items-center gap-1.5">
-                  <FaWhatsapp className="text-gray-400 print:text-gray-500 shrink-0" size={18} />
+                  <FaWhatsapp
+                    className="text-gray-400 print:text-gray-500 shrink-0"
+                    size={18}
+                  />
                   <span>{dados.whatsapp}</span>
                 </div>
               )}
 
               {dados.telefone && (
                 <div className="flex items-center gap-1.5">
-                  <HiOutlinePhone className="text-gray-400 print:text-gray-500 shrink-0" size={18} />
+                  <HiOutlinePhone
+                    className="text-gray-400 print:text-gray-500 shrink-0"
+                    size={18}
+                  />
                   <span>{dados.telefone}</span>
                 </div>
               )}
 
               {dados.endereco?.cidade && (
                 <div className="flex items-center gap-1.5">
-                  <HiOutlineLocationMarker className="text-gray-400 print:text-gray-500 shrink-0" size={18} />
+                  <HiOutlineLocationMarker
+                    className="text-gray-400 print:text-gray-500 shrink-0"
+                    size={18}
+                  />
                   <span>
                     {dados.endereco.cidade}, {dados.endereco.uf}
                   </span>
@@ -203,7 +217,10 @@ export default function VerCurriculoPage() {
                   rel="noreferrer"
                   className="flex items-center gap-1.5 hover:text-blue-600 transition-colors"
                 >
-                  <FaLinkedin className="text-gray-400 print:text-gray-500 shrink-0" size={18} />
+                  <FaLinkedin
+                    className="text-gray-400 print:text-gray-500 shrink-0"
+                    size={18}
+                  />
                   <span>LinkedIn</span>
                 </a>
               )}
@@ -215,7 +232,10 @@ export default function VerCurriculoPage() {
                   rel="noreferrer"
                   className="flex items-center gap-1.5 hover:text-gray-900 transition-colors"
                 >
-                  <FaGithub className="text-gray-400 print:text-gray-500 shrink-0" size={18} />
+                  <FaGithub
+                    className="text-gray-400 print:text-gray-500 shrink-0"
+                    size={18}
+                  />
                   <span>Portfólio / GitHub</span>
                 </a>
               )}
@@ -227,7 +247,10 @@ export default function VerCurriculoPage() {
                   rel="noreferrer"
                   className="flex items-center gap-1.5 hover:text-blue-600 transition-colors"
                 >
-                  <HiOutlineLink className="text-gray-400 print:text-gray-500 shrink-0" size={18} />
+                  <HiOutlineLink
+                    className="text-gray-400 print:text-gray-500 shrink-0"
+                    size={18}
+                  />
                   <span className="truncate max-w-[150px]">Link Externo</span>
                 </a>
               )}
@@ -260,8 +283,9 @@ export default function VerCurriculoPage() {
               Experiência Profissional
             </h3>
 
-            {dados.primeiro_emprego ? (
-              <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 print:bg-transparent print:border-none print:p-0">
+            {/* Destaque do Primeiro Emprego (Sempre visível se marcado) */}
+            {dados.primeiro_emprego && (
+              <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 print:bg-transparent print:border-none print:p-0 mb-8 print:mb-6">
                 <p className="text-blue-800 print:text-gray-800 font-bold flex items-center gap-2">
                   <HiOutlineLightningBolt
                     size={20}
@@ -270,7 +294,10 @@ export default function VerCurriculoPage() {
                   Em busca da primeira oportunidade profissional.
                 </p>
               </div>
-            ) : (
+            )}
+
+            {/* Lista de Experiências (Sempre visível se houver itens) */}
+            {dados.experiencias?.length > 0 && (
               <div className="space-y-8 print:space-y-6 pl-2">
                 {dados.experiencias.map((exp: any) => (
                   <div
@@ -300,9 +327,9 @@ export default function VerCurriculoPage() {
                           {exp.atual
                             ? "O Momento"
                             : new Date(exp.data_fim).toLocaleDateString(
-                              "pt-BR",
-                              { month: "short", year: "numeric" },
-                            )}
+                                "pt-BR",
+                                { month: "short", year: "numeric" },
+                              )}
                         </span>
                       </div>
                     </div>
@@ -318,7 +345,6 @@ export default function VerCurriculoPage() {
             )}
           </section>
         )}
-
         {/* ========================================= */}
         {/* FORMAÇÃO ACADÊMICA                        */}
         {/* ========================================= */}
@@ -396,7 +422,6 @@ export default function VerCurriculoPage() {
         {/* ========================================= */}
         <section className="pt-6 md:pt-8 border-t-2 border-gray-50 print:border-gray-200 print:break-inside-avoid">
           <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-2 gap-4 md:gap-6 print:gap-8">
-
             {/* Bloco de Logística */}
             <div className="bg-gray-50 p-5 md:p-6 rounded-3xl print:bg-transparent print:p-0">
               <h4 className="text-[11px] md:text-xs font-black text-gray-400 print:text-gray-800 uppercase tracking-widest mb-4">
@@ -409,8 +434,8 @@ export default function VerCurriculoPage() {
                   </span>
                   <span className="font-bold text-gray-900 text-right max-w-[140px] md:max-w-[200px] truncate">
                     {dados.cnh &&
-                      dados.cnh.length > 0 &&
-                      !dados.cnh.includes("NAO_POSSUO")
+                    dados.cnh.length > 0 &&
+                    !dados.cnh.includes("NAO_POSSUO")
                       ? dados.cnh.join(", ")
                       : "Não possui"}
                   </span>
@@ -446,10 +471,10 @@ export default function VerCurriculoPage() {
                   </span>
                   <span className="font-bold text-gray-900 text-right leading-snug break-words">
                     {Array.isArray(dados.turno_preferido) &&
-                      dados.turno_preferido.length > 0
+                    dados.turno_preferido.length > 0
                       ? dados.turno_preferido
-                        .map((t: string) => turnoLabels[t] || t)
-                        .join(", ")
+                          .map((t: string) => turnoLabels[t] || t)
+                          .join(", ")
                       : "Sem Preferência"}
                   </span>
                 </li>
@@ -468,10 +493,10 @@ export default function VerCurriculoPage() {
                   </span>
                   <span className="font-bold text-blue-600 print:text-gray-900 text-right max-w-[140px] md:max-w-[200px] truncate">
                     {Array.isArray(dados.tipo_contato) &&
-                      dados.tipo_contato.length > 0
+                    dados.tipo_contato.length > 0
                       ? dados.tipo_contato
-                        .map((t: string) => contatoLabels[t] || t)
-                        .join(", ")
+                          .map((t: string) => contatoLabels[t] || t)
+                          .join(", ")
                       : "Qualquer canal"}
                   </span>
                 </li>

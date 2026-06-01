@@ -312,7 +312,7 @@ export default function MeuCurriculoRefatoradoPage() {
             {currentTabIndex < tabsOrdem.length - 1 ? (
               <button
                 onClick={irParaProxima}
-                className="flex items-center gap-2 px-8 py-3 text-sm font-black text-white bg-blue-600 hover:bg-blue-700 border border-blue-600 rounded-full transition-all group shadow-md shadow-blue-500/20"
+                className="flex items-center gap-2 px-8 py-3 text-sm font-black text-white bg-primary hover:bg-blue-700 rounded-full transition-all group shadow-md shadow-blue-500/20"
               >
                 Próxima Etapa <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
               </button>

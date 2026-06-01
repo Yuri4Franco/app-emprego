@@ -242,8 +242,7 @@ export default function GuiaCurriculoPage() {
       titulo: "17. Aba de Revisão Final",
       descricao: (
         <>
-          Chegamos ao fim! A aba de <strong>Revisão</strong> é o seu guia inteligente. Se a sua barra não estiver em 100%, esta tela mostrará exatamente o que ficou faltando (Ex: "Faltou preencher o WhatsApp" ou "Você não adicionou experiências").<br /><br />
-          Siga as dicas da tela de revisão para atingir o nível Campeão!
+          Chegamos ao fim! A aba de <strong>Revisão</strong> é o seu guia inteligente. Se a sua barra não estiver em 100%, esta tela mostrará qual aba ficou faltando!.<br /><br />
         </>
       ),
       imagem: imgCurriculo16,
