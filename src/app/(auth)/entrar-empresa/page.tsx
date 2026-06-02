@@ -194,7 +194,7 @@ export default function LoginEmpresaPage() {
               className="w-full py-4 text-lg font-black shadow-xl shadow-blue-600/20 active:scale-[0.98] transition-all"
               disabled={isLoading}
             >
-              {isLoading ? "Validando acesso..." : "Entrar no Painel"}
+              {isLoading ? "Validando acesso..." : "Entrar"}
             </ButtonType>
           </form>
 

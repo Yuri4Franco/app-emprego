@@ -18,6 +18,7 @@ import {
 } from "react-icons/hi";
 import { IoIosArrowDown } from "react-icons/io";
 import ContatoEmpresaForm from "@/src/components/ContatoEmpresaForm";
+import { RandomDesignImage } from "../RandomDesignImagem";
 
 const faqData = [
   {
@@ -119,6 +120,85 @@ export default function EmpresasPage() {
         </div>
       </section>
 
+      {/* --- BANCO DE TALENTOS (Busca Ativa) --- */}
+      <section className="py-24 bg-gradient-to-b from-gray-50 to-white border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 md:px-8">
+          <div className="flex flex-col-reverse md:flex-row items-center gap-16">
+
+            {/* Visual Ilustrativo (Esquerda) */}
+            <div className="w-full md:w-1/2 flex justify-center relative">
+              {/* Elemento de design flutuante atrás da imagem para dar destaque */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-blue-100 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+
+              <div className="relative z-10 w-full max-w-md">
+                <RandomDesignImage />
+              </div>
+            </div>
+
+            {/* Texto de Venda (Direita) */}
+            <div className="w-full md:w-1/2 space-y-8">
+              <div>
+                <span className="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-emerald-50 text-emerald-600 text-xs font-black tracking-widest uppercase mb-4 border border-emerald-100">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Busca Ativa
+                </span>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                  Acesso exclusivo ao <span className="text-primary">Banco de Talentos</span>
+                </h2>
+                <p className="text-gray-600 mt-4 text-lg font-medium leading-relaxed">
+                  Não espere o candidato perfeito bater na sua porta. Com a ACI Vagas, sua empresa ganha acesso total a um banco repleto de profissionais de Panambi e região. Vá direto à fonte!
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-start gap-4 group">
+                  <div className="w-12 h-12 shrink-0 bg-white border border-gray-100 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-primary group-hover:border-blue-200 group-hover:bg-blue-50 transition-all shadow-sm">
+                    <HiOutlineSearch size={22} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-lg">Filtros de Alta Precisão</h4>
+                    <p className="text-gray-500 font-medium mt-1 leading-relaxed">
+                      Encontre exatamente quem você precisa em segundos. Filtre por área de atuação, habilidades, nível de formação, PCD e muito mais.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 group">
+                  <div className="w-12 h-12 shrink-0 bg-white border border-gray-100 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-primary group-hover:border-blue-200 group-hover:bg-blue-50 transition-all shadow-sm">
+                    <HiOutlineDocumentText size={22} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-lg">Leitura Padronizada</h4>
+                    <p className="text-gray-500 font-medium mt-1 leading-relaxed">
+                      Esqueça a bagunça de PDFs com formatos diferentes. Analise perfis limpos, focados nas habilidades e na trajetória do talento.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 group">
+                  <div className="w-12 h-12 shrink-0 bg-white border border-gray-100 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-primary group-hover:border-blue-200 group-hover:bg-blue-50 transition-all shadow-sm">
+                    <HiOutlineCursorClick size={22} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-lg">Conexão Imediata</h4>
+                    <p className="text-gray-500 font-medium mt-1 leading-relaxed">
+                      Gostou de um perfil? Com apenas um clique, acesse o contato do candidato e inicie o seu processo seletivo na mesma hora.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <ButtonType href="#contato" variant="primary" className="shadow-lg shadow-blue-500/20 px-8 py-4 w-full sm:w-auto flex justify-center hover:scale-105 active:scale-95 transition-all">
+                  Quero ter acesso ao banco
+                </ButtonType>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* --- 2. COMO FUNCIONA (STEPS) --- */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
@@ -128,7 +208,7 @@ export default function EmpresasPage() {
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Simplificamos o processo para você focar no que importa: as
-              pessoas.
+              pessoas. Publique vagas ou busque ativamente!
             </p>
           </div>
 
@@ -145,7 +225,7 @@ export default function EmpresasPage() {
                 Ative seu acesso
               </h3>
               <p className="text-gray-600 relative z-10">
-                Converse com a gente e formalize o seu cadastro na plataforma.
+                Converse com a gente e formalize o acesso da sua empresa na plataforma.
               </p>
             </div>
 
@@ -155,13 +235,13 @@ export default function EmpresasPage() {
                 2
               </div>
               <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-primary text-2xl mb-6 relative z-10">
-                <HiOutlineDocumentText />
+                <HiOutlineSearch />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-2 relative z-10">
-                Cadastre sua vaga
+                Divulgue ou Busque
               </h3>
               <p className="text-gray-600 relative z-10">
-                Preencha os detalhes, requisitos e benefícios da oportunidade.
+                Publique sua vaga ou use nossos filtros para procurar o perfil ideal diretamente no Banco de Talentos.
               </p>
             </div>
 
@@ -174,11 +254,10 @@ export default function EmpresasPage() {
                 <HiOutlineCursorClick />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-2 relative z-10">
-                Receba candidatos
+                Avalie e Conecte
               </h3>
               <p className="text-gray-600 relative z-10">
-                Visualize currículos padronizados e organize sua seleção pelo
-                painel.
+                Receba candidaturas padronizadas ou inicie contato imediato com os profissionais que você encontrou na base.
               </p>
             </div>
 
@@ -191,11 +270,10 @@ export default function EmpresasPage() {
                 <HiOutlineCheckCircle />
               </div>
               <h3 className="text-xl font-bold text-gray-800 mb-2 relative z-10">
-                Contrate o talento
+                Contrate com agilidade
               </h3>
               <p className="text-gray-600 relative z-10">
-                Encontre o profissional certo em Panambi e região para o seu
-                time.
+                Feche a contratação do profissional certo em Panambi e região para o seu time.
               </p>
             </div>
           </div>
@@ -239,6 +317,22 @@ export default function EmpresasPage() {
                     <p className="text-gray-600 mt-1">
                       Encontre talentos locais com mais facilidade. Nossa base é
                       focada em quem mora ou quer trabalhar na região.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 shrink-0 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 text-xl">
+                    <HiOutlineUserGroup />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-800 text-lg">
+                      Busca Ativa no Banco de Talentos
+                    </h3>
+                    <p className="text-gray-600 mt-1">
+                      Não espere o candidato bater na sua porta. Navegue pelo nosso
+                      banco de currículos usando filtros inteligentes e vá direto
+                      ao profissional ideal.
                     </p>
                   </div>
                 </div>

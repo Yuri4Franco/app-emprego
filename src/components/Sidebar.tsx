@@ -22,6 +22,7 @@ import {
   HiOutlineBell,
   HiOutlineCheckCircle,
   HiOutlineInformationCircle,
+  HiOutlineCollection,
 } from "react-icons/hi";
 import { useEffect, useState } from "react";
 import api from "@/src/services/api";
@@ -70,6 +71,11 @@ const MENU_CONFIG = {
       label: "Base de Usuários",
       href: "/admin/usuarios",
       icon: <HiOutlineUsers size={22} />,
+    },
+        {
+      label: "Gestão do Catálogo",
+      href: "/admin/catalogo",
+      icon: <HiOutlineCollection size={22} />,
     },
   ],
   EMPRESA: [
