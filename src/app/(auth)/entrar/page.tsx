@@ -166,7 +166,7 @@ export default function LoginCandidatoPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-[38px] text-gray-400 hover:text-blue-600 transition-colors"
+                className="absolute right-3 top-[38px] text-gray-400 hover:text-primary transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? (
@@ -182,7 +182,7 @@ export default function LoginCandidatoPage() {
                 <input
                   type="checkbox"
                   {...register("remember")}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-blue-500 cursor-pointer"
                 />
                 <span className="text-gray-500 font-medium group-hover:text-gray-900 transition-colors">
                   Lembrar de mim
@@ -190,7 +190,7 @@ export default function LoginCandidatoPage() {
               </label>
               <Link
                 href="/recuperar-senha"
-                className="text-blue-600 font-bold hover:underline"
+                className="text-primary font-bold hover:underline"
               >
                 Esqueceu a senha?
               </Link>
@@ -198,7 +198,7 @@ export default function LoginCandidatoPage() {
 
             <ButtonType
               variant="primary"
-              className="w-full py-4 text-lg font-black shadow-xl shadow-blue-600/20 active:scale-[0.98] transition-all"
+              className="w-full py-4 text-lg font-black shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
               disabled={isLoading}
             >
               {isLoading ? "Validando acesso..." : "Entrar"}
@@ -206,15 +206,28 @@ export default function LoginCandidatoPage() {
           </form>
 
           <div className="text-center pt-4">
-            <p className="text-gray-500 font-medium">
-              Ainda não tem o seu currículo?{" "}
+            <p className="text-center text-sm text-gray-600">
+              Ainda não tem o uma conta?{" "}
               <Link
                 href="/cadastrar"
-                className="text-blue-600 font-black hover:underline"
+                className="text-primary font-black hover:underline"
               >
                 Cadastre-se grátis
               </Link>
             </p>
+
+            <p className="text-center text-sm text-gray-600">
+              Precisa de ajuda?{" "}
+              <a
+                href="https://acivagas.com.br/ajuda"
+                target="_blank"
+                className="text-primary hover:underline font-bold transition-all"
+              >
+                Acesse os guias
+              </a>
+              .
+            </p>
+
           </div>
         </div>
       </div>

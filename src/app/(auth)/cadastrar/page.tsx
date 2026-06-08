@@ -212,6 +212,17 @@ export default function RegisterPage() {
               Fazer Login
             </Link>
           </p>
+          <p className="text-center text-sm text-gray-600">
+            Precisa de ajuda?{" "}
+            <a
+              href="https://acivagas.com.br/ajuda"
+              target="_blank"
+              className="text-primary hover:underline font-bold transition-all"
+            >
+              Acesse os guias
+            </a>
+            .
+          </p>
         </div>
       </div>
 
