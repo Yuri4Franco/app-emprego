@@ -173,7 +173,7 @@ export default function TabDescricao() {
 
         <div className="space-y-1.5">
           <label className="text-sm font-bold text-gray-700 ml-2">
-            Requisitos Obrigatórios
+            Requisitos Obrigatórios (Opcional)
           </label>
           <Controller
             name="requisitos_obrigatorios"

@@ -13,7 +13,7 @@ export const vagaSchema = z.object({
   empresa_confidencial: z.boolean().default(false),
   descricao: z.string().min(15, "Descrição detalhada é obrigatória"),
   responsabilidades: z.string().min(10, "Informe as responsabilidades"),
-  requisitos_obrigatorios: z.string().min(10, "Informe os requisitos"),
+  requisitos_obrigatorios: z.string().optional().default(""),
   diferenciais: z.string().optional().default(""),
   cidade: z.string().min(2, "Cidade obrigatória").default("Panambi"),
   uf: z.string().length(2, "UF obrigatória").default("RS"),
@@ -27,9 +27,6 @@ export const vagaSchema = z.object({
     hoje.setHours(0, 0, 0, 0);
     return dataEscolhida >= hoje;
   }, "A data de encerramento não pode estar no passado."),
-  vaga_externa: z.boolean().default(false),
-  link_externo: z.string().url("Insira um link válido (com https://)").optional().or(z.literal("")),
-  instrucoes_candidatura: z.string().optional().or(z.literal("")),
   etapas: z.array(
     z.object({
       nome: z.string().min(2, "Nome da etapa é obrigatório"),

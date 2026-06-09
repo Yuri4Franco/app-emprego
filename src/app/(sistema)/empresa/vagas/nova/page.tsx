@@ -118,7 +118,6 @@ export default function NovaVagaPage() {
     !!(
       (valoresAtuais.descricao || "").length > 15 &&
       (valoresAtuais.responsabilidades || "").length > 10 &&
-      (valoresAtuais.requisitos_obrigatorios || "").length > 10 &&
       valoresAtuais.cidade
     );
   const checkEtapas = () =>
@@ -155,7 +154,6 @@ export default function NovaVagaPage() {
       descricao: [
         "descricao",
         "responsabilidades",
-        "requisitos_obrigatorios",
         "cidade",
         "uf",
       ],
@@ -196,13 +194,6 @@ export default function NovaVagaPage() {
         data_encerramento: data.data_encerramento
           ? `${data.data_encerramento}T23:59:59.000Z`
           : null,
-        vaga_externa: data.vaga_externa || false,
-        link_externo:
-          data.vaga_externa && data.link_externo ? data.link_externo : null,
-        instrucoes_candidatura:
-          data.vaga_externa && data.instrucoes_candidatura
-            ? data.instrucoes_candidatura
-            : null,
       };
 
       if (payload.tipo_salario !== "FAIXA") {
@@ -327,7 +318,6 @@ export default function NovaVagaPage() {
               [
                 "descricao",
                 "responsabilidades",
-                "requisitos_obrigatorios",
                 "cidade",
                 "uf",
               ].includes(k),
