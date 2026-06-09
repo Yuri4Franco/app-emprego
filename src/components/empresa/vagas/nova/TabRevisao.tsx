@@ -8,7 +8,6 @@ import {
   HiOutlineCheckCircle,
   HiOutlineXCircle,
   HiOutlineCalendar,
-  HiOutlineLink,
 } from "react-icons/hi";
 import { ButtonType } from "@/src/components/ButtonType";
 import { VagaFormData } from "@/src/schemas/vagaSchemas";
@@ -59,7 +58,6 @@ export default function TabRevisao({ isPublishing }: TabRevisaoProps) {
     !!(
       (valoresAtuais.descricao || "").length > 15 &&
       (valoresAtuais.responsabilidades || "").length > 10 &&
-      (valoresAtuais.requisitos_obrigatorios || "").length > 10 &&
       valoresAtuais.cidade
     );
 
@@ -71,11 +69,10 @@ export default function TabRevisao({ isPublishing }: TabRevisaoProps) {
       {/* HEADER DA REVISÃO */}
       <div className="text-center space-y-2">
         <div
-          className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-sm border-4 border-white transition-colors ${
-            isValid
+          className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 shadow-sm border-4 border-white transition-colors ${isValid
               ? "bg-emerald-100 text-emerald-500"
               : "bg-red-100 text-red-500"
-          }`}
+            }`}
         >
           {isValid ? (
             <HiOutlineClipboardList size={36} />
@@ -211,39 +208,24 @@ export default function TabRevisao({ isPublishing }: TabRevisaoProps) {
               </div>
             )}
 
-            {valoresAtuais.vaga_externa ? (
-              <div className="flex items-start gap-2 text-sm text-amber-800 font-medium bg-amber-50 p-3 rounded-xl border border-amber-200">
-                <HiOutlineLink
-                  className="text-amber-600 shrink-0 mt-0.5"
-                  size={18}
-                />
-                <div>
-                  <span className="font-bold block">
-                    Captação Externa (Sem ATS):
-                  </span>
-                  Os candidatos não entrarão no painel da ACI.
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-1 text-sm text-gray-700 font-medium bg-white p-3 rounded-xl border border-gray-100">
-                <span className="font-bold text-emerald-600 text-xs uppercase tracking-widest">
-                  Funil de Etapas configurado:
+            <div className="flex flex-col gap-1 text-sm text-gray-700 font-medium bg-white p-3 rounded-xl border border-gray-100">
+              <span className="font-bold text-emerald-600 text-xs uppercase tracking-widest">
+                Funil de Etapas configurado:
+              </span>
+              <span className="text-xs text-gray-500">
+                1. Inscritos &rarr;{" "}
+                {valoresAtuais.etapas
+                  ?.map((e: any) => e.nome)
+                  .join(" \u2192 ")}{" "}
+                {valoresAtuais.etapas?.length ? "\u2192" : ""} Aprovados
+              </span>
+              {!checkEtapas() && (
+                <span className="text-xs font-bold text-red-500 flex items-center gap-1 mt-1">
+                  <HiOutlineExclamationCircle /> Você deixou nomes de etapas
+                  em branco!
                 </span>
-                <span className="text-xs text-gray-500">
-                  1. Inscritos &rarr;{" "}
-                  {valoresAtuais.etapas
-                    ?.map((e: any) => e.nome)
-                    .join(" \u2192 ")}{" "}
-                  {valoresAtuais.etapas?.length ? "\u2192" : ""} Aprovados
-                </span>
-                {!checkEtapas() && (
-                  <span className="text-xs font-bold text-red-500 flex items-center gap-1 mt-1">
-                    <HiOutlineExclamationCircle /> Você deixou nomes de etapas
-                    em branco!
-                  </span>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
