@@ -8,7 +8,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
-import { HiOutlineEye, HiOutlineEyeOff, HiArrowRight, HiOutlineInformationCircle } from "react-icons/hi";
+import {
+  HiOutlineEye,
+  HiOutlineEyeOff,
+  HiArrowRight,
+  HiOutlineInformationCircle,
+} from "react-icons/hi";
 import Image from "next/image";
 import toast from "react-hot-toast"; // Importado para feedbacks
 
@@ -202,27 +207,28 @@ export default function RegisterPage() {
               )}
             </ButtonType>
           </form>
-
-          <p className="text-center text-sm text-gray-600">
-            Já tem cadastro?{" "}
-            <Link
-              href="/entrar"
-              className="text-primary font-bold hover:underline"
-            >
-              Fazer Login
-            </Link>
-          </p>
-          <p className="text-center text-sm text-gray-600">
-            Precisa de ajuda?{" "}
-            <a
-              href="https://acivagas.com.br/ajuda"
-              target="_blank"
-              className="text-primary hover:underline font-bold transition-all"
-            >
-              Acesse os guias
-            </a>
-            .
-          </p>
+          <div className="text-center pt-4 space-y-2">
+            <p className="text-center text-sm text-gray-600">
+              Já tem cadastro?{" "}
+              <Link
+                href="/entrar"
+                className="text-primary font-black hover:underline"
+              >
+                Acessar minha conta
+              </Link>
+            </p>
+            <p className="text-center text-sm text-gray-600">
+              Precisa de ajuda?{" "}
+              <a
+                href="https://acivagas.com.br/ajuda"
+                target="_blank"
+                className="text-primary font-black hover:underline"
+              >
+                Acessar os guias
+              </a>
+              .
+            </p>
+          </div>
         </div>
       </div>
 

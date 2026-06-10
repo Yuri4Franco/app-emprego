@@ -205,7 +205,7 @@ export default function LoginCandidatoPage() {
             </ButtonType>
           </form>
 
-          <div className="text-center pt-4">
+          <div className="text-center pt-4 space-y-2">
             <p className="text-center text-sm text-gray-600">
               Ainda não tem o uma conta?{" "}
               <Link
@@ -221,9 +221,9 @@ export default function LoginCandidatoPage() {
               <a
                 href="https://acivagas.com.br/ajuda"
                 target="_blank"
-                className="text-primary hover:underline font-bold transition-all"
+                className="text-primary font-black hover:underline"
               >
-                Acesse os guias
+                Acessar os guias
               </a>
               .
             </p>
