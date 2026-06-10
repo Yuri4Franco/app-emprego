@@ -24,7 +24,6 @@ import {
   HiOutlineHeart,
   HiOutlineMoon,
   HiOutlineUser,
-  HiOutlineStar,
 } from "react-icons/hi";
 import { FaWhatsapp, FaLinkedin, FaGithub } from "react-icons/fa";
 
@@ -131,8 +130,6 @@ export default function DetalhesCurriculoPage() {
 
   const { acesso_liberado, saldo_creditos_empresa } = dadosBase;
   const perfil = dadosBase.perfil;
-  const endereco = perfil.endereco_completo || perfil.endereco;
-
   const idade = perfil.data_nascimento ? new Date().getFullYear() - new Date(perfil.data_nascimento).getFullYear() : null;
 
   return (
@@ -170,10 +167,11 @@ export default function DetalhesCurriculoPage() {
       </div>
 
       {/* ================= LINHA 1: IDENTIDADE E CONTATO ================= */}
-      <div className="flex flex-col gap-6 md:gap-8 items-stretch">
+      {/* ================= LINHA 1: IDENTIDADE E CONTATO ================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-stretch">
 
         {/* Bloco 1: Identidade (Foto, Nome, Dados Básicos e PcD) */}
-        <div className="bg-white p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-8 items-center sm:items-start text-center sm:text-left relative overflow-hidden">
+        <div className="lg:col-span-2 bg-white p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-8 items-center sm:items-start text-center sm:text-left relative overflow-hidden">
           <div className="absolute top-0 right-0 w-72 h-72 bg-blue-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-70"></div>
 
           {/* Foto com Blur se estiver bloqueado */}
@@ -222,7 +220,7 @@ export default function DetalhesCurriculoPage() {
               )}
             </div>
 
-            {/* Destaque PcD integrado diretamente no perfil para não ocupar espaço extra embaixo */}
+            {/* Destaque PcD integrado diretamente no perfil */}
             {perfil.pcd && (
               <div className="mt-2 p-4 bg-purple-50 rounded-2xl border border-purple-100 flex flex-col gap-1.5 w-fit mx-auto sm:mx-0 text-left">
                 <div className="flex items-center gap-2 text-purple-800 font-black text-sm mb-1">
@@ -237,132 +235,128 @@ export default function DetalhesCurriculoPage() {
 
         {/* Bloco 2: Contato, Endereço Completo & Paywall */}
         {acesso_liberado ? (
-          <div className="bg-gray-900 p-8 md:p-10 rounded-[32px] shadow-xl text-white flex flex-col justify-center animate-in zoom-in-95 duration-500 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-
-            <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {/* Lado A: Contato & Redes */}
-              <div className="space-y-5">
-                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+          <div className="lg:col-span-1 bg-indigo-50/50 p-8 rounded-[32px] shadow-sm border border-indigo-100 flex flex-col justify-start relative overflow-hidden">
+            <div className="space-y-6 relative z-10">
+              {/* Contato & Redes */}
+              <div className="space-y-4 text-sm font-medium">
+                <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2 mb-2">
                   <HiOutlineMail size={16} /> Contato Pessoal
                 </h3>
-                <div className="space-y-4 text-sm font-medium">
-                  {perfil.whatsapp && (
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
-                        <FaWhatsapp size={18} className="text-emerald-400" />
-                      </div>
-                      <a href={`https://wa.me/55${perfil.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="hover:text-emerald-300 transition-colors text-gray-200">
-                        {perfil.whatsapp}
-                      </a>
-                    </div>
-                  )}
-                  {perfil.telefone && !perfil.whatsapp && (
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-white/10 rounded-xl border border-white/10">
-                        <HiOutlinePhone size={18} className="text-gray-300" />
-                      </div>
-                      <span className="text-gray-200">{perfil.telefone}</span>
-                    </div>
-                  )}
-                  {perfil.email && (
-                    <div className="flex items-center gap-3 pl-1">
-                      <a href={`mailto:${perfil.email}`} className="truncate hover:text-blue-300 transition-colors text-gray-400 underline underline-offset-4 decoration-gray-700">
-                        {perfil.email}
-                      </a>
-                    </div>
-                  )}
 
-                  <div className="flex gap-2 pt-3 border-t border-gray-800">
-                    {perfil.link_linkedin && (
-                      <a href={perfil.link_linkedin} target="_blank" rel="noreferrer" className="p-3 bg-blue-600 hover:bg-blue-500 rounded-xl transition-colors shadow-lg" title="LinkedIn">
-                        <FaLinkedin size={20} className="text-white" />
-                      </a>
-                    )}
-                    {perfil.link_portfolio && (
-                      <a href={perfil.link_portfolio} target="_blank" rel="noreferrer" className="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors border border-white/10 shadow-lg" title="Portfólio">
-                        <FaGithub size={20} className="text-white" />
-                      </a>
-                    )}
+                {perfil.whatsapp && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-emerald-100 rounded-xl border border-emerald-200">
+                      <FaWhatsapp size={18} className="text-emerald-600" />
+                    </div>
+                    <a href={`https://wa.me/55${perfil.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="hover:text-emerald-600 transition-colors text-gray-700 font-bold">
+                      {perfil.whatsapp}
+                    </a>
                   </div>
+                )}
+
+                {perfil.telefone && !perfil.whatsapp && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white rounded-xl border border-indigo-200">
+                      <HiOutlinePhone size={18} className="text-indigo-600" />
+                    </div>
+                    <span className="text-gray-700 font-bold">{perfil.telefone}</span>
+                  </div>
+                )}
+
+                {perfil.email && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white rounded-xl border border-indigo-200 shrink-0">
+                      <HiOutlineMail size={18} className="text-indigo-600" />
+                    </div>
+                    <a href={`mailto:${perfil.email}`} className="truncate hover:text-indigo-600 transition-colors text-gray-700 underline underline-offset-4 decoration-indigo-200 font-bold">
+                      {perfil.email}
+                    </a>
+                  </div>
+                )}
+
+                <div className="flex gap-2 pt-2">
+                  {perfil.link_linkedin && (
+                    <a href={perfil.link_linkedin} target="_blank" rel="noreferrer" className="p-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl transition-colors shadow-sm" title="LinkedIn">
+                      <FaLinkedin size={18} className="text-white" />
+                    </a>
+                  )}
+                  {perfil.link_portfolio && (
+                    <a href={perfil.link_portfolio} target="_blank" rel="noreferrer" className="p-2.5 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors shadow-sm" title="Portfólio">
+                      <FaGithub size={18} className="text-white" />
+                    </a>
+                  )}
                 </div>
               </div>
 
-              {/* Lado B: Endereço Completo */}
-              <div className="space-y-5">
-                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+              <hr className="border-indigo-100" />
+
+              {/* Endereço Completo */}
+              <div className="space-y-3">
+                <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
                   <HiOutlineLocationMarker size={16} /> Endereço
                 </h3>
                 {perfil.endereco_completo ? (
-                  <div className="text-sm font-medium text-gray-400 space-y-2.5 leading-relaxed bg-white/5 p-5 rounded-2xl border border-white/10">
-                    <p className="text-white font-bold text-base mb-3 flex items-center gap-2">
+                  <div className="text-sm font-medium text-gray-600 space-y-1.5 leading-relaxed">
+                    <p className="text-gray-900 font-black text-base mb-2">
                       {perfil.endereco_completo.cidade} - {perfil.endereco_completo.uf}
                     </p>
                     {perfil.endereco_completo.logradouro && (
-                      <p className="text-gray-300">
+                      <p>
                         {perfil.endereco_completo.logradouro}, {perfil.endereco_completo.numero || "S/N"}
                       </p>
                     )}
-                    {perfil.endereco_completo.bairro && (
-                      <p>Bairro {perfil.endereco_completo.bairro}</p>
-                    )}
-                    {perfil.endereco_completo.complemento && (
-                      <p className="italic text-xs">"{perfil.endereco_completo.complemento}"</p>
-                    )}
-                    {perfil.endereco_completo.cep && (
-                      <p className="pt-2">CEP: <span className="font-mono text-gray-300">{perfil.endereco_completo.cep}</span></p>
-                    )}
+                    {perfil.endereco_completo.bairro && <p>Bairro {perfil.endereco_completo.bairro}</p>}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 italic p-4 bg-white/5 rounded-2xl">Endereço não cadastrado.</p>
+                  <p className="text-sm text-gray-500 italic">Endereço não cadastrado.</p>
                 )}
               </div>
             </div>
           </div>
         ) : (
-          /* PAINEL CENSURADO (PAYWALL) MANTIDO */
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-8 md:p-10 rounded-[32px] shadow-xl text-center relative overflow-hidden flex flex-col justify-center">
-            <div className="absolute -right-6 -top-6 text-white/5 pointer-events-none">
+          /* PAINEL CENSURADO (PAYWALL) CLARO */
+          <div className="lg:col-span-1 bg-gradient-to-br from-indigo-50 to-white p-8 rounded-[32px] shadow-sm border border-indigo-100 text-center relative overflow-hidden flex flex-col justify-center">
+            <div className="absolute -right-6 -top-6 text-indigo-500/5 pointer-events-none">
               <HiOutlineLockClosed size={160} />
             </div>
-            <div className="relative z-10 max-w-md mx-auto">
-              <div className="w-16 h-16 bg-white/10 rounded-[20px] flex items-center justify-center mx-auto mb-6 backdrop-blur-sm border border-white/10">
-                <HiOutlineLockClosed size={32} className="text-white" />
+            <div className="relative z-10 mx-auto">
+              <div className="w-16 h-16 bg-white rounded-[20px] flex items-center justify-center mx-auto mb-5 shadow-sm border border-indigo-100">
+                <HiOutlineLockClosed size={32} className="text-indigo-400" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-3">Dados Ocultos</h3>
-              <p className="text-sm text-gray-300 font-medium mb-8 leading-relaxed">
-                Desbloqueie o perfil para visualizar o <b>endereço completo, e-mail, telefone, redes sociais e a foto</b> do candidato.
+              <h3 className="text-xl font-black text-gray-900 mb-2">Dados Ocultos</h3>
+              <p className="text-sm text-gray-500 font-medium mb-8 leading-relaxed px-4">
+                Desbloqueie o perfil para visualizar o <b>endereço completo, contato e a foto</b> do candidato.
               </p>
 
               {saldo_creditos_empresa > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <button
                     onClick={handleDesbloquear}
                     disabled={isUnlocking}
-                    className="w-full py-4 px-6 bg-emerald-500 hover:bg-emerald-400 text-white rounded-2xl font-black text-base transition-colors shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-70"
+                    className="w-full py-4 px-6 bg-emerald-500 hover:bg-emerald-400 text-white rounded-2xl font-black text-sm transition-colors shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-70"
                   >
                     {isUnlocking ? (
-                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                       <>
-                        <HiOutlineLockClosed size={20} />
+                        <HiOutlineLockClosed size={18} />
                         Desbloquear Perfil (1 Crédito)
                       </>
                     )}
                   </button>
-                  <p className="text-xs text-emerald-300/80 font-black uppercase tracking-widest">
+                  <p className="text-xs text-emerald-600 font-black uppercase tracking-widest">
                     Saldo disponível: {saldo_creditos_empresa} créditos
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <Link
                     href="/empresa/comprar-creditos"
-                    className="flex items-center justify-center w-full py-4 px-6 bg-white hover:bg-gray-50 text-gray-900 rounded-2xl font-black text-base transition-colors shadow-lg"
+                    className="flex items-center justify-center w-full py-4 px-6 bg-gray-900 hover:bg-gray-800 text-white rounded-2xl font-black text-sm transition-colors shadow-md"
                   >
                     Comprar Créditos
                   </Link>
-                  <p className="text-xs text-red-400 font-black uppercase tracking-widest">
+                  <p className="text-xs text-red-500 font-black uppercase tracking-widest">
                     Saldo Insuficiente
                   </p>
                 </div>
@@ -373,7 +367,7 @@ export default function DetalhesCurriculoPage() {
       </div>
 
       {/* ================= LINHA 2: RESUMO E LOGÍSTICA ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
         {/* Resumo Profissional */}
         <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-[32px] border border-gray-100 shadow-sm space-y-6">
           {perfil.objetivo_profissional && (
@@ -408,7 +402,7 @@ export default function DetalhesCurriculoPage() {
         {/* Logística & Preferências */}
         <div className="bg-white p-6 md:p-8 rounded-[32px] border border-gray-100 shadow-sm h-fit">
           <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-            <HiOutlineMoon className="text-indigo-500" size={16} /> Logística e Interesses
+            Logística e Interesses
           </h4>
 
           <ul className="space-y-5 text-sm font-bold text-gray-700">
@@ -465,96 +459,12 @@ export default function DetalhesCurriculoPage() {
         </div>
       </div>
 
-      {/* ================= LINHA 3: ENDEREÇO E TAXONOMIAS (3 COLUNAS) ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+      {/* ================= LINHA 3: EXPERIÊNCIA vs FORMAÇÃO & SKILLS (NOVO GRID) ================= */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-start">
 
-        {/* Bloco 1: Endereço */}
-        <div className="bg-white p-6 md:p-8 rounded-[32px] border border-gray-100 shadow-sm h-fit">
-          <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-5">
-            <HiOutlineLocationMarker size={18} className="text-red-500" /> Endereço Base
-          </h3>
-          {endereco ? (
-            <div className="space-y-4 text-sm font-medium text-gray-700">
-              <div className="grid grid-cols-2 gap-y-4 gap-x-4">
-                <div className="col-span-2">
-                  <span className="block text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">Rua / Logradouro</span>
-                  {endereco.logradouro ? `${endereco.logradouro}, ${endereco.numero || "S/N"}` : "-"}
-                </div>
-                <div>
-                  <span className="block text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">Bairro</span>
-                  {endereco.bairro || "-"}
-                </div>
-                <div>
-                  <span className="block text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">Complemento</span>
-                  {endereco.complemento || "-"}
-                </div>
-                <div>
-                  <span className="block text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">CEP</span>
-                  {endereco.cep || "-"}
-                </div>
-                <div>
-                  <span className="block text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1">Cidade/UF</span>
-                  {endereco.cidade} - {endereco.uf}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <span className="text-sm text-gray-400 italic">Endereço detalhado não informado.</span>
-          )}
-        </div>
-
-        {/* Bloco 2: Áreas de Atuação */}
-        <div className="bg-white p-6 md:p-8 rounded-[32px] border border-gray-100 shadow-sm h-fit">
-          <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-5">
-            <HiOutlineTag size={18} className="text-blue-500" /> Áreas de Atuação
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {perfil.areas_atuacao?.length > 0 ? (
-              perfil.areas_atuacao.map((a: any) => (
-                <span key={a.id_area || a.area?.id_area} className="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg border border-blue-100">
-                  {a.area?.nome || a.nome || "Área"}
-                </span>
-              ))
-            ) : (
-              <span className="text-sm text-gray-400 italic">Nenhuma área cadastrada.</span>
-            )}
-          </div>
-        </div>
-
-        {/* Bloco 3: Habilidades */}
-        <div className="bg-white p-6 md:p-8 rounded-[32px] border border-gray-100 shadow-sm h-fit">
-          <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-5">
-            <HiOutlineLightningBolt size={18} className="text-purple-500" /> Habilidades (Skills)
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {perfil.competencias?.length > 0 ? (
-              perfil.competencias.map((c: any, index: number) => {
-                const nivel = c.nivel || "BASICO";
-                const isAvancado = nivel === "AVANCADO";
-                const isIntermediario = nivel === "INTERMEDIARIO";
-                const colorClass = isAvancado ? "bg-purple-50 text-purple-700 border-purple-200" : isIntermediario ? "bg-indigo-50 text-indigo-700 border-indigo-100" : "bg-gray-50 text-gray-600 border-gray-200";
-
-                return (
-                  <div key={index} className={`px-3 py-1.5 border rounded-xl flex items-center gap-1.5 transition-colors ${colorClass}`} title={`Nível: ${nivel}`}>
-                    <span className="text-xs font-bold">{c.competencia?.nome || c.nome}</span>
-                    <span className="text-[9px] uppercase tracking-widest font-black opacity-60">
-                      ({nivel.charAt(0)})
-                    </span>
-                  </div>
-                );
-              })
-            ) : (
-              <span className="text-sm text-gray-400 italic">Nenhuma habilidade cadastrada.</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ================= LINHA 4: EXPERIÊNCIA E FORMAÇÃO LADO A LADO ================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-start">
-        {/* Histórico Profissional */}
-        {perfil.experiencias && perfil.experiencias.length > 0 && (
-          <div className="bg-white p-6 md:p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col">
+        {/* LADO ESQUERDO: Histórico Profissional */}
+        {perfil.experiencias && perfil.experiencias.length > 0 ? (
+          <div className="bg-white p-6 md:p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col h-full">
             <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                 <HiOutlineBriefcase size={20} />
@@ -588,45 +498,100 @@ export default function DetalhesCurriculoPage() {
               })}
             </div>
           </div>
+        ) : (
+          <div className="bg-white p-6 md:p-8 rounded-[32px] border border-gray-100 shadow-sm h-full flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-gray-50 text-gray-300 rounded-full flex items-center justify-center mb-4">
+              <HiOutlineBriefcase size={28} />
+            </div>
+            <h3 className="text-lg font-bold text-gray-800">Sem Experiência</h3>
+            <p className="text-sm text-gray-500 mt-1">Este candidato está em busca do seu primeiro emprego.</p>
+          </div>
         )}
 
-        {/* Formação Acadêmica */}
-        {perfil.formacoes && perfil.formacoes.length > 0 && (
-          <div className="bg-white p-6 md:p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col">
+        {/* LADO DIREITO: Formação Acadêmica & Skills Empilhados */}
+        <div className="space-y-6 md:space-y-8 flex flex-col h-full">
+
+          {/* Formação Acadêmica */}
+          <div className="bg-white p-6 md:p-8 rounded-[32px] border border-gray-100 shadow-sm flex-1">
             <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-3">
               <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
                 <HiOutlineAcademicCap size={20} />
               </div>
               Formação Acadêmica
             </h3>
-            <div className="space-y-6 pl-2">
-              {perfil.formacoes.map((form: any) => (
-                <div key={form.id_formacao} className="relative pl-6 border-l-2 border-gray-100 pb-2">
-                  <div className="absolute w-3.5 h-3.5 bg-white border-[3px] border-emerald-500 rounded-full -left-[9px] top-1"></div>
 
-                  <h4 className="text-base font-black text-gray-900 leading-tight mb-1">{form.curso || form.nivel}</h4>
-                  {form.instituicao && <p className="text-sm font-bold text-emerald-600 mb-2">{form.instituicao}</p>}
+            {perfil.formacoes && perfil.formacoes.length > 0 ? (
+              <div className="space-y-6 pl-2">
+                {perfil.formacoes.map((form: any) => (
+                  <div key={form.id_formacao} className="relative pl-6 border-l-2 border-gray-100 pb-2">
+                    <div className="absolute w-3.5 h-3.5 bg-white border-[3px] border-emerald-500 rounded-full -left-[9px] top-1"></div>
 
-                  <div className="flex flex-wrap items-center gap-2 mt-1">
-                    <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2 py-1 rounded-md uppercase tracking-wider">
-                      {form.nivel}
-                    </span>
-                    <span className={`text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-wider ${form.status?.toUpperCase().includes("CONCLU")
-                      ? "bg-emerald-50 text-emerald-700"
-                      : form.status?.toUpperCase() === "CURSANDO"
-                        ? "bg-blue-50 text-blue-700"
-                        : "bg-orange-50 text-orange-700"
-                      }`}>
-                      {formatarStatusFormacao(form)}
-                    </span>
+                    <h4 className="text-base font-black text-gray-900 leading-tight mb-1">{form.curso || form.nivel}</h4>
+                    {form.instituicao && <p className="text-sm font-bold text-emerald-600 mb-2">{form.instituicao}</p>}
+
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2 py-1 rounded-md uppercase tracking-wider">
+                        {form.nivel}
+                      </span>
+                      <span className={`text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-wider ${form.status?.toUpperCase().includes("CONCLU")
+                        ? "bg-emerald-50 text-emerald-700"
+                        : form.status?.toUpperCase() === "CURSANDO"
+                          ? "bg-blue-50 text-blue-700"
+                          : "bg-orange-50 text-orange-700"
+                        }`}>
+                        {formatarStatusFormacao(form)}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 italic text-center py-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                Nenhuma formação cadastrada.
+              </p>
+            )}
+          </div>
+
+          {/* Habilidades Redesenhadas em Cards */}
+          <div className="bg-white p-6 md:p-8 rounded-[32px] border border-gray-100 shadow-sm flex-1">
+            <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center">
+                <HiOutlineLightningBolt size={20} />
+              </div>
+              Habilidades Técnicas
+            </h3>
+
+            <div className="flex flex-wrap gap-2">
+              {perfil.competencias?.length > 0 ? (
+                perfil.competencias.map((c: any, index: number) => {
+                  const nivel = c.nivel || "BASICO";
+                  const isAvancado = nivel === "AVANCADO";
+                  const isIntermediario = nivel === "INTERMEDIARIO";
+
+                  // Paleta de cores para cada nível de proficiência
+                  const bgColor = isAvancado ? "bg-emerald-50 border-emerald-200" : isIntermediario ? "bg-blue-50 border-blue-200" : "bg-gray-50 border-gray-200";
+                  const textColor = isAvancado ? "text-emerald-600" : isIntermediario ? "text-blue-600" : "text-gray-500";
+                  const titleColor = isAvancado ? "text-emerald-900" : isIntermediario ? "text-blue-900" : "text-gray-800";
+
+                  return (
+                    <div key={index} className={`flex flex-col px-3.5 py-2.5 border rounded-xl transition-colors ${bgColor}`} title={`Nível: ${nivel}`}>
+                      <span className={`text-sm font-black ${titleColor}`}>{c.competencia?.nome || c.nome}</span>
+                      <span className={`text-[9px] uppercase tracking-widest font-black mt-0.5 ${textColor}`}>
+                        {nivel}
+                      </span>
+                    </div>
+                  );
+                })
+              ) : (
+                <span className="text-sm text-gray-400 italic w-full text-center py-6 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                  Nenhuma habilidade cadastrada.
+                </span>
+              )}
             </div>
           </div>
-        )}
-      </div>
 
+        </div>
+      </div>
     </div>
   );
 }
