@@ -314,7 +314,6 @@ export default function DetalhesCurriculoPage() {
             </div>
           </div>
         ) : (
-          /* PAINEL CENSURADO (PAYWALL) CLARO */
           <div className="lg:col-span-1 bg-gradient-to-br from-indigo-50 to-white p-8 rounded-[32px] shadow-sm border border-indigo-100 text-center relative overflow-hidden flex flex-col justify-center">
             <div className="absolute -right-6 -top-6 text-indigo-500/5 pointer-events-none">
               <HiOutlineLockClosed size={160} />
