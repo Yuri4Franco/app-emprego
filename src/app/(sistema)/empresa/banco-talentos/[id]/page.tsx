@@ -27,7 +27,6 @@ import {
 } from "react-icons/hi";
 import { FaWhatsapp, FaLinkedin, FaGithub } from "react-icons/fa";
 
-// Helper para tratar as regras de negócio da Formação Acadêmica (evita 1969)
 const formatarStatusFormacao = (form: any) => {
   const isBasic = form.nivel === "Ensino Fundamental" || form.nivel === "Ensino Médio";
   const statusUpper = form.status?.toUpperCase() || "";
@@ -46,7 +45,6 @@ const formatarStatusFormacao = (form: any) => {
     const year = new Date(form.data_conclusao).getFullYear();
     if (year > 1970) anoLabel = ` em ${year}`;
   }
-
   return `${statusLabel}${anoLabel}`;
 };
 
