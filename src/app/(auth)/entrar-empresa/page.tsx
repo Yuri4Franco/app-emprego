@@ -112,7 +112,11 @@ export default function LoginEmpresaPage() {
     <div className="flex min-h-screen w-full bg-gray-50">
       {/* LADO ESQUERDO: FORMULÁRIO */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-white relative">
-        {/* Botão sutil para redirecionar candidatos perdidos */}
+        <div className="absolute top-6 right-8">
+          <Link href="/entrar" className="text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors uppercase tracking-widest">
+            Acesso para Candidatos →
+          </Link>
+        </div>
 
         <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="text-center">

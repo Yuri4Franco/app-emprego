@@ -92,7 +92,7 @@ export default function EmpresaDashboard() {
 
   return (
     <div className="p-4 md:p-10 max-w-7xl mx-auto space-y-8 md:space-y-10 animate-in fade-in duration-700">
-      {/* ================= HEADER PREMIUM ================= */}
+      {/* ================= HEADER ================= */}
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white p-8 md:p-10 rounded-[32px] md:rounded-[40px] shadow-sm border border-gray-100 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
 
@@ -106,30 +106,19 @@ export default function EmpresaDashboard() {
             {perfil?.empresa?.nome_fantasia || "Minha Empresa"}
           </h1>
           <p className="text-gray-500 font-medium text-sm md:text-base">
-            Bem-vindo de volta,{" "}
+            Olá,{" "}
             <strong className="text-gray-800">{perfil?.nome}</strong>. O que
             vamos realizar hoje?
           </p>
         </div>
 
         {/* CARTEIRA DE CRÉDITOS */}
-        <div className="relative z-10 flex items-center gap-3 bg-gray-50 p-2 pr-6 rounded-full border border-gray-100">
-          <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center text-primary shrink-0 border border-gray-100">
-            <HiOutlineBadgeCheck size={24} />
-          </div>
+        <div className="relative z-10 flex items-center gap-3 bg-gray-50 px-6 py-2 rounded-full border border-gray-100">
           <div className="flex flex-col">
             <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">
               Seu Saldo
             </span>
             <div className="flex items-center gap-3 text-sm font-black text-gray-800">
-              <div
-                className="flex items-center gap-1.5"
-                title="Créditos de Vagas"
-              >
-                <HiOutlineBriefcase className="text-primary" size={16} />
-                {perfil?.empresa?.creditos_vagas || 0}
-              </div>
-              <span className="text-gray-300">•</span>
               <div
                 className="flex items-center gap-1.5"
                 title="Créditos de Currículos"

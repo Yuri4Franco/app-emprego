@@ -119,7 +119,11 @@ export default function LoginCandidatoPage() {
     <div className="flex min-h-screen w-full bg-gray-50">
       {/* LADO ESQUERDO: FORMULÁRIO */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-white relative">
-
+        <div className="absolute top-6 right-8">
+          <Link href="/entrar-empresa" className="text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors uppercase tracking-widest">
+            Acesso para Empresas →
+          </Link>
+        </div>
         <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="text-center">
             <Link href="/" className="inline-block mb-6">
@@ -131,7 +135,7 @@ export default function LoginCandidatoPage() {
             </Link>
 
             <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-              Bem-vindo de volta
+              Bem-vindo(a) de volta
             </h2>
             <p className="text-gray-500 mt-2 font-medium">
               Acesse a sua conta para encontrar as melhores oportunidades da
