@@ -117,12 +117,20 @@ export default function EditarVagaPage({
             (b: any) => b.id_beneficio || b.beneficio?.id_beneficio,
           ) || [];
 
-        const etapasIntermediarias =
-          vaga.etapas
-            ?.filter(
-              (e: any) => e.nome !== "Inscritos" && e.nome !== "Aprovados",
-            )
-            .sort((a: any, b: any) => a.ordem - b.ordem) || [];
+
+
+        const etapasIntermediarias = (vaga.etapas || [])
+          .filter((e: any) => e.nome !== "Inscritos" && e.nome !== "Aprovados")
+          .sort((a: any, b: any) => a.ordem - b.ordem)
+          .map((e: any) => ({
+            nome: e.nome,
+            requer_agendamento: Boolean(e.requer_agendamento)
+          }));
+
+
+        const dataEncerramentoFormatada = vaga.data_encerramento
+          ? vaga.data_encerramento.split("T")[0]
+          : "";
 
         reset({
           titulo: vaga.titulo,
@@ -130,6 +138,7 @@ export default function EditarVagaPage({
           nivel_hierarquico: vaga.nivel_hierarquico,
           modelo_trabalho: vaga.modelo_trabalho,
           tipo_contrato: vaga.tipo_contrato,
+          data_encerramento: dataEncerramentoFormatada,
           tipo_salario: vaga.ocultar_salario
             ? "OCULTO"
             : vaga.salario_a_combinar
@@ -146,6 +155,7 @@ export default function EditarVagaPage({
           uf: vaga.endereco?.uf || "RS",
           tipo_diversidade: vaga.tipo_diversidade || "AMPLA_CONCORRENCIA",
           beneficios_ids: beneficiosMapeados,
+
           etapas: etapasIntermediarias,
         });
       } catch (error) {
@@ -188,7 +198,7 @@ export default function EditarVagaPage({
     if (statusAbas.principal) pts += 25;
     if (statusAbas.descricao) pts += 25;
     if (statusAbas.etapas) pts += 25;
-    if (valoresAtuais.beneficios_ids?.length > 0) pts += 25;
+    if (valoresAtuais.beneficios_ids) pts += 25;
     return pts;
   };
 
@@ -402,13 +412,12 @@ export default function EditarVagaPage({
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id as any)}
-            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${
-              activeTab === tab.id
-                ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
-                : tab.hasError
-                  ? "text-red-500 hover:bg-red-50 border-b-2 border-transparent"
-                  : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
-            }`}
+            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${activeTab === tab.id
+              ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
+              : tab.hasError
+                ? "text-red-500 hover:bg-red-50 border-b-2 border-transparent"
+                : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
+              }`}
           >
             <span className="flex items-center gap-1.5 md:gap-2 relative z-10">
               {tab.icon} {tab.label}

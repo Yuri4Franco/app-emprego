@@ -12,7 +12,7 @@ import { VagaCard } from "@/src/components/empresa/vagas/VagaCard";
 import { ModalConfirmacaoAcao } from "@/src/components/empresa/vagas/ModalConfirmacaoAcao";
 
 
-type ActionType = "PAUSAR" | "ENCERRAR" | "EXCLUIR_RASCUNHO" | null;
+type ActionType = "PAUSAR" | "ENCERRAR" | "EXCLUIR_RASCUNHO" | "REABRIR" | null;
 
 export default function GestaoVagasPage() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function GestaoVagasPage() {
   // Controles
   const [isDuplicating, setIsDuplicating] = useState<number | null>(null);
   const [menuAberto, setMenuAberto] = useState<number | null>(null);
-  
+
   const [filtroStatus, setFiltroStatus] = useState<string>("");
   const [busca, setBusca] = useState("");
   const [meta, setMeta] = useState<any>({ total: 0, page: 1 });
@@ -94,19 +94,24 @@ export default function GestaoVagasPage() {
   const executeConfirmAction = async () => {
     if (!modalConfig.idVaga || !modalConfig.tipo) return;
     setModalConfig({ ...modalConfig, isProcessing: true });
-    
+
     try {
       if (modalConfig.tipo === "PAUSAR") {
         await api.patch(`/empresa/vagas/${modalConfig.idVaga}/pausar`);
         toast.success("Vaga pausada com sucesso!");
-      } else if (modalConfig.tipo === "ENCERRAR") {
+      }
+      else if (modalConfig.tipo === "REABRIR") {
+        await api.patch(`/empresa/vagas/${modalConfig.idVaga}/ativar`); // Adapte para sua rota exata
+        toast.success("Vaga reaberta com sucesso!");
+      }
+      else if (modalConfig.tipo === "ENCERRAR") {
         await api.patch(`/empresa/vagas/${modalConfig.idVaga}/encerrar`); // Adapte para sua rota exata
         toast.success("Vaga encerrada definitivamente!");
       } else if (modalConfig.tipo === "EXCLUIR_RASCUNHO") {
         await api.delete(`/empresa/vagas/${modalConfig.idVaga}`); // Adapte para sua rota exata
         toast.success("Rascunho excluído!");
       }
-      
+
       closeConfirmModal();
       fetchVagas(meta.page); // Recarrega a listagem
     } catch (error: any) {
@@ -117,7 +122,7 @@ export default function GestaoVagasPage() {
 
   return (
     <div className="max-w-6xl mx-auto pb-20 pt-4 md:pt-10 px-4 md:px-8 space-y-8 animate-in fade-in duration-700">
-      
+
       {/* HEADER */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>

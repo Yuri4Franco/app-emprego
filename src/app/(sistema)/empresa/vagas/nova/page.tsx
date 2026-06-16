@@ -24,12 +24,6 @@ import TabBeneficios from "@/src/components/empresa/vagas/nova/TabBeneficios";
 import TabEtapas from "@/src/components/empresa/vagas/nova/TabEtapas";
 import TabRevisao from "@/src/components/empresa/vagas/nova/TabRevisao";
 
-// Os componentes filhos que vamos criar nas próximas etapas
-// import TabPrincipal from "./_components/TabPrincipal";
-// import TabDescricao from "./_components/TabDescricao";
-// import TabBeneficios from "./_components/TabBeneficios";
-// import TabEtapas from "./_components/TabEtapas";
-// import TabRevisao from "./_components/TabRevisao";
 
 export default function NovaVagaPage() {
   const router = useRouter();
@@ -73,7 +67,6 @@ export default function NovaVagaPage() {
     },
   });
 
-  // Desestruturamos as ferramentas que o Pai precisa para a lógica de UI
   const {
     watch,
     trigger,
@@ -111,14 +104,14 @@ export default function NovaVagaPage() {
     loadData();
   }, [setValue]);
 
-  // Lógica de Progresso
   const checkPrincipal = () =>
     !!(valoresAtuais.titulo?.length > 4 && valoresAtuais.id_area_atuacao > 0);
   const checkDescricao = () =>
     !!(
       (valoresAtuais.descricao || "").length > 15 &&
       (valoresAtuais.responsabilidades || "").length > 10 &&
-      valoresAtuais.cidade
+      valoresAtuais.cidade && 
+      valoresAtuais.uf
     );
   const checkEtapas = () =>
     valoresAtuais.etapas?.every((e) => e.nome.length > 1);
@@ -136,7 +129,7 @@ export default function NovaVagaPage() {
     if (statusAbas.principal) pts += 25;
     if (statusAbas.descricao) pts += 25;
     if (statusAbas.etapas) pts += 25;
-    if (valoresAtuais.beneficios_ids?.length > 0) pts += 25;
+    if (valoresAtuais.beneficios_ids) pts += 25;
     return pts;
   };
 

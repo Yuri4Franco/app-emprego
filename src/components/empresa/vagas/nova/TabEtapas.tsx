@@ -16,9 +16,11 @@ export default function TabEtapas() {
   } = useFormContext<VagaFormData>();
 
   // ✨ O useFieldArray gerencia listas dinâmicas de forma otimizada
+  // Adicionamos keyName para evitar conflitos com IDs que possam vir do banco
   const { fields, append, remove } = useFieldArray({
     control,
     name: "etapas",
+    keyName: "fieldId", // 👈 ISSO AQUI RESOLVE O BUG!
   });
 
   return (
@@ -47,7 +49,7 @@ export default function TabEtapas() {
         {/* ETAPAS DINÂMICAS DO USUÁRIO */}
         {fields.map((field, index) => (
           <div
-            key={field.id}
+            key={field.fieldId} // 👈 USA O KEYNAME AQUI
             className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 bg-white rounded-[24px] border border-blue-100 shadow-sm relative z-10 group hover:border-blue-300 transition-colors"
           >
             {/* Numeração (Soma 2 porque o 1 é o Inscritos fixo) */}
@@ -72,9 +74,9 @@ export default function TabEtapas() {
               <input
                 type="checkbox"
                 {...register(`etapas.${index}.requer_agendamento`)}
-                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
               />
-              <span className="text-[10px] font-bold text-gray-600 uppercase">
+              <span className="text-[10px] font-bold text-gray-600 uppercase cursor-pointer">
                 Agendamento
               </span>
             </label>
@@ -118,4 +120,4 @@ export default function TabEtapas() {
       </div>
     </section>
   );
-}
+} 

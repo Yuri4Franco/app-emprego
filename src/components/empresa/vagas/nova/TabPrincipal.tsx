@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { HiOutlineSearch, HiOutlineX } from "react-icons/hi";
 import { Input } from "@/src/components/Input";
@@ -22,6 +22,23 @@ export default function TabPrincipal({ areas }: TabPrincipalProps) {
   const [searchTermArea, setSearchTermArea] = useState("");
   const [isAreaDropdownOpen, setIsAreaDropdownOpen] = useState(false);
   const [focusedAreaIndex, setFocusedAreaIndex] = useState(-1);
+
+  const idAreaAtual = watch("id_area_atuacao");
+
+  // ✨ ADICIONE ESTE USEEFFECT
+  useEffect(() => {
+    // Se existe um ID no form (vindo da edição), mas o texto de busca está vazio, 
+    // nós procuramos o nome da área e preenchemos o input visualmente.
+    if (idAreaAtual > 0 && areas.length > 0 && searchTermArea === "") {
+      const areaEncontrada = areas.find(
+        (a: any) => Number(a.id_area || a.id) === idAreaAtual
+      );
+
+      if (areaEncontrada) {
+        setSearchTermArea(areaEncontrada.nome);
+      }
+    }
+  }, [idAreaAtual, areas, searchTermArea]);
 
   const getFieldStatus = (fieldName: keyof VagaFormData) => {
     if (errors[fieldName])
@@ -97,11 +114,10 @@ export default function TabPrincipal({ areas }: TabPrincipalProps) {
           <input
             type="text"
             placeholder="Buscar área (Ex: TI, Comercial...)"
-            className={`w-full pl-12 pr-4 py-4 bg-gray-50 border rounded-[20px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 ${
-              errors.id_area_atuacao
+            className={`w-full pl-12 pr-4 py-4 bg-gray-50 border rounded-[20px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 ${errors.id_area_atuacao
                 ? "border-red-500 bg-red-50/30"
                 : "border-gray-100 focus:border-blue-500"
-            }`}
+              }`}
             value={searchTermArea}
             onChange={(e) => {
               setSearchTermArea(e.target.value);
@@ -140,11 +156,10 @@ export default function TabPrincipal({ areas }: TabPrincipalProps) {
                       aria-selected={isFocused}
                       onClick={() => selecionarArea(a)}
                       onMouseEnter={() => setFocusedAreaIndex(index)}
-                      className={`w-full text-left px-4 py-3 rounded-[16px] text-sm font-medium cursor-pointer transition-colors ${
-                        isFocused
+                      className={`w-full text-left px-4 py-3 rounded-[16px] text-sm font-medium cursor-pointer transition-colors ${isFocused
                           ? "bg-blue-50 text-blue-700"
                           : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
-                      }`}
+                        }`}
                     >
                       {a.nome}
                     </li>
@@ -254,6 +269,7 @@ export default function TabPrincipal({ areas }: TabPrincipalProps) {
             type="date"
             {...register("data_encerramento")}
             className={getFieldStatus("data_encerramento")}
+
             error={errors.data_encerramento?.message}
           />
           <p className="text-[10px] text-gray-500 ml-1">
