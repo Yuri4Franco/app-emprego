@@ -53,14 +53,14 @@ export default async function PerfilPublicoEmpresaPage({ params }: PageProps) {
           src={banner}
           alt="Banner"
           fill
-          className="object-cover"
+          className="object-content object-center"
           priority
         />
         <div className="absolute inset-0 bg-black/20" />
       </div>
 
       {/* 2. CONTAINER PRINCIPAL CENTRALIZADO */}
-      <div className="max-w-4xl mx-auto px-4 md:px-8 -mt-16 relative z-10">
+      <div className="max-w-4xl mx-auto px-4 md:px-8 relative z-10">
         {/* CABEÇALHO DA EMPRESA (Perfil Style) */}
         <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-xl shadow-gray-200/40 border border-gray-100 flex flex-col items-center text-center gap-6 mb-10">
           {/* Logotipo Redondo invadindo o banner */}

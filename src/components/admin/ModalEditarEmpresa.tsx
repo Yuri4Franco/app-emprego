@@ -9,30 +9,33 @@ import {
   HiOutlineX,
   HiOutlineSave,
   HiOutlineMap,
-  HiOutlineMail,
+  HiOutlineUserCircle,
+  HiOutlineKey,
 } from "react-icons/hi";
 import api from "@/src/services/api";
 import toast from "react-hot-toast";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
 
+// 1. Zod Schema Atualizado (Inclui Status e Usuário)
 const editarEmpresaSchema = z.object({
   razao_social: z.string().min(3, "Razão social obrigatória"),
   nome_fantasia: z.string().min(3, "Nome fantasia obrigatório"),
-  cnpj: z.string().min(18, "CNPJ incompleto"),
-  email_institucional: z
-    .string()
-    .email("E-mail inválido")
-    .nullable()
-    .or(z.literal("")),
+  cnpj: z.string().min(1, "CNPJ incompleto"),
   tipo_vinculo_aci: z.enum(["ASSOCIADA", "NAO_ASSOCIADA"]),
+  status: z.enum(["ATIVA", "INATIVA", "BLOQUEADA", "PENDENTE_APROVACAO"]).optional(), // Adapte se tiver outros status
   logradouro: z.string().min(3, "Rua obrigatória"),
   numero: z.string().min(1, "Nº obrigatório"),
   complemento: z.string().optional(),
-  cep: z.string().min(9, "CEP incompleto"),
+  cep: z.string().min(1, "CEP incompleto"),
   bairro: z.string().min(2, "Bairro obrigatório"),
   cidade: z.string().min(2, "Cidade obrigatória"),
   uf: z.string().length(2, "UF deve ter 2 caracteres"),
+
+  // Dados do Responsável
+  nome: z.string().min(3, "Nome inválido").optional().or(z.literal("")),
+  email: z.string().email("E-mail inválido").optional().or(z.literal("")),
+  senha: z.string().optional(), // Se preenchido, o service faz o hash e força troca
 });
 
 type EditarEmpresaFormData = z.infer<typeof editarEmpresaSchema>;
@@ -65,11 +68,15 @@ export function ModalEditarEmpresa({
 
   useEffect(() => {
     if (empresa && isOpen) {
+      // Pega o usuário master se existir no retorno do backend
+      const usuarioMaster = empresa.usuarios?.length > 0 ? empresa.usuarios.find((u: any) => u.is_master) || empresa.usuarios[0] : null;
+
       reset({
         cnpj: empresa.cnpj,
         razao_social: empresa.razao_social,
         nome_fantasia: empresa.nome_fantasia,
         tipo_vinculo_aci: empresa.tipo_vinculo_aci,
+        status: empresa.status || "ATIVA",
         logradouro: empresa.endereco?.logradouro || "",
         numero: empresa.endereco?.numero || "",
         complemento: empresa.endereco?.complemento || "",
@@ -77,6 +84,10 @@ export function ModalEditarEmpresa({
         bairro: empresa.endereco?.bairro || "",
         cidade: empresa.endereco?.cidade || "",
         uf: empresa.endereco?.uf || "",
+        // Preenche o responsável
+        nome: usuarioMaster?.nome || "",
+        email: usuarioMaster?.email || "",
+        senha: "", // Sempre inicia vazio por segurança
       });
     }
   }, [empresa, isOpen, reset]);
@@ -85,14 +96,19 @@ export function ModalEditarEmpresa({
 
   const onSubmit = async (data: EditarEmpresaFormData) => {
     setIsLoading(true);
+
+    // Remove a senha se estiver vazia para não sobrescrever com "" no banco
+    const payload = { ...data };
+    if (!payload.senha) delete payload.senha;
+
     await toast.promise(
-      api.put(`/admin/empresas/${empresa.id_empresa}`, data),
+      api.put(`/admin/empresas/${empresa.id_empresa}`, payload),
       {
         loading: "Salvando alterações...",
         success: () => {
           onSuccess();
           onClose();
-          return "Dados da empresa atualizados!";
+          return "Dados da empresa atualizados com sucesso!";
         },
         error: (err) => err.response?.data?.error || "Erro ao atualizar dados.",
       },
@@ -120,25 +136,20 @@ export function ModalEditarEmpresa({
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
       <div className="bg-white w-full max-w-3xl rounded-[32px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+
         {/* Header */}
         <div className="p-6 border-b border-gray-50 flex justify-between items-center shrink-0">
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <HiOutlineOfficeBuilding className="text-blue-600" /> Editar Dados
-            da Empresa
+            <HiOutlineOfficeBuilding className="text-blue-600" /> Editar Dados da Empresa
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 transition-colors">
             <HiOutlineX size={20} />
           </button>
         </div>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="overflow-y-auto p-8 space-y-8 custom-scrollbar"
-        >
-          {/* Seção 1: Identificação */}
+        <form onSubmit={handleSubmit(onSubmit)} className="overflow-y-auto p-8 space-y-10 custom-scrollbar">
+
+          {/* ==================== SEÇÃO 1: IDENTIFICAÇÃO ==================== */}
           <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="col-span-full flex items-center gap-2 text-blue-700 font-bold text-[10px] uppercase tracking-[0.2em]">
               <HiOutlineOfficeBuilding size={14} /> Dados Institucionais
@@ -149,40 +160,20 @@ export function ModalEditarEmpresa({
               placeholder="00.000.000/0000-00"
               {...register("cnpj")}
               error={errors.cnpj?.message}
-              onChange={(e) =>
-                setValue("cnpj", maskCNPJ(e.target.value), {
-                  shouldValidate: true,
-                })
-              }
+              onChange={(e) => setValue("cnpj", maskCNPJ(e.target.value), { shouldValidate: true })}
             />
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Vínculo com a ACI
-              </label>
-              <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100 h-[46px]">
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={watch("tipo_vinculo_aci") === "ASSOCIADA"}
-                    onChange={(e) =>
-                      setValue(
-                        "tipo_vinculo_aci",
-                        e.target.checked ? "ASSOCIADA" : "NAO_ASSOCIADA",
-                      )
-                    }
-                  />
-                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-                <span
-                  className={`text-xs font-bold transition-colors ${watch("tipo_vinculo_aci") === "ASSOCIADA" ? "text-blue-700" : "text-gray-500"}`}
-                >
-                  {watch("tipo_vinculo_aci") === "ASSOCIADA"
-                    ? "Empresa Associada"
-                    : "Não Associada"}
-                </span>
-              </div>
+              <label className="text-sm font-semibold text-gray-700">Status da Conta</label>
+              <select
+                {...register("status")}
+                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm focus:border-blue-500 transition-all font-medium text-gray-700"
+              >
+                <option value="ATIVA">Ativa</option>
+                <option value="PENDENTE_APROVACAO">Pendente de Aprovação</option>
+                <option value="BLOQUEADA">Bloqueada</option>
+                <option value="INATIVA">Inativa</option>
+              </select>
             </div>
 
             <Input
@@ -191,20 +182,76 @@ export function ModalEditarEmpresa({
               {...register("nome_fantasia")}
               error={errors.nome_fantasia?.message}
             />
+
             <Input
               label="Razão Social"
               placeholder="Ex: Associação Comercial e Industrial"
               {...register("razao_social")}
               error={errors.razao_social?.message}
             />
+
+            <div className="col-span-full flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700">Vínculo com a ACI</label>
+              <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100 h-[46px] w-fit pr-6">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={watch("tipo_vinculo_aci") === "ASSOCIADA"}
+                    onChange={(e) => setValue("tipo_vinculo_aci", e.target.checked ? "ASSOCIADA" : "NAO_ASSOCIADA")}
+                  />
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+                <span className={`text-xs font-bold transition-colors ${watch("tipo_vinculo_aci") === "ASSOCIADA" ? "text-blue-700" : "text-gray-500"}`}>
+                  {watch("tipo_vinculo_aci") === "ASSOCIADA" ? "Empresa Associada" : "Não Associada"}
+                </span>
+              </div>
+            </div>
           </section>
 
           <hr className="border-gray-100" />
 
-          {/* Seção 2: Endereço */}
+          {/* ==================== SEÇÃO 2: RESPONSÁVEL ==================== */}
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 p-6 rounded-[24px] border border-gray-100">
+            <div className="col-span-full flex items-center gap-2 text-indigo-700 font-bold text-[10px] uppercase tracking-[0.2em] mb-1">
+              <HiOutlineUserCircle size={16} /> Acesso do Responsável (Master)
+            </div>
+
+            <Input
+              label="Nome Completo"
+              placeholder="Nome do usuário"
+              {...register("nome")}
+              error={errors.nome?.message}
+            />
+
+            <Input
+              label="E-mail de Acesso"
+              type="email"
+              placeholder="email@empresa.com"
+              {...register("email")}
+              error={errors.email?.message}
+            />
+
+            <div className="col-span-full">
+              <Input
+                label="Redefinir Senha (Opcional)"
+                type="text"
+                placeholder="Digite para forçar uma nova senha..."
+                {...register("senha")}
+                error={errors.senha?.message}
+              />
+              <p className="text-[10px] text-gray-500 mt-1.5 flex items-center gap-1 font-medium">
+                <HiOutlineKey size={12} /> Se preenchido, a senha será alterada e o usuário será obrigado a criar uma nova no próximo login.
+              </p>
+            </div>
+          </section>
+
+          <hr className="border-gray-100" />
+
+          {/* ==================== SEÇÃO 3: ENDEREÇO ==================== */}
           <section className="grid grid-cols-1 md:grid-cols-6 gap-6">
             <div className="col-span-full flex items-center gap-2 text-blue-700 font-bold text-[10px] uppercase tracking-[0.2em]">
-              <HiOutlineMap size={14} /> Localização e Endereço
+              <HiOutlineMap size={14} /> Endereço Completo
             </div>
 
             <div className="md:col-span-2">
@@ -213,11 +260,7 @@ export function ModalEditarEmpresa({
                 placeholder="00000-000"
                 {...register("cep")}
                 error={errors.cep?.message}
-                onChange={(e) =>
-                  setValue("cep", maskCEP(e.target.value), {
-                    shouldValidate: true,
-                  })
-                }
+                onChange={(e) => setValue("cep", maskCEP(e.target.value), { shouldValidate: true })}
               />
             </div>
 
@@ -276,7 +319,7 @@ export function ModalEditarEmpresa({
             </div>
           </section>
 
-          {/* Footer Ações */}
+          {/* ==================== FOOTER ==================== */}
           <div className="pt-4 flex flex-col md:flex-row gap-3">
             <ButtonType
               type="submit"
@@ -284,12 +327,17 @@ export function ModalEditarEmpresa({
               className="flex-1 py-4 flex items-center justify-center gap-2 shadow-lg shadow-blue-100"
               disabled={isLoading}
             >
-              <HiOutlineSave size={20} /> Salvar Alterações
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <><HiOutlineSave size={20} /> Salvar Alterações</>
+              )}
             </ButtonType>
             <button
               type="button"
               onClick={onClose}
-              className="px-8 py-4 text-sm font-bold text-gray-400 hover:text-gray-600 transition-all rounded-xl hover:bg-gray-50"
+              disabled={isLoading}
+              className="px-8 py-4 text-sm font-bold text-gray-500 hover:text-gray-700 transition-all rounded-xl hover:bg-gray-100 disabled:opacity-50"
             >
               Cancelar
             </button>

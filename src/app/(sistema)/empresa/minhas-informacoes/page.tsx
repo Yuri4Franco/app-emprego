@@ -306,7 +306,7 @@ export default function MinhasInformacoesPage() {
 
             <div className="space-y-6">
               <Input
-                label="Nome Fantasia (Como os candidatos verão)"
+                label="Nome Fantasia"
                 placeholder="Ex: ACI Soluções Tecnológicas"
                 {...register("nome_fantasia")}
                 error={errors.nome_fantasia?.message}
