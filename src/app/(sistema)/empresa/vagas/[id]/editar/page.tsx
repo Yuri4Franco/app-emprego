@@ -94,7 +94,7 @@ export default function EditarVagaPage({
         const [resAreas, resBen, resVaga] = await Promise.all([
           api.get("/taxonomia/areas"),
           api.get("/taxonomia/beneficios"),
-          api.get(`/vagas/${vagaId}`),
+          api.get(`/empresa/vagas/${vagaId}`),
         ]);
 
         setAreas(resAreas.data);
@@ -116,17 +116,18 @@ export default function EditarVagaPage({
           vaga.beneficios?.map(
             (b: any) => b.id_beneficio || b.beneficio?.id_beneficio,
           ) || [];
-
-
-
         const etapasIntermediarias = (vaga.etapas || [])
-          .filter((e: any) => e.nome !== "Inscritos" && e.nome !== "Aprovados")
+          // 1. Mudamos de e.nome para e.nome_etapa para bater com o JSON do backend
+          .filter(
+            (e: any) =>
+              e.nome_etapa !== "Inscritos" && e.nome_etapa !== "Aprovados",
+          )
           .sort((a: any, b: any) => a.ordem - b.ordem)
+          // 2. Mapeamos a propriedade correta do backend para o formato 'nome' que o Zod/Form espera
           .map((e: any) => ({
-            nome: e.nome,
-            requer_agendamento: Boolean(e.requer_agendamento)
+            nome: String(e.nome_etapa), // 👈 Aqui pegamos e.nome_etapa!
+            requer_agendamento: Boolean(e.requer_agendamento),
           }));
-
 
         const dataEncerramentoFormatada = vaga.data_encerramento
           ? vaga.data_encerramento.split("T")[0]
@@ -156,7 +157,10 @@ export default function EditarVagaPage({
           tipo_diversidade: vaga.tipo_diversidade || "AMPLA_CONCORRENCIA",
           beneficios_ids: beneficiosMapeados,
 
-          etapas: etapasIntermediarias,
+          etapas:
+            etapasIntermediarias.length > 0
+              ? etapasIntermediarias
+              : [{ nome: "Entrevista", requer_agendamento: true }],
         });
       } catch (error) {
         toast.error("Erro ao carregar os dados da vaga.");
@@ -212,12 +216,7 @@ export default function EditarVagaPage({
         "modelo_trabalho",
         "tipo_contrato",
       ],
-      descricao: [
-        "descricao",
-        "responsabilidades",
-        "cidade",
-        "uf",
-      ],
+      descricao: ["descricao", "responsabilidades", "cidade", "uf"],
       etapas: ["etapas"],
     };
 
@@ -378,12 +377,7 @@ export default function EditarVagaPage({
             icon: <HiOutlineMap />,
             isOk: statusAbas.descricao,
             hasError: Object.keys(errors).some((k) =>
-              [
-                "descricao",
-                "responsabilidades",
-                "cidade",
-                "uf",
-              ].includes(k),
+              ["descricao", "responsabilidades", "cidade", "uf"].includes(k),
             ),
           },
           {
@@ -412,12 +406,13 @@ export default function EditarVagaPage({
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id as any)}
-            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${activeTab === tab.id
-              ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
-              : tab.hasError
-                ? "text-red-500 hover:bg-red-50 border-b-2 border-transparent"
-                : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
-              }`}
+            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${
+              activeTab === tab.id
+                ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
+                : tab.hasError
+                  ? "text-red-500 hover:bg-red-50 border-b-2 border-transparent"
+                  : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
+            }`}
           >
             <span className="flex items-center gap-1.5 md:gap-2 relative z-10">
               {tab.icon} {tab.label}
