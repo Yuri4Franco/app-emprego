@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import api from "@/src/services/api";
 import toast from "react-hot-toast";
 import {
@@ -27,7 +28,19 @@ interface ModeracaoState {
 }
 
 export default function AdminVagasPage() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("EM_ANALISE");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const urlTab = searchParams.get("tab") as ActiveTab | null;
+  const [activeTab, setActiveTab] = useState<ActiveTab>(
+    urlTab === "EM_ANALISE" ||
+      urlTab === "AGUARDANDO_PAGAMENTO" ||
+      urlTab === "TODAS"
+      ? urlTab
+      : "EM_ANALISE",
+  );
+
   const [todasPendencias, setTodasPendencias] = useState<any[]>([]);
   const [vagasTodas, setVagasTodas] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,6 +55,23 @@ export default function AdminVagasPage() {
   });
   const [motivo, setMotivo] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleTabChange = (tabId: ActiveTab) => {
+    setActiveTab(tabId);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tabId);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  useEffect(() => {
+    if (
+      urlTab === "EM_ANALISE" ||
+      urlTab === "AGUARDANDO_PAGAMENTO" ||
+      urlTab === "TODAS"
+    ) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
 
   const carregarVagas = useCallback(async () => {
     setIsLoading(true);
@@ -159,7 +189,7 @@ export default function AdminVagasPage() {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as ActiveTab)}
+            onClick={() => handleTabChange(tab.id as ActiveTab)}
             className={`flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all ${
               activeTab === tab.id
                 ? "bg-white shadow-sm text-gray-900"
@@ -213,13 +243,19 @@ export default function AdminVagasPage() {
                     Criada em
                   </p>
                   <p className="text-xs font-bold text-gray-700">
-                    {formatarData(vaga.criado_em)}
+                    {formatarData(vaga.criado_em || vaga.createdAt)}
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button className="p-3 text-gray-400 hover:bg-gray-100 rounded-xl transition-colors">
+                  {/* ✨ BOTÃO DE VER REDIRECIONANDO PARA A PÁGINA */}
+                  <button
+                    onClick={() => router.push(`/admin/vagas/${vaga.id_vaga}`)}
+                    className="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+                    title="Analisar Detalhes da Vaga"
+                  >
                     <HiOutlineEye size={20} />
                   </button>
+
                   {activeTab === "EM_ANALISE" && (
                     <>
                       <button

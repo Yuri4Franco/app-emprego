@@ -1,8 +1,14 @@
 "use client";
 
+import { TabAreasAtuacao } from "@/src/components/admin/catalogo/TabAreas";
+import { TabBeneficios } from "@/src/components/admin/catalogo/TabBeneficios";
 import TabCompetencias from "@/src/components/admin/catalogo/TabCompetencias";
 import { useState } from "react";
-import { HiOutlineLightningBolt, HiOutlineBriefcase, HiOutlineHeart } from "react-icons/hi";
+import {
+  HiOutlineLightningBolt,
+  HiOutlineBriefcase,
+  HiOutlineHeart,
+} from "react-icons/hi";
 
 export default function CatalogoAdminPage() {
   const [activeTab, setActiveTab] = useState("competencias");
@@ -55,12 +61,8 @@ export default function CatalogoAdminPage() {
       {/* CONTEÚDO DA ABA */}
       <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 p-6 md:p-8 min-h-[500px]">
         {activeTab === "competencias" && <TabCompetencias />}
-        {activeTab === "areas" && (
-          <div className="text-gray-400 font-bold text-center py-20">Em construção: Áreas de Atuação</div>
-        )}
-        {activeTab === "beneficios" && (
-          <div className="text-gray-400 font-bold text-center py-20">Em construção: Benefícios</div>
-        )}
+        {activeTab === "areas" && <TabAreasAtuacao />}
+        {activeTab === "beneficios" && <TabBeneficios />}
       </div>
     </div>
   );

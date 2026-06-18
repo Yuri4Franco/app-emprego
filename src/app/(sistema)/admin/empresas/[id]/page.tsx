@@ -272,7 +272,7 @@ export default function DetalhesEmpresaPage() {
                           {vaga.titulo}
                         </td>
                         <td className="px-8 py-4 text-xs text-gray-500 font-medium">
-                          {new Date(vaga.criado_em).toLocaleDateString("pt-BR")}
+                          {new Date(vaga.criada_em).toLocaleDateString("pt-BR")}
                         </td>
                         <td className="px-8 py-4">
                           <span className="bg-gray-100 border border-gray-200 text-gray-600 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest">

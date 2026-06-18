@@ -68,17 +68,10 @@ export default function AdminDashboardPage() {
       {/* 2. CARDS DE PENDÊNCIAS (Links diretos) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <PendenciaCard
-          title="Empresas"
-          count={data.pendencias.empresasAguardando}
-          label="Aguardando Aprovação"
-          link="/admin/empresas?status=PENDENTE"
-          color="border-purple-200"
-        />
-        <PendenciaCard
           title="Vagas"
           count={data.pendencias.vagasEmAnalise}
           label="Em Análise"
-          link="/admin/vagas?status=EM_ANALISE"
+          link="/admin/vagas?tab=EM_ANALISE"
           color="border-blue-200"
         />
         <PendenciaCard
@@ -92,7 +85,7 @@ export default function AdminDashboardPage() {
           title="Financeiro"
           count={data.pendencias.pagamentosAguardando}
           label="Pagamentos"
-          link="/admin/financeiro"
+          link="/admin/vagas?tab=AGUARDANDO_PAGAMENTO"
           color="border-emerald-200"
         />
       </div>
