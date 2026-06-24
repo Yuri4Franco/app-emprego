@@ -27,133 +27,131 @@ interface ModeracaoState {
   vaga: any | null;
 }
 
+function AdminVagasContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
-const searchParams = useSearchParams();
-const router = useRouter();
-const pathname = usePathname();
-
-const urlTab = searchParams.get("tab") as ActiveTab | null;
-const [activeTab, setActiveTab] = useState<ActiveTab>(
-  urlTab === "EM_ANALISE" ||
-    urlTab === "AGUARDANDO_PAGAMENTO" ||
-    urlTab === "TODAS"
-    ? urlTab
-    : "EM_ANALISE",
-);
-
-const [todasPendencias, setTodasPendencias] = useState<any[]>([]);
-const [vagasTodas, setVagasTodas] = useState<any[]>([]);
-const [isLoading, setIsLoading] = useState(true);
-
-const [busca, setBusca] = useState("");
-const [termoBuscado, setTermoBuscado] = useState("");
-
-const [moderacao, setModeracao] = useState<ModeracaoState>({
-  isOpen: false,
-  tipo: null,
-  vaga: null,
-});
-const [motivo, setMotivo] = useState("");
-const [isSubmitting, setIsSubmitting] = useState(false);
-
-const handleTabChange = (tabId: ActiveTab) => {
-  setActiveTab(tabId);
-  const params = new URLSearchParams(searchParams.toString());
-  params.set("tab", tabId);
-  router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-};
-
-useEffect(() => {
-  if (
+  const urlTab = searchParams.get("tab") as ActiveTab | null;
+  const [activeTab, setActiveTab] = useState<ActiveTab>(
     urlTab === "EM_ANALISE" ||
-    urlTab === "AGUARDANDO_PAGAMENTO" ||
-    urlTab === "TODAS"
-  ) {
-    setActiveTab(urlTab);
-  }
-}, [urlTab]);
+      urlTab === "AGUARDANDO_PAGAMENTO" ||
+      urlTab === "TODAS"
+      ? urlTab
+      : "EM_ANALISE",
+  );
 
-const carregarVagas = useCallback(async () => {
-  setIsLoading(true);
-  try {
-    const [resPendentes, resTodas] = await Promise.all([
-      api.get("/admin/vagas/pendentes"),
-      api.get("/admin/vagas", {
-        params: { busca: termoBuscado || undefined },
-      }),
-    ]);
-    setTodasPendencias(resPendentes.data.data || []);
-    setVagasTodas(resTodas.data.dados || resTodas.data.data || []);
-  } catch (error) {
-    toast.error("Erro ao carregar as vagas.");
-  } finally {
-    setIsLoading(false);
-  }
-}, [termoBuscado]);
+  const [todasPendencias, setTodasPendencias] = useState<any[]>([]);
+  const [vagasTodas, setVagasTodas] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-useEffect(() => {
-  carregarVagas();
-}, [carregarVagas]);
+  const [busca, setBusca] = useState("");
+  const [termoBuscado, setTermoBuscado] = useState("");
 
-const vagasExibidas =
-  activeTab === "TODAS"
-    ? vagasTodas
-    : todasPendencias.filter((v: any) => v.status === activeTab);
-
-const handleBusca = () => setTermoBuscado(busca);
-
-const formatarData = (isoDate: string) => {
-  if (!isoDate) return "-";
-  return new Date(isoDate).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  const [moderacao, setModeracao] = useState<ModeracaoState>({
+    isOpen: false,
+    tipo: null,
+    vaga: null,
   });
-};
+  const [motivo, setMotivo] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-const abrirModalAcao = (vaga: any, tipo: ModeracaoAcao) => {
-  setModeracao({ isOpen: true, tipo, vaga });
-  setMotivo("");
-};
+  const handleTabChange = (tabId: ActiveTab) => {
+    setActiveTab(tabId);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tabId);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
-const fecharModal = () => {
-  setModeracao({ isOpen: false, tipo: null, vaga: null });
-  setMotivo("");
-};
-
-const executarAcao = async () => {
-  if (!moderacao.vaga || !moderacao.tipo) return;
-  if (moderacao.tipo === "REPROVAR" && motivo.trim().length < 5) {
-    toast.error("Por favor, informe um motivo válido.");
-    return;
-  }
-
-  setIsSubmitting(true);
-  try {
-    if (moderacao.tipo === "CONFIRMAR_PAGAMENTO") {
-      await api.patch(
-        `/admin/vagas/${moderacao.vaga.id_vaga}/confirmar-pagamento`,
-      );
-      toast.success("Pagamento confirmado!");
-    } else {
-      await api.patch(`/admin/vagas/${moderacao.vaga.id_vaga}/moderacao`, {
-        acao: moderacao.tipo,
-        motivo: motivo.trim() || "não informado",
-      });
-      toast.success("Ação concluída!");
+  useEffect(() => {
+    if (
+      urlTab === "EM_ANALISE" ||
+      urlTab === "AGUARDANDO_PAGAMENTO" ||
+      urlTab === "TODAS"
+    ) {
+      setActiveTab(urlTab);
     }
-    fecharModal();
-    carregarVagas();
-  } catch (error: any) {
-    toast.error(error.response?.data?.error || "Erro ao processar.");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  }, [urlTab]);
 
-export default function AdminVagasPage() {
+  const carregarVagas = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [resPendentes, resTodas] = await Promise.all([
+        api.get("/admin/vagas/pendentes"),
+        api.get("/admin/vagas", {
+          params: { busca: termoBuscado || undefined },
+        }),
+      ]);
+      setTodasPendencias(resPendentes.data.data || []);
+      setVagasTodas(resTodas.data.dados || resTodas.data.data || []);
+    } catch (error) {
+      toast.error("Erro ao carregar as vagas.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [termoBuscado]);
+
+  useEffect(() => {
+    carregarVagas();
+  }, [carregarVagas]);
+
+  const vagasExibidas =
+    activeTab === "TODAS"
+      ? vagasTodas
+      : todasPendencias.filter((v: any) => v.status === activeTab);
+
+  const handleBusca = () => setTermoBuscado(busca);
+
+  const formatarData = (isoDate: string) => {
+    if (!isoDate) return "-";
+    return new Date(isoDate).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const abrirModalAcao = (vaga: any, tipo: ModeracaoAcao) => {
+    setModeracao({ isOpen: true, tipo, vaga });
+    setMotivo("");
+  };
+
+  const fecharModal = () => {
+    setModeracao({ isOpen: false, tipo: null, vaga: null });
+    setMotivo("");
+  };
+
+  const executarAcao = async () => {
+    if (!moderacao.vaga || !moderacao.tipo) return;
+    if (moderacao.tipo === "REPROVAR" && motivo.trim().length < 5) {
+      toast.error("Por favor, informe um motivo válido.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (moderacao.tipo === "CONFIRMAR_PAGAMENTO") {
+        await api.patch(
+          `/admin/vagas/${moderacao.vaga.id_vaga}/confirmar-pagamento`,
+        );
+        toast.success("Pagamento confirmado!");
+      } else {
+        await api.patch(`/admin/vagas/${moderacao.vaga.id_vaga}/moderacao`, {
+          acao: moderacao.tipo,
+          motivo: motivo.trim() || "não informado",
+        });
+        toast.success("Ação concluída!");
+      }
+      fecharModal();
+      carregarVagas();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Erro ao processar.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Suspense fallback={
@@ -335,6 +333,19 @@ export default function AdminVagasPage() {
           </div>
         )}
       </div>
+    </Suspense>
+  );
+}
+
+
+export default function AdminVagasPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center p-20 text-gray-400">
+        Carregando interface...
+      </div>
+    }>
+      <AdminVagasContent />
     </Suspense>
   );
 }
