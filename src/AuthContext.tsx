@@ -33,7 +33,7 @@ interface PerfilCompleto {
   nome: string;
   email: string;
   tipo_usuario: string;
-  empresa?: EmpresaPerfil; // Opcional pois candidatos não têm empresa
+  empresa?: EmpresaPerfil;
 }
 
 interface AuthContextData {
@@ -52,28 +52,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [perfil, setPerfil] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname(); // Usamos o pathname para detectar mudanças de rota
+  const pathname = usePathname();
 
   const isAuthenticated = !!user;
 
+  // Logout modificado para verificar dinamicamente a origem/regra da empresa
   const logout = useCallback(() => {
+    const isEmpresa = user?.role === "EMPRESA" || pathname.startsWith("/empresa") || pathname === "/entrar-empresa";
+
     Cookies.remove("aci_token");
     Cookies.remove("user_role");
     Cookies.remove("exigir_troca_senha");
     setUser(null);
     setPerfil(null);
-    router.push("/entrar");
-  }, [router]);
 
-  // Função isolada para buscar o perfil, assim podemos chamá-la de vários lugares
+    if (isEmpresa) {
+      router.push("/entrar-empresa");
+    } else {
+      router.push("/entrar");
+    }
+  }, [router, user, pathname]);
+
   const fetchPerfil = async () => {
     try {
       const { data } = await api.get("/me");
       setPerfil(data);
       return data;
     } catch (error: any) {
-      // Se der erro 401, o nosso interceptor já vai chutar o cara pro /entrar.
-      // O que precisamos fazer aqui é só zerar os estados da memória.
       if (error.response?.status === 401) {
         setUser(null);
         setPerfil(null);
@@ -111,8 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     carregarSessao();
   }, []);
 
-  // 2. O "OUVINTE" DE SEGURANÇA (A Mágica)
-  // Sempre que a rota mudar, se o usuário estiver logado mas o perfil estiver vazio, ele busca!
+  // 2. O OUVINTE DE SEGURANÇA
   useEffect(() => {
     if (isAuthenticated && !perfil && !isLoading) {
       fetchPerfil();
@@ -120,10 +124,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [pathname, isAuthenticated, perfil, isLoading]);
 
   useEffect(() => {
-    // Só faz a verificação depois que o carregamento inicial (isLoading) terminar
     if (!isLoading && isAuthenticated && user) {
       if (user.exigir_troca_senha && pathname !== "/trocar-senha") {
-        // Se exige troca e ele NÃO está na página de troca, chuta ele pra lá
         router.push("/trocar-senha");
       }
     }
@@ -151,10 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       setUser(userData);
-
-      // Busca o perfil antes de navegar
       await fetchPerfil();
-
       setIsLoading(false);
 
       if (userData.exigir_troca_senha) {

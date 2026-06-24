@@ -221,7 +221,7 @@ export default function MinhasInformacoesPage() {
         </div>
 
         {/* 2. CONTAINER CENTRALIZADO COM LOGO E TEXTOS */}
-        <div className="max-w-4xl mx-auto px-4 md:px-8 -mt-20 relative z-10 mb-12">
+        <div className="max-w-4xl mx-auto px-4 md:px-8 -mt-12 relative z-10 mb-12">
           <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-xl shadow-gray-200/40 border border-gray-100 flex flex-col items-center text-center gap-5">
             {/* LOGO SOBREPOSTA CENTRALIZADA */}
             <div className="w-36 h-36 md:w-44 md:h-44 bg-white rounded-full p-1.5 border-2 border-white shadow-xl -mt-28 md:-mt-32 relative shrink-0 group">

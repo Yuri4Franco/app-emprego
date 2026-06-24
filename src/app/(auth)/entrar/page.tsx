@@ -72,14 +72,6 @@ export default function LoginCandidatoPage() {
 
       const { token, tipo } = response.data.data;
 
-      // Se por acaso uma empresa tentar logar pelo portal do candidato, nós barramos aqui para manter a separação
-      if (tipo === "EMPRESA") {
-        setErrorMessage(
-          "Por favor, acesse o portal de empresas para fazer login.",
-        );
-        setIsLoading(false);
-        return;
-      }
 
       if (data.remember) {
         localStorage.setItem("@aci:remembered_email", data.email);
@@ -97,7 +89,11 @@ export default function LoginCandidatoPage() {
 
       if (tipo === "ADM") {
         router.push("/admin/dashboard");
-      } else {
+      }
+      if (tipo === "EMPRESA") {
+        router.push("/empresa/dashboard");
+      } 
+      else {
         router.push("/candidato/inicio");
       }
     } catch (error: any) {

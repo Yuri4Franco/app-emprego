@@ -15,6 +15,7 @@ import {
 import { FaInstagram, FaLinkedin, FaFacebook } from "react-icons/fa";
 import logoDefault from "@/src/assets/default/logo.webp";
 import bannerDefault from "@/src/assets/default/banner.webp";
+import { HiOutlineArrowRight } from "react-icons/hi2";
 
 interface VagaDetalhesContentProps {
   vaga: any;
@@ -107,19 +108,19 @@ export default function VagaDetalhesContent({
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* 1. BANNER */}
-      <div className="w-full h-64 md:h-80 relative overflow-hidden">
+      <div className="w-full h-64 md:h-96 lg:h-[420px] relative bg-gray-900 flex items-center justify-center">
         <Image
           src={banner}
-          alt="Banner"
+          alt={`Banner da ${empresa?.nome_fantasia || "Empresa Confidencial"}`}
           fill
-          className="object-cover"
+          className="object-cover object-center opacity-90"
           priority
         />
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
       </div>
 
       {/* 2. CONTAINER CENTRALIZADO */}
-      <div className="max-w-4xl mx-auto px-4 md:px-8 -mt-16 relative z-10">
+      <div className="max-w-4xl mx-auto px-4 md:px-8 -mt-12 relative z-10">
         <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-xl shadow-gray-200/40 border border-gray-100 flex flex-col items-center text-center gap-6 mb-10">
           <div className="w-32 h-32 md:w-40 md:h-40 bg-white rounded-full p-1.5 border-2 border-white shadow-xl -mt-24 relative shrink-0">
             <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-50 flex items-center justify-center">
@@ -191,18 +192,16 @@ export default function VagaDetalhesContent({
             {vaga.tipo_diversidade &&
               vaga.tipo_diversidade !== "AMPLA_CONCORRENCIA" && (
                 <div
-                  className={`w-full p-6 rounded-3xl border flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 mt-6 ${
-                    vaga.tipo_diversidade === "EXCLUSIVA_PCD"
-                      ? "bg-purple-50/60 border-purple-200 text-purple-950"
-                      : "bg-blue-50/40 border-blue-200 text-blue-950"
-                  }`}
+                  className={`w-full p-6 rounded-3xl border flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 mt-6 ${vaga.tipo_diversidade === "EXCLUSIVA_PCD"
+                    ? "bg-purple-50/60 border-purple-200 text-purple-950"
+                    : "bg-blue-50/40 border-blue-200 text-blue-950"
+                    }`}
                 >
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-white shadow-sm border ${
-                      vaga.tipo_diversidade === "EXCLUSIVA_PCD"
-                        ? "border-purple-200 text-purple-600"
-                        : "border-blue-200 text-blue-600"
-                    }`}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-white shadow-sm border ${vaga.tipo_diversidade === "EXCLUSIVA_PCD"
+                      ? "border-purple-200 text-purple-600"
+                      : "border-blue-200 text-blue-600"
+                      }`}
                   >
                     <HiOutlineInformationCircle size={24} />
                   </div>
@@ -320,9 +319,8 @@ export default function VagaDetalhesContent({
                     >
                       {/* Bolinha da Timeline */}
                       <span
-                        className={`absolute -left-[11px] top-1 w-5 h-5 rounded-full flex items-center justify-center border-4 border-white ${
-                          isUltima ? "bg-emerald-500" : "bg-blue-500"
-                        }`}
+                        className={`absolute -left-[11px] top-1 w-5 h-5 rounded-full flex items-center justify-center border-4 border-white ${isUltima ? "bg-emerald-500" : "bg-blue-500"
+                          }`}
                       ></span>
 
                       <h4 className="text-base font-bold text-gray-800">
@@ -397,40 +395,41 @@ export default function VagaDetalhesContent({
               </h2>
               {!isConfidencial && empresa ? (
                 <div className="space-y-8">
+                  {/* Texto "Quem Somos" com tipografia refinada */}
                   <div
-                    className="rich-text text-gray-300 leading-relaxed text-lg max-w-3xl"
+                    className="rich-text text-gray-200 leading-relaxed text-lg max-w-3xl"
                     dangerouslySetInnerHTML={{ __html: empresa.quem_somos }}
                   />
-                  <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-gray-700/50">
-                    <SocialLink
-                      href={formatSocialUrl("https://", empresa.site)}
-                      icon={<HiOutlineGlobeAlt size={20} />}
-                      label="Website"
-                    />
-                    <SocialLink
-                      href={formatSocialUrl(
-                        "https://linkedin.com/in/",
-                        empresa.linkedin,
+
+                  {/* Área de Ações */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-6 pt-6 border-t border-gray-200">
+
+                    {/* Grupo de Social Links (Ícones circulares minimalistas) */}
+                    <div className="flex items-center gap-3">
+                      {empresa.site && (
+                        <SocialLink href={formatSocialUrl("https://", empresa.site)} icon={<HiOutlineGlobeAlt size={20} />} />
                       )}
-                      icon={<FaLinkedin size={20} />}
-                      label="LinkedIn"
-                    />
-                    <SocialLink
-                      href={formatSocialUrl(
-                        "https://instagram.com/",
-                        empresa.instagram,
+                      {empresa.linkedin && (
+                        <SocialLink href={formatSocialUrl("https://linkedin.com/in/", empresa.linkedin)} icon={<FaLinkedin size={20} />} />
                       )}
-                      icon={<FaInstagram size={20} />}
-                      label="Instagram"
-                    />
-                    <SocialLink
-                      href={formatSocialUrl(
-                        "https://facebook.com/",
-                        empresa.facebook,
+                      {empresa.instagram && (
+                        <SocialLink href={formatSocialUrl("https://instagram.com/", empresa.instagram)} icon={<FaInstagram size={20} />} />
                       )}
-                      icon={<FaFacebook size={20} />}
-                      label="Facebook"
-                    />
+                      {empresa.facebook && (
+                        <SocialLink href={formatSocialUrl("https://facebook.com/", empresa.facebook)} icon={<FaFacebook size={20} />} />
+                      )}
+                    </div>
+
+                    {/* Botão Premium "Ver todas as vagas" */}
+                    <a
+                      href={`https://acivagas.com.br/${empresa.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 hover:bg-blue-600 text-white rounded-2xl transition-all duration-300 font-bold shadow-lg hover:shadow-blue-500/20"
+                    >
+                      Ver todas as vagas
+                      <HiOutlineArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+                    </a>
                   </div>
                 </div>
               ) : (
@@ -508,16 +507,15 @@ function SubSection({
   );
 }
 
-function SocialLink({ href, icon, label }: any) {
-  if (href === "#") return null;
+function SocialLink({ href, icon }: { href: string; icon: React.ReactNode }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 px-5 py-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-sm font-bold text-white"
+      className="p-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all hover:scale-110"
     >
-      {icon} {label}
+      {icon}
     </a>
   );
 }
