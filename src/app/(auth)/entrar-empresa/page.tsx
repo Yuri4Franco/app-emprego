@@ -113,7 +113,7 @@ export default function LoginEmpresaPage() {
       {/* LADO ESQUERDO: FORMULÁRIO */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-white relative">
         <div className="absolute top-6 right-8">
-          <Link href="/entrar" className="text-xs font-bold text-gray-400 hover:text-blue-600 transition-colors uppercase tracking-widest">
+          <Link href="/entrar" className="text-xs font-bold text-gray-400 hover:text-primary transition-colors uppercase tracking-widest">
             Acesso para Candidatos →
           </Link>
         </div>
@@ -163,7 +163,7 @@ export default function LoginEmpresaPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-[38px] text-gray-400 hover:text-blue-600 transition-colors"
+                className="absolute right-3 top-[38px] text-gray-400 hover:text-primary transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? (
@@ -179,7 +179,7 @@ export default function LoginEmpresaPage() {
                 <input
                   type="checkbox"
                   {...register("remember")}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-blue-500 cursor-pointer"
                 />
                 <span className="text-gray-500 font-medium group-hover:text-gray-900 transition-colors">
                   Lembrar acesso
@@ -187,7 +187,7 @@ export default function LoginEmpresaPage() {
               </label>
               <Link
                 href="/recuperar-senha"
-                className="text-blue-600 font-bold hover:underline"
+                className="text-primary font-bold hover:underline"
               >
                 Esqueceu a senha?
               </Link>
@@ -195,7 +195,7 @@ export default function LoginEmpresaPage() {
 
             <ButtonType
               variant="primary"
-              className="w-full py-4 text-lg font-black shadow-xl shadow-blue-600/20 active:scale-[0.98] transition-all"
+              className="w-full py-4 text-lg font-black shadow-xl shadow-primary/20 active:scale-[0.98] transition-all"
               disabled={isLoading}
             >
               {isLoading ? "Validando acesso..." : "Entrar"}
@@ -208,7 +208,7 @@ export default function LoginEmpresaPage() {
               Sua empresa ainda não possui acesso?{" "}
               <a
                 href="mailto:comercial@acipanambi.com.br"
-                className="text-blue-600 font-black hover:underline"
+                className="text-primary font-black hover:underline"
               >
                 Fale com a ACI
               </a>
@@ -220,7 +220,7 @@ export default function LoginEmpresaPage() {
       {/* LADO DIREITO: BRANDING */}
       <div className="hidden lg:block w-1/2 relative bg-gray-900">
         {/* Usando a mesma cor para manter a identidade visual da plataforma */}
-        <div className="absolute inset-0 bg-blue-600 z-10 mix-blend-multiply opacity-90"></div>
+        <div className="absolute inset-0 bg-primary z-10 mix-blend-multiply opacity-90"></div>
         <Image
           src={bgAuth}
           alt="Imagem de Fundo ACI Vagas"

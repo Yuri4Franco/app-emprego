@@ -152,7 +152,7 @@ export default function RecuperarSenhaPage() {
                 <div className="mt-8 space-y-6 text-center animate-in fade-in slide-in-from-bottom-2">
 
                     <Link
-                        href="/login"
+                        href="/entrar"
                         className="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
                     >
                         <HiOutlineArrowLeft size={16} /> Voltar para o Login

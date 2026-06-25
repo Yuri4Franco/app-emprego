@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 const getDashboardPath = (role?: string) => {
   if (role === "ADM") return "/admin/dashboard";
   if (role === "EMPRESA") return "/empresa/dashboard";
-  return "/candidato/inicio"; // CANDIDATO é o default
+  return "/candidato/inicio";
 };
 
 export function proxy(request: NextRequest) {
@@ -40,7 +40,7 @@ export function proxy(request: NextRequest) {
     !token &&
     (pathname.startsWith("/admin") ||
       pathname.startsWith("/empresa") ||
-      pathname.startsWith("/dashboard"))
+      pathname.startsWith("/candidato"))
   ) {
     // Redirecionamento inteligente baseado no escopo da rota desejada
     const redirectPath = pathname.startsWith("/empresa")
@@ -57,7 +57,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(getDashboardPath(role), request.url));
   }
 
-  if (pathname.startsWith("/candidato/inicio") && role !== "CANDIDATO") {
+  if (pathname.startsWith("/candidato") && role !== "CANDIDATO") {
     return NextResponse.redirect(new URL(getDashboardPath(role), request.url));
   }
 
@@ -65,11 +65,11 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Adicionado '/entrar-empresa' na lista do matcher
+
   matcher: [
     "/admin/:path*",
     "/empresa/:path*",
-    "/dashboard/:path*",
+    "/candidato/:path*",
     "/entrar",
     "/entrar-empresa",
     "/trocar-senha",
