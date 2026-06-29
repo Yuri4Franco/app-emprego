@@ -100,7 +100,7 @@ export default function AdminDashboardPage() {
           title="Habilidades"
           count={data.pendencias.competenciasSugeridas}
           label="Sugestões"
-          link="/admin/competencias?status=PENDENTE"
+          link="/admin/catalogo"
           color="border-amber-200"
         />
         <PendenciaCard

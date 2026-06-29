@@ -15,7 +15,13 @@ export function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  if (token && forceChange && pathname !== "/trocar-senha") {
+  if (
+    token &&
+    forceChange &&
+    pathname !== "/trocar-senha" &&
+    pathname !== "/termos" &&
+    pathname !== "/privacidade" 
+  ) {
     return NextResponse.redirect(new URL("/trocar-senha", request.url));
   }
 
@@ -65,13 +71,12 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-
   matcher: [
     "/admin/:path*",
     "/empresa/:path*",
     "/candidato/:path*",
     "/entrar",
     "/entrar-empresa",
-    "/trocar-senha",
+    "/trocar-senha"
   ],
 };

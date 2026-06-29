@@ -10,8 +10,9 @@ import {
   HiOutlineCamera,
   HiOutlineSearch,
   HiOutlineX,
-  HiOutlineSave,
+  HiOutlinePencilAlt,
   HiOutlineArrowRight,
+  HiOutlineSave,
 } from "react-icons/hi";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
@@ -46,9 +47,14 @@ export default function TabDadosGerais({
     dadosIniciais?.foto_url || null,
   );
   const [isUploadingFoto, setIsUploadingFoto] = useState(false);
-  const [nomeCandidato] = useState<string>(
+  const [nomeCandidato, setNomeCandidato] = useState<string>(
     dadosIniciais?.usuario?.nome || dadosIniciais?.nome || "Meu Perfil",
   );
+
+  const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [isSavingName, setIsSavingName] = useState(false);
+
 
   // Áreas de Atuação
   const [listaTaxonomiaAreas, setListaTaxonomiaAreas] = useState<any[]>([]);
@@ -159,6 +165,25 @@ export default function TabDadosGerais({
       setFotoUrl(dadosIniciais?.foto_url || null); // Reverte em caso de erro
     } finally {
       setIsUploadingFoto(false);
+    }
+  };
+
+  const handleSalvarNome = async () => {
+    if (!newName.trim() || newName.trim().length < 3) {
+      toast.error("O nome deve ter pelo menos 3 caracteres.");
+      return;
+    }
+
+    setIsSavingName(true);
+    try {
+      await api.patch("/usuario/trocar-nome", { nome: newName.trim() });
+      setNomeCandidato(newName.trim());
+      setIsEditNameModalOpen(false);
+      toast.success("Nome atualizado com sucesso!");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Erro ao atualizar nome.");
+    } finally {
+      setIsSavingName(false);
     }
   };
 
@@ -322,9 +347,22 @@ export default function TabDadosGerais({
               </div>
             )}
           </div>
-          <h2 className="text-xl md:text-2xl font-black text-gray-800 tracking-tight text-center">
-            {nomeCandidato}
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl md:text-2xl font-black text-gray-800 tracking-tight text-center">
+              {nomeCandidato}
+            </h2>
+            <button
+              type="button"
+              onClick={() => {
+                setNewName(nomeCandidato);
+                setIsEditNameModalOpen(true);
+              }}
+              className="p-2 bg-white text-gray-400 hover:text-blue-600 rounded-full shadow-sm border border-gray-100 transition-all hover:scale-110"
+              title="Trocar Nome"
+            >
+              <HiOutlinePencilAlt size={18} />
+            </button>
+          </div>
         </div>
 
         <div className="p-5 md:p-8 space-y-8 md:space-y-10">
@@ -553,11 +591,10 @@ export default function TabDadosGerais({
                     : "Buscar área (Ex: TI, RH...)"
                 }
                 disabled={areasSelecionadas.length >= 10}
-                className={`w-full pl-12 pr-4 py-3.5 md:py-4 border rounded-[20px] md:rounded-[24px] outline-none text-sm transition-all disabled:opacity-50 ${
-                  erroAreas
-                    ? "bg-red-50/30 border-red-500 focus:ring-4 focus:ring-red-500/20"
-                    : "bg-gray-50 border-gray-100 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500"
-                }`}
+                className={`w-full pl-12 pr-4 py-3.5 md:py-4 border rounded-[20px] md:rounded-[24px] outline-none text-sm transition-all disabled:opacity-50 ${erroAreas
+                  ? "bg-red-50/30 border-red-500 focus:ring-4 focus:ring-red-500/20"
+                  : "bg-gray-50 border-gray-100 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500"
+                  }`}
                 value={searchTermArea}
                 onChange={(e) => {
                   setSearchTermArea(e.target.value);
@@ -623,20 +660,20 @@ export default function TabDadosGerais({
 
           {(!watch("resumo_profissional") ||
             !watch("objetivo_profissional")) && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50/50 p-4 rounded-2xl border border-blue-100 flex items-start gap-3 animate-in fade-in duration-500">
-              <span className="text-xl shrink-0">💡</span>
-              <div>
-                <h4 className="text-xs md:text-sm font-black text-blue-900">
-                  Dica de Ouro para chegar aos 100%
-                </h4>
-                <p className="text-[11px] md:text-xs text-blue-800/80 mt-0.5 leading-relaxed font-medium">
-                  Estes dois campos abaixo são opcionais, mas preenchê-los
-                  garante a pontuação máxima do seu currículo. Recrutadores
-                  adoram ler um bom resumo antes de olhar as experiências!
-                </p>
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50/50 p-4 rounded-2xl border border-blue-100 flex items-start gap-3 animate-in fade-in duration-500">
+                <span className="text-xl shrink-0">💡</span>
+                <div>
+                  <h4 className="text-xs md:text-sm font-black text-blue-900">
+                    Dica de Ouro para chegar aos 100%
+                  </h4>
+                  <p className="text-[11px] md:text-xs text-blue-800/80 mt-0.5 leading-relaxed font-medium">
+                    Estes dois campos abaixo são opcionais, mas preenchê-los
+                    garante a pontuação máxima do seu currículo. Recrutadores
+                    adoram ler um bom resumo antes de olhar as experiências!
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div className="space-y-2">
             <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
@@ -1024,6 +1061,65 @@ export default function TabDadosGerais({
           )}
         </ButtonType>
       </div>
+      {isEditNameModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-[32px] p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
+                <HiOutlinePencilAlt className="text-blue-600" /> Alterar Nome
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsEditNameModalOpen(false)}
+                className="text-gray-400 hover:bg-gray-100 p-2 rounded-full transition-colors"
+              >
+                <HiOutlineX size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <Input
+                label="Seu Nome Completo"
+                placeholder="Digite seu nome"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!isSavingName && newName.trim().length >= 3) {
+                      handleSalvarNome();
+                    }
+                  }
+                }}
+                autoFocus
+              />
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsEditNameModalOpen(false)}
+                  disabled={isSavingName}
+                  className="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-colors"
+                >
+                  Cancelar
+                </button>
+                <ButtonType
+                  type="button"
+                  onClick={handleSalvarNome}
+                  disabled={isSavingName || newName.trim().length < 3}
+                  className="flex-1 py-4 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+                >
+                  {isSavingName ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <><HiOutlineSave size={18} /> Salvar Nome</>
+                  )}
+                </ButtonType>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

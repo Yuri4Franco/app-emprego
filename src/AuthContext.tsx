@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser({
             id: decoded.sub,
             role: decoded.role,
-            is_master: decoded.master,
+            is_master: !!decoded.is_master,
             exigir_troca_senha: decoded.exigir_troca_senha,
           });
 
@@ -124,13 +124,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [pathname, isAuthenticated, perfil, isLoading]);
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
-      if (user.exigir_troca_senha && pathname !== "/trocar-senha") {
-        router.push("/trocar-senha");
-      }
+    const rotasLiberadas = ["/trocar-senha", "/termos", "/privacidade", "/vagas", "/para-empresas"];
+    const precisaTrocarSenha = user?.exigir_troca_senha;
+    const estaEmRotaBloqueada = !rotasLiberadas.includes(pathname);
+
+    if (!isLoading && isAuthenticated && precisaTrocarSenha && estaEmRotaBloqueada) {
+      router.push("/trocar-senha");
     }
   }, [isLoading, isAuthenticated, user, pathname, router]);
-
   // 3. FLUXO DE LOGIN ASSÍNCRONO
   const login = async (token: string) => {
     setIsLoading(true);
