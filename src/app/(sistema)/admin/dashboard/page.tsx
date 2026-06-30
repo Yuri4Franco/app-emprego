@@ -64,8 +64,14 @@ export default function AdminDashboardPage() {
       {/* 1. CARDS DE TOTAIS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <StatCard
-          title="Candidatos"
+          title="Inscritos"
           value={data.totais.candidatos}
+          icon={<HiOutlineUserGroup />}
+          color="text-blue-600"
+        />
+        <StatCard
+          title="Banco de Currículos"
+          value={data.totais.candidatosAtivos}
           icon={<HiOutlineUserGroup />}
           color="text-blue-600"
         />
