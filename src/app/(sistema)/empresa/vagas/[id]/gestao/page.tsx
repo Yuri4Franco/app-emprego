@@ -169,20 +169,6 @@ export default function GestaoVagaPage({
     carregarDados(true);
   }, [carregarDados]);
 
-  // Ações da Vaga (Notificações e Configuração)
-  const dispararNotificacoes = async () => {
-    setIsNotificando(true);
-    try {
-      await api.post(`/empresa/vagas/${idVaga}/notificar-candidatos`);
-      toast.success("Notificações enviadas com sucesso aos candidatos!");
-      carregarDados();
-    } catch (error) {
-      toast.error("Erro ao enviar notificações.");
-    } finally {
-      setIsNotificando(false);
-    }
-  };
-
   const salvarConfiguracoes = async () => {
     setIsSalvandoConfig(true);
     try {
@@ -278,7 +264,7 @@ export default function GestaoVagaPage({
             : true;
           const diasInscrito = Math.floor(
             (new Date().getTime() - new Date(c.data_inscricao).getTime()) /
-              (1000 * 3600 * 24),
+            (1000 * 3600 * 24),
           );
           const matchNovo = filtroNovos ? diasInscrito <= 2 : true;
           return matchNome && matchAvaliacao && matchNaoVisto && matchNovo;
@@ -365,13 +351,12 @@ export default function GestaoVagaPage({
                   {vaga?.titulo}
                 </h1>
                 <span
-                  className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest shrink-0 ${
-                    isAtiva
+                  className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest shrink-0 ${isAtiva
                       ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
                       : isPausada
                         ? "bg-amber-50 border border-amber-200 text-amber-700"
                         : "bg-gray-100 border border-gray-200 text-gray-600"
-                  }`}
+                    }`}
                 >
                   {vaga?.status}
                 </span>
@@ -390,38 +375,6 @@ export default function GestaoVagaPage({
                 <HiOutlineAdjustments size={18} />
                 Visão Estratégica
               </button>
-
-              {notificacoesPendentes === 0 ? (
-                <button
-                  disabled
-                  className="flex justify-center items-center gap-2 bg-gray-50 text-gray-400 border border-gray-100 px-6 py-3 rounded-xl text-sm font-bold transition-all cursor-default"
-                >
-                  <HiOutlineCheck size={18} className="text-emerald-500" />
-                  Tudo Certo
-                </button>
-              ) : (
-                <button
-                  onClick={dispararNotificacoes}
-                  disabled={isNotificando}
-                  className="relative flex justify-center items-center gap-2 bg-blue-600 text-white border border-blue-700 hover:bg-blue-700 px-6 py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50 shadow-lg shadow-blue-600/20"
-                >
-                  <div className="relative flex items-center justify-center">
-                    <HiOutlineBell
-                      size={18}
-                      className={
-                        isNotificando ? "animate-spin" : "animate-bounce"
-                      }
-                    />
-                    <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 items-center justify-center">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                    </span>
-                  </div>
-                  {isNotificando
-                    ? "Notificando..."
-                    : `Notificar Candidatos (${notificacoesPendentes})`}
-                </button>
-              )}
             </div>
           </div>
         </div>
@@ -484,11 +437,10 @@ export default function GestaoVagaPage({
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setMenuEtapasAberto(!menuEtapasAberto)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-[14px] border text-xs font-black uppercase tracking-widest transition-colors select-none ${
-                  menuEtapasAberto
+                className={`flex items-center gap-2 px-4 py-2 rounded-[14px] border text-xs font-black uppercase tracking-widest transition-colors select-none ${menuEtapasAberto
                     ? "bg-gray-100 border-gray-300 text-gray-700"
                     : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 <HiOutlineEye size={16} />
                 Etapas

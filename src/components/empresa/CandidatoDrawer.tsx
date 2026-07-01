@@ -45,7 +45,7 @@ export function CandidatoDrawer({
   const [dataEntrevista, setDataEntrevista] = useState("");
   const [horaEntrevista, setHoraEntrevista] = useState("");
   const [localEntrevista, setLocalEntrevista] = useState("");
-  const [instrucoesEntrevista, setInstrucoesEntrevista] = useState("");
+  const [observacoesEntrevista, setObservacoesEntrevista] = useState("");
   const [isAgendando, setIsAgendando] = useState(false);
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export function CandidatoDrawer({
       await api.post(`/empresa/candidaturas/${idCandidatura}/agendar`, {
         data_hora: dataHoraIso,
         local_link: localEntrevista,
-        instrucoes: instrucoesEntrevista,
+        observacoes: observacoesEntrevista,
       });
 
       toast.success(
@@ -510,9 +510,9 @@ export function CandidatoDrawer({
                         Instruções (Opcional)
                       </label>
                       <textarea
-                        value={instrucoesEntrevista}
+                        value={observacoesEntrevista}
                         onChange={(e) =>
-                          setInstrucoesEntrevista(e.target.value)
+                          setObservacoesEntrevista(e.target.value)
                         }
                         placeholder="Ex: Procure pela recepcionista Maria. Traga RG."
                         className="w-full p-4 bg-white border border-purple-100 shadow-sm rounded-2xl h-24 outline-none text-sm resize-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all font-medium text-gray-700"

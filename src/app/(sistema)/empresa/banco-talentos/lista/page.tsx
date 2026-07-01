@@ -47,6 +47,8 @@ function VitrineConteudo() {
   const [filtroIdadeMin, setFiltroIdadeMin] = useState(searchParams.get("idade_min") || "");
   const [filtroIdadeMax, setFiltroIdadeMax] = useState(searchParams.get("idade_max") || "");
 
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+
   const paginaAtual = Number(searchParams.get("pagina")) || 1;
 
   useEffect(() => {
@@ -88,6 +90,31 @@ function VitrineConteudo() {
     }
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      sessionStorage.setItem("vitrine_scroll_y", window.scrollY.toString());
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // ✨ 2. Restaura o scroll APÓS o loading terminar (somente na primeira vez)
+  useEffect(() => {
+    if (!isLoading && isFirstLoad) {
+      const savedScroll = sessionStorage.getItem("vitrine_scroll_y");
+      if (savedScroll) {
+        // O setTimeout garante que o DOM (os cards) já foram desenhados na tela
+        setTimeout(() => {
+          window.scrollTo({
+            top: parseInt(savedScroll, 10),
+            behavior: "instant", // "instant" evita que a tela desça rolando devagar
+          });
+        }, 100);
+      }
+      setIsFirstLoad(false);
+    }
+  }, [isLoading, isFirstLoad]);
+
   // ✨ APLICAÇÃO DO DEBOUNCE NO USE EFFECT
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -99,12 +126,16 @@ function VitrineConteudo() {
 
   const mudarPagina = (novaPagina: number) => {
     if (novaPagina < 1 || novaPagina > paginacao.total_paginas) return;
+    sessionStorage.removeItem("vitrine_scroll_y");
+    window.scrollTo({ top: 0, behavior: "smooth" });
     const params = new URLSearchParams(searchParams.toString());
     params.set("pagina", novaPagina.toString());
     router.push(`/empresa/banco-talentos/lista?${params.toString()}`);
   };
 
   const limparFiltros = () => {
+    sessionStorage.removeItem("vitrine_scroll_y");
+    window.scrollTo({ top: 0, behavior: "smooth" });
     setFiltroArea(""); setFiltroTurno([]); setFiltroEscolaridade([]); setFiltroCnh([]); setFiltroCompetencias([]);
     setFiltroPcd(false); setFiltroPrimeiroEmprego(false); setFiltroSabados(false); setFiltroViagem(false);
     setFiltroGenero(""); setFiltroIdadeMin(""); setFiltroIdadeMax(""); // Limpa os novos
