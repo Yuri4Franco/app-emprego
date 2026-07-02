@@ -3,14 +3,21 @@
 import { useState, useEffect } from "react";
 import api from "@/src/services/api";
 import toast from "react-hot-toast";
-import { HiOutlineCheck, HiOutlineX, HiOutlinePencil, HiOutlineCollection, HiOutlineSearch } from "react-icons/hi";
+import { HiOutlineCheck, HiOutlineX, HiOutlinePencil, HiOutlineCollection, HiOutlineSearch, HiOutlineExternalLink } from "react-icons/hi";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
+
+interface SugeridoPor {
+    id: number;
+    nome: string;
+    origem: string;
+}
 
 interface Competencia {
     id_competencia: number;
     nome: string;
     status?: string;
+    sugerido_por?: SugeridoPor;
 }
 
 export default function TabCompetencias() {
@@ -168,6 +175,21 @@ export default function TabCompetencias() {
                                                 Sugerida
                                             </span>
                                             <h4 className="font-bold text-gray-900 text-base">{comp.nome}</h4>
+                                            {comp.sugerido_por && (
+                                                <p className="text-xs text-gray-500 mt-1.5 flex flex-wrap items-center gap-1">
+                                                    Por:
+                                                    <a
+                                                        href={`/admin/usuarios/${comp.sugerido_por.id}/ver`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 transition-colors"
+                                                        title={`Ver perfil (Categoria: ${comp.sugerido_por.origem})`}
+                                                    >
+                                                        {comp.sugerido_por.nome}
+                                                        <HiOutlineExternalLink size={12} className="text-blue-400" />
+                                                    </a>
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
 
@@ -274,8 +296,8 @@ export default function TabCompetencias() {
 
                         {/* ALERTA DE MERGE (ATRIBUIÇÃO) */}
                         <div className={`mt-6 p-4 rounded-[20px] border transition-all ${isExactMatch
-                                ? "bg-amber-50 border-amber-200"
-                                : "bg-gray-50 border-transparent opacity-0 h-0 p-0 overflow-hidden"
+                            ? "bg-amber-50 border-amber-200"
+                            : "bg-gray-50 border-transparent opacity-0 h-0 p-0 overflow-hidden"
                             }`}>
                             <div className="flex gap-3 items-start">
                                 <span className="text-xl mt-0.5">💡</span>
