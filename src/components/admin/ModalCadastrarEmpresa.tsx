@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 const empresaSchema = z.object({
     nome: z.string().min(3, "Nome do responsável é obrigatório"),
     email: z.string().email("E-mail inválido"),
-    senha: z.string().min(6, "Mínimo 6 caracteres"),
+    senha: z.string().min(8, "Mínimo 8 caracteres"),
     cnpj: z.string().min(18, "CNPJ incompleto"),
     razao_social: z.string().min(3, "Razão social obrigatória"),
     nome_fantasia: z.string().min(3, "Nome fantasia obrigatório"),
@@ -47,7 +47,8 @@ export function ModalCadastrarEmpresa({ isOpen, onClose, onSuccess }: ModalProps
             uf: "RS",
             tipo_vinculo_aci: "NAO_ASSOCIADA",
             cnpj: "",
-            cep: ""
+            cep: "98280-000",
+            senha: "@Acivagas555",
         }
     });
 
@@ -257,7 +258,7 @@ export function ModalCadastrarEmpresa({ isOpen, onClose, onSuccess }: ModalProps
                                 <Input
                                     label="Senha provisória"
                                     type={showPassword ? "text" : "password"}
-                                    placeholder="Mínimo 6 caracteres"
+                                    placeholder="Mínimo 8 caracteres"
                                     error={errors.senha?.message}
                                     {...register("senha")}
                                 />

@@ -90,31 +90,6 @@ function VitrineConteudo() {
     }
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      sessionStorage.setItem("vitrine_scroll_y", window.scrollY.toString());
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // ✨ 2. Restaura o scroll APÓS o loading terminar (somente na primeira vez)
-  useEffect(() => {
-    if (!isLoading && isFirstLoad) {
-      const savedScroll = sessionStorage.getItem("vitrine_scroll_y");
-      if (savedScroll) {
-        // O setTimeout garante que o DOM (os cards) já foram desenhados na tela
-        setTimeout(() => {
-          window.scrollTo({
-            top: parseInt(savedScroll, 10),
-            behavior: "instant", // "instant" evita que a tela desça rolando devagar
-          });
-        }, 100);
-      }
-      setIsFirstLoad(false);
-    }
-  }, [isLoading, isFirstLoad]);
-
   // ✨ APLICAÇÃO DO DEBOUNCE NO USE EFFECT
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -123,6 +98,62 @@ function VitrineConteudo() {
 
     return () => clearTimeout(delayDebounceFn);
   }, [filtroArea, filtroTurno, filtroEscolaridade, filtroCnh, filtroCompetencias, filtroPcd, filtroPrimeiroEmprego, filtroSabados, filtroViagem, filtroGenero, filtroIdadeMin, filtroIdadeMax, paginaAtual]);
+
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
+  // ✨ 2. RESTAURA O SCROLL (Com Trava Dupla para vencer o Next.js)
+  useEffect(() => {
+    if (!isLoading && isFirstLoad && candidatos.length > 0) {
+      const savedScroll = sessionStorage.getItem("vitrine_scroll_y");
+
+      if (savedScroll) {
+        const position = parseInt(savedScroll, 10);
+
+        // Ação 1: Restaura imediatamente quando a DOM pinta
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: position, behavior: "instant" });
+        });
+
+        // Ação 2: A Trava Dupla. Esperamos 350ms para deixar o Next.js dar o pulo falso dele, 
+        // e então puxamos a tela de volta pro lugar certo.
+        const timeoutId = setTimeout(() => {
+          window.scrollTo({ top: position, behavior: "instant" });
+          setIsFirstLoad(false); // Libera o sistema para salvar novos scrolls APÓS a poeira baixar
+        }, 350);
+
+        return () => clearTimeout(timeoutId);
+      } else {
+        setIsFirstLoad(false);
+      }
+    }
+  }, [isLoading, isFirstLoad, candidatos]);
+
+  // ✨ 3. SALVA O SCROLL (Com proteção contra pulos falsos)
+  useEffect(() => {
+    // Só deixa salvar se a página não estiver carregando e o primeiro load (e a trava dupla) já passou
+    if (isLoading || isFirstLoad) return;
+
+    let timeoutId: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      // Usamos um debounce de 100ms. 
+      // Se o navegador der um "pulo" sozinho, a gente não salva isso imediatamente.
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        sessionStorage.setItem("vitrine_scroll_y", window.scrollY.toString());
+      }, 100);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [isLoading, isFirstLoad]);
 
   const mudarPagina = (novaPagina: number) => {
     if (novaPagina < 1 || novaPagina > paginacao.total_paginas) return;
