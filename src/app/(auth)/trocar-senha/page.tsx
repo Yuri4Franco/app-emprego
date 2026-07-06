@@ -8,7 +8,12 @@ import toast from "react-hot-toast";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
 import { useAuth } from "@/src/AuthContext";
-import { HiOutlineLockClosed, HiOutlineShieldCheck } from "react-icons/hi";
+import { 
+    HiOutlineLockClosed, 
+    HiOutlineShieldCheck, 
+    HiCheckCircle, 
+    HiXCircle 
+} from "react-icons/hi";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -35,12 +40,34 @@ export default function TrocarSenhaPage() {
     const { user, logout, isLoading } = useAuth();
     const router = useRouter();
 
-    const { register, handleSubmit, formState: { errors } } = useForm<TrocarSenhaFormData>({
-        resolver: zodResolver(trocarSenhaSchema)
+    const { 
+        register, 
+        handleSubmit, 
+        watch, // ✨ Importado para monitorar a digitação em tempo real
+        formState: { errors } 
+    } = useForm<TrocarSenhaFormData>({
+        resolver: zodResolver(trocarSenhaSchema),
+        mode: "onChange" // ✨ Valida a cada caractere digitado
     });
 
     if (isLoading) return null;
     if (!user) return null;
+
+    // ✨ Observadores dos campos para controlar o estado do checklist e do botão
+    const currentPassword = watch("nova_senha", "");
+    const currentConfirmPassword = watch("confirmar_senha", "");
+    const aceitouTermos = watch("termos", false);
+
+    // ✨ Regras visuais para o checklist
+    const passwordRules = [
+        { label: "Mínimo de 8 caracteres", isValid: currentPassword.length >= 8 },
+        { label: "Pelo menos uma letra maiúscula", isValid: /[A-Z]/.test(currentPassword) },
+        { label: "Pelo menos um número", isValid: /[0-9]/.test(currentPassword) },
+        { label: "Um caractere especial (@, #, $...)", isValid: /[^a-zA-Z0-9]/.test(currentPassword) },
+    ];
+
+    // Verifica se todos os critérios individuais da senha foram satisfeitos
+    const isPasswordValid = passwordRules.every(rule => rule.isValid);
 
     const onSubmit = async (data: TrocarSenhaFormData) => {
         await toast.promise(
@@ -48,13 +75,9 @@ export default function TrocarSenhaPage() {
             {
                 loading: "Salvando sua nova senha...",
                 success: () => {
-                    // Verifica o perfil do usuário atual antes de deslogar
-                    // Ajuste "tipo" para a propriedade exata que vem da sua API (ex: user.role, user.perfil)
                     const isEmpresa = user.role === "EMPRESA";
 
                     logout();
-
-                    // Redireciona de forma inteligente
                     router.push(isEmpresa ? "/entrar-empresa" : "/entrar");
 
                     return "Senha definida! Entre agora com sua nova credencial.";
@@ -85,18 +108,30 @@ export default function TrocarSenhaPage() {
                             type="password"
                             placeholder="Crie sua nova senha"
                             {...register("nova_senha")}
-                            error={errors.nova_senha?.message}
+                            // Prioriza o checklist ocultando o texto vermelho longo do Zod abaixo do input
+                            error={currentPassword.length > 0 && !isPasswordValid ? " " : errors.nova_senha?.message}
                         />
 
-                        {/* Pequeno guia visual para o usuário */}
-                        {!errors.nova_senha && (
-                            <div className="px-2 space-y-1">
-                                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Requisitos:</p>
-                                <p className="text-[11px] text-gray-500 flex items-center gap-1 italic">
-                                    • Mín. 8 caracteres, maiúscula, número e símbolo.
-                                </p>
-                            </div>
-                        )}
+                        {/* ✨ CHECKLIST VISUAL DOS REQUISITOS */}
+                        <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                            <p className="text-xs font-bold text-gray-700 mb-3">Sua senha deve conter:</p>
+                            <ul className="space-y-2">
+                                {passwordRules.map((rule, index) => (
+                                    <li key={index} className="flex items-center gap-2">
+                                        {rule.isValid ? (
+                                            <HiCheckCircle className="text-emerald-500 shrink-0" size={16} />
+                                        ) : (
+                                            <div className="w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center shrink-0">
+                                                {currentPassword.length > 0 && <HiXCircle className="text-red-400 opacity-50" size={16} />}
+                                            </div>
+                                        )}
+                                        <span className={`text-xs ${rule.isValid ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
+                                            {rule.label}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
 
                         <Input
                             label="Confirmar Senha"
@@ -139,6 +174,8 @@ export default function TrocarSenhaPage() {
                     <ButtonType
                         type="submit"
                         className="w-full py-4.5 shadow-xl shadow-blue-100 flex items-center justify-center gap-2 text-base font-bold"
+                        // ✨ Só habilita se a senha for válida, as duas forem iguais e os termos aceitos
+                        disabled={!isPasswordValid || currentPassword !== currentConfirmPassword || !aceitouTermos}
                     >
                         <HiOutlineLockClosed size={20} /> Definir Nova Senha
                     </ButtonType>
