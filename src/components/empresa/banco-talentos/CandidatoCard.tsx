@@ -10,6 +10,7 @@ import {
   HiOutlineLocationMarker,
   HiOutlineChevronRight,
   HiOutlineTag,
+  HiOutlineCheckCircle,
 } from "react-icons/hi";
 import {
   CandidatoResumo,
@@ -23,6 +24,18 @@ export default function CandidatoCard({
   candidato: CandidatoResumo;
 }) {
   const badgesDoCandidato = [];
+
+  const pctCompleto = (candidato as any).perfil_completo_pct;
+  if (pctCompleto !== undefined && pctCompleto !== null) {
+    badgesDoCandidato.push({
+      label: `Perfil ${pctCompleto}%`,
+      icon: HiOutlineCheckCircle,
+      color:
+        pctCompleto === 100
+          ? "bg-blue-50 text-green-700 border-green-200"
+          : "bg-orange-50 text-orange-700 border-orange-200",
+    });
+  }
 
   // ================= LÓGICA DE BADGES (MANTIDA) =================
   if (candidato.primeiro_emprego) {

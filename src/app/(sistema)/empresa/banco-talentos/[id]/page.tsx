@@ -11,8 +11,9 @@ import { PerfilProfissional } from "@/src/components/empresa/banco-talentos/curr
 import { Experiencias } from "@/src/components/empresa/banco-talentos/curriculo/Experiencias";
 import { FormacaoAcad } from "@/src/components/empresa/banco-talentos/curriculo/FormacaoAcad";
 import { Habilidades } from "@/src/components/empresa/banco-talentos/curriculo/Habilidades";
-import { LogisticaPreferencias } from "@/src/components/empresa/banco-talentos/curriculo/LogisticaPreferencias";
+
 import { CurriculoIdentidade } from "@/src/components/empresa/banco-talentos/curriculo/IdentidadeContato";
+import { CurriculoLogistica } from "@/src/components/empresa/banco-talentos/curriculo/LogisticaPreferencias";
 
 // Importando os componentes modularizados
 
@@ -152,7 +153,7 @@ export default function DetalhesCurriculoEmpresaPage() {
         <Habilidades competencias={perfil.competencias} />
 
         {/* 6. Preferências & Logística */}
-        <LogisticaPreferencias perfil={perfil} />
+        <CurriculoLogistica perfil={perfil} />
 
       </div>
     </div>
