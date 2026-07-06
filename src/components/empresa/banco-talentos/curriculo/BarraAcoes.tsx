@@ -51,7 +51,7 @@ export function BarraAcoes({
                 {acessoLiberado ? (
                     <button
                         onClick={onPrint}
-                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3.5 sm:py-3 rounded-full font-bold hover:bg-blue-700 transition-all shadow-md hover:shadow-xl hover:shadow-blue-600/20 active:translate-y-0"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-primary text-white px-6 py-3.5 sm:py-3 rounded-full font-bold hover:bg-blue-700 transition-all shadow-md hover:shadow-xl hover:shadow-blue-600/20 active:translate-y-0"
                     >
                         <HiOutlinePrinter size={20} />
                         Imprimir <span className="hidden sm:inline">PDF</span>
