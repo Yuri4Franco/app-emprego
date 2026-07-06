@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Importado para redirecionamento
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,28 +13,27 @@ import {
   HiOutlineEyeOff,
   HiArrowRight,
   HiOutlineInformationCircle,
+  HiCheckCircle,
+  HiXCircle
 } from "react-icons/hi";
 import Image from "next/image";
-import toast from "react-hot-toast"; // Importado para feedbacks
+import toast from "react-hot-toast";
 
 import Logo from "@/src/assets/logos/logo-transparente.webp";
 import bgAuth from "@/src/assets/backgrounds/bg-cadastrar.webp";
 import api from "@/src/services/api";
 
-// 1. Schema de Validação (Alinhado com as regras do Backend)
+// 1. Schema de Validação
 const registerSchema = z
   .object({
     name: z.string().min(3, "Por favor, digite seu nome completo"),
     email: z.string().email("Digite um e-mail válido"),
     password: z
       .string()
-      .min(8, "A senha deve ter pelo menos 8 caracteres")
-      .regex(/[a-zA-Z]/, "A senha deve conter letras")
-      .regex(/[0-9]/, "A senha deve conter números")
-      .regex(
-        /[@#$!%*?&]/,
-        "A senha deve conter um caractere especial (@, #, $, etc)",
-      ),
+      .min(8, "A senha deve ter no mínimo 8 caracteres")
+      .regex(/[A-Z]/, "Deve conter ao menos uma letra maiúscula")
+      .regex(/[0-9]/, "Deve conter ao menos um número")
+      .regex(/[^a-zA-Z0-9]/, "Deve conter ao menos um caractere especial"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -47,15 +46,31 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter(); // Instanciando o router
+  const router = useRouter();
 
   const {
     register,
     handleSubmit,
+    watch, // ✨ IMPORTADO PARA O CHECKLIST
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
+    mode: "onChange", // Para validar enquanto a pessoa digita
   });
+
+  // ✨ OBSERVADOR DA SENHA PARA O CHECKLIST
+  const currentPassword = watch("password", "");
+
+  // Regras de negócio da senha para o UI
+  const passwordRules = [
+    { label: "Mínimo de 8 caracteres", isValid: currentPassword.length >= 8 },
+    { label: "Pelo menos uma letra MAIÚSCULA", isValid: /[A-Z]/.test(currentPassword) },
+    { label: "Pelo menos um número", isValid: /[0-9]/.test(currentPassword) },
+    { label: "Um caractere especial (@, #, $...)", isValid: /[^a-zA-Z0-9]/.test(currentPassword) },
+  ];
+
+  // Verifica se todas as regras da senha estão OK para habilitar o botão
+  const isPasswordValid = passwordRules.every(rule => rule.isValid);
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
@@ -66,15 +81,10 @@ export default function RegisterPage() {
         senha: data.password,
       };
 
-      // Chamada real para a sua rota do backend
       await api.post("/register", payload);
 
-      // ✨ O PULO DO GATO: Salva o e-mail na sessão temporária da aba
       sessionStorage.setItem("@ACI:pendingEmail", data.email);
-
       toast.success("Conta criada com sucesso!");
-
-      // Redireciona
       router.push("/verificar-email");
     } catch (error: any) {
       const mensagemErro =
@@ -119,6 +129,7 @@ export default function RegisterPage() {
               error={errors.name?.message}
               {...register("name")}
             />
+
             <div>
               <Input
                 label="E-mail"
@@ -151,7 +162,8 @@ export default function RegisterPage() {
                   label="Senha"
                   type={showPassword ? "text" : "password"}
                   placeholder="Mínimo 8 caracteres"
-                  error={errors.password?.message}
+                  // Desligamos o texto vermelho nativo da senha para priorizar o checklist visual
+                  error={currentPassword.length > 0 && !isPasswordValid ? " " : undefined}
                   {...register("password")}
                 />
                 <button
@@ -160,11 +172,7 @@ export default function RegisterPage() {
                   className="absolute right-3 top-[34px] text-gray-400 hover:text-primary transition-colors"
                   tabIndex={-1}
                 >
-                  {showPassword ? (
-                    <HiOutlineEyeOff size={20} />
-                  ) : (
-                    <HiOutlineEye size={20} />
-                  )}
+                  {showPassword ? <HiOutlineEyeOff size={20} /> : <HiOutlineEye size={20} />}
                 </button>
               </div>
 
@@ -177,7 +185,28 @@ export default function RegisterPage() {
               />
             </div>
 
-            <p className="text-xs text-gray-500 leading-relaxed">
+            {/* ✨ CHECKLIST DE REQUISITOS DA SENHA */}
+            <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+              <p className="text-xs font-bold text-gray-700 mb-3">Sua senha deve conter:</p>
+              <ul className="space-y-2">
+                {passwordRules.map((rule, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    {rule.isValid ? (
+                      <HiCheckCircle className="text-emerald-500 shrink-0" size={16} />
+                    ) : (
+                      <div className="w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center shrink-0">
+                        {currentPassword.length > 0 && <HiXCircle className="text-red-400 opacity-50" size={16} />}
+                      </div>
+                    )}
+                    <span className={`text-xs ${rule.isValid ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
+                      {rule.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <p className="text-xs text-gray-500 leading-relaxed text-center md:text-left">
               Ao clicar em "Criar minha conta", você concorda com nossos{" "}
               <Link href="/termos" className="text-primary hover:underline">
                 Termos de Uso
@@ -194,8 +223,9 @@ export default function RegisterPage() {
 
             <ButtonType
               variant="primary"
-              className="w-full justify-center py-3 text-base shadow-lg shadow-blue-900/10 group"
-              disabled={isLoading}
+              className="w-full justify-center py-3.5 text-base shadow-lg shadow-blue-900/10 group"
+              // ✨ Só habilita o botão se não estiver carregando, se a senha for válida e se as senhas forem iguais
+              disabled={isLoading || !isPasswordValid || currentPassword !== watch("confirmPassword")}
             >
               {isLoading ? (
                 "Criando conta..."
@@ -207,6 +237,7 @@ export default function RegisterPage() {
               )}
             </ButtonType>
           </form>
+
           <div className="text-center pt-4 space-y-2">
             <p className="text-center text-sm text-gray-600">
               Já tem cadastro?{" "}
@@ -232,7 +263,7 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* --- LADO DIREITO: BRANDING (MANTIDO EXATAMENTE IGUAL) --- */}
+      {/* --- LADO DIREITO: BRANDING --- */}
       <div className="hidden lg:block w-1/2 relative bg-primary">
         <div className="absolute inset-0 bg-primary z-10 mix-blend-multiply"></div>
         <Image
