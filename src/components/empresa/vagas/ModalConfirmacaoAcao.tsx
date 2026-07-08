@@ -14,16 +14,16 @@ export function ModalConfirmacaoAcao({ isOpen, tipo, tituloVaga, isProcessing, o
 
   const config = {
     PAUSAR: {
-      titulo: "Pausar Vaga",
-      aviso: "A vaga será removida temporariamente da vitrine pública. Nenhum novo candidato poderá se inscrever até que você a reative.",
-      btnText: "Sim, Pausar Vaga",
+      titulo: "Pausar Candidaturas",
+      aviso: "As candidaturas para esta vaga serão pausadas. Nenhum novo candidato poderá se inscrever até que você as reative.",
+      btnText: "Sim, Pausar Candidaturas",
       color: "bg-amber-500 hover:bg-amber-600 shadow-amber-500/30",
       iconColor: "text-amber-500 bg-amber-50",
     },
     REABRIR: {
-      titulo: "Reabrir Vaga",
-      aviso: "A vaga voltará a ficar disponível na vitrine pública e novos candidatos poderão se inscrever. Deseja continuar?",
-      btnText: "Sim, Reabrir Vaga",
+      titulo: "Reabrir Candidaturas",
+      aviso: "As candidaturas para esta vaga serão reabertas. Novos candidatos poderão se inscrever. Deseja continuar?",
+      btnText: "Sim, Reabrir Candidaturas",
       color: "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30",
       iconColor: "text-emerald-500 bg-emerald-50",
     },
@@ -39,7 +39,7 @@ export function ModalConfirmacaoAcao({ isOpen, tipo, tituloVaga, isProcessing, o
       aviso: "Você está prestes a excluir este rascunho. Todos os dados preenchidos até agora serão perdidos para sempre.",
       btnText: "Excluir Rascunho",
       color: "bg-red-600 hover:bg-red-700 shadow-red-600/30",
-      iconColor: "text-red-600 bg-red-50",
+      iconColor: "text-red-600 bg-red-50",  
     },
   }[tipo];
 

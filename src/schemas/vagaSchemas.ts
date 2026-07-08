@@ -21,12 +21,18 @@ export const vagaSchema = z.object({
   tipo_diversidade: z.string().default("AMPLA_CONCORRENCIA"),
   data_encerramento: z.string().optional().refine((val) => {
     if (!val) return true;
-    // Adiciona T12:00:00 para evitar bugs de fuso horário no navegador
     const dataEscolhida = new Date(`${val}T12:00:00`);
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     return dataEscolhida >= hoje;
   }, "A data de encerramento não pode estar no passado."),
+  data_fechamento: z.string().optional().refine((val) => {
+    if (!val) return true;
+    const dataEscolhida = new Date(`${val}T12:00:00`);
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    return dataEscolhida >= hoje;
+  }, "A data de fechamento não pode estar no passado."),
   etapas: z.array(
     z.object({
       nome: z.string().min(2, "Nome da etapa é obrigatório"),

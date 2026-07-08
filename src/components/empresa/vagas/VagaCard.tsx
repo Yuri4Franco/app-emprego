@@ -22,8 +22,8 @@ const STATUS_MAP: Record<string, any> = {
   RASCUNHO: { label: "Rascunho", color: "bg-gray-100 text-gray-600 border-gray-200", icon: <HiOutlinePencilAlt /> },
   EM_ANALISE: { label: "Em Análise", color: "bg-amber-50 text-amber-600 border-amber-200", icon: <HiOutlineClock /> },
   REPROVADA: { label: "Reprovada", color: "bg-red-50 text-red-600 border-red-200", icon: <HiOutlineX /> },
-  ATIVA: { label: "Ativa", color: "bg-emerald-50 text-emerald-600 border-emerald-200", icon: <HiOutlineCheckCircle /> },
-  PAUSADA: { label: "Pausada", color: "bg-blue-50 text-primary border-blue-200", icon: <HiOutlinePause /> },
+  ATIVA: { label: "Aceitando Candidaturas", color: "bg-emerald-50 text-emerald-600 border-emerald-200", icon: <HiOutlineCheckCircle /> },
+  PAUSADA: { label: "Em Triagem", color: "bg-blue-50 text-primary border-blue-200", icon: <HiOutlinePause /> },
   ENCERRADA: { label: "Encerrada", color: "bg-gray-200 text-gray-500 border-gray-300", icon: <HiOutlineTrash /> },
   AGUARDANDO_PAGAMENTO: { label: "Aguardando Pagamento", color: "bg-purple-50 text-purple-600 border-purple-200", icon: <HiOutlineExclamation /> },
 };
@@ -193,14 +193,14 @@ export function VagaCard({ vaga, menuAberto, setMenuAberto, isDuplicating, onDup
                   {/* PAUSAR (Apenas Ativas) */}
                   {vaga.status === "ATIVA" && (
                     <button onClick={(e) => { e.stopPropagation(); onAcaoConfirma(vaga.id_vaga, vaga.titulo, "PAUSAR"); }} className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-amber-600 hover:bg-amber-50 transition-colors border-b border-gray-50">
-                      <HiOutlinePause size={18} /> Pausar Vaga
+                      <HiOutlinePause size={18} /> Pausar Candidaturas
                     </button>
                   )}
 
                   {/* REABRIR (Apenas Pausadas) */}
                   {vaga.status === "PAUSADA" && (
                     <button onClick={(e) => { e.stopPropagation(); onAcaoConfirma(vaga.id_vaga, vaga.titulo, "REABRIR"); }} className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-emerald-600 hover:bg-emerald-50 transition-colors border-b border-gray-50">
-                      <HiOutlinePlay size={18} /> Reativar Vaga
+                      <HiOutlinePlay size={18} /> Reativar Candidaturas
                     </button>
                   )}
 

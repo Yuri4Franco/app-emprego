@@ -177,12 +177,12 @@ export default function VagaDetalhesContent({
                 />
               )}
 
-              {/* DATA DE ENCERRAMENTO */}
-              {vaga.data_encerramento &&
-                !isNaN(new Date(vaga.data_encerramento).getTime()) && (
+              {/* DATA DE FECHAMENTO */}
+              {vaga.data_fechamento &&
+                !isNaN(new Date(vaga.data_fechamento).getTime()) && (
                   <Badge
                     icon={<HiOutlineCalendar size={18} />}
-                    text={`Inscrições até: ${new Date(vaga.data_encerramento).toLocaleDateString("pt-BR")}`}
+                    text={`Inscrições até: ${new Date(vaga.data_fechamento).toLocaleDateString("pt-BR")}`}
                     color="bg-amber-50 text-amber-700 border-amber-200"
                   />
                 )}

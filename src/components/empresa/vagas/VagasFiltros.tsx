@@ -16,7 +16,7 @@ export function VagasFiltros({
   const tabs = [
     { id: "", label: "Todas" },
     { id: "ATIVA", label: "Ativas" },
-    { id: "PAUSADA", label: "Pausadas" },
+    { id: "PAUSADA", label: "Em Triagem" },
     { id: "RASCUNHO", label: "Rascunhos" },
     { id: "EM_ANALISE", label: "Em Análise" },
     { id: "AGUARDANDO_PAGAMENTO", label: "Pagamento" },

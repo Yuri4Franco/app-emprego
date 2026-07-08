@@ -6,11 +6,11 @@ export default function robots(): MetadataRoute.Robots {
 
   return {
     rules: {
-      userAgent: '*', // Aplica-se a todos os motores de busca (Googlebot, Bingbot, etc.)
+      userAgent: '*',
       allow: [
         '/',
-        '/ajuda/', // Permite a indexação de todos os tutoriais e guias
-        '/vagas/', // Se no futuro tiver uma página pública para listar vagas
+        '/ajuda/',
+        '/vagas/',
       ],
       disallow: [
         '/admin/',

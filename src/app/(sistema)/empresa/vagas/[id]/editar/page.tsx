@@ -133,6 +133,10 @@ export default function EditarVagaPage({
           ? vaga.data_encerramento.split("T")[0]
           : "";
 
+        const dataFechamentoFormatada = vaga.data_fechamento
+          ? vaga.data_fechamento.split("T")[0]
+          : "";
+
         reset({
           titulo: vaga.titulo,
           id_area_atuacao: vaga.id_area_atuacao,
@@ -140,6 +144,7 @@ export default function EditarVagaPage({
           modelo_trabalho: vaga.modelo_trabalho,
           tipo_contrato: vaga.tipo_contrato,
           data_encerramento: dataEncerramentoFormatada,
+          data_fechamento: dataFechamentoFormatada,
           tipo_salario: vaga.ocultar_salario
             ? "OCULTO"
             : vaga.salario_a_combinar
@@ -406,13 +411,12 @@ export default function EditarVagaPage({
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id as any)}
-            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${
-              activeTab === tab.id
+            className={`relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 md:px-6 py-3 rounded-[20px] text-xs md:text-sm font-bold transition-all overflow-hidden whitespace-nowrap min-w-fit ${activeTab === tab.id
                 ? "bg-blue-50 text-primary shadow-sm border-b-2 border-primary"
                 : tab.hasError
                   ? "text-red-500 hover:bg-red-50 border-b-2 border-transparent"
                   : "text-gray-500 hover:bg-gray-50 border-b-2 border-transparent hover:text-gray-700"
-            }`}
+              }`}
           >
             <span className="flex items-center gap-1.5 md:gap-2 relative z-10">
               {tab.icon} {tab.label}

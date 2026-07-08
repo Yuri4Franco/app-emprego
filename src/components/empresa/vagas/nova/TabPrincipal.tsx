@@ -115,8 +115,8 @@ export default function TabPrincipal({ areas }: TabPrincipalProps) {
             type="text"
             placeholder="Buscar área (Ex: TI, Comercial...)"
             className={`w-full pl-12 pr-4 py-4 bg-gray-50 border rounded-[20px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 ${errors.id_area_atuacao
-                ? "border-red-500 bg-red-50/30"
-                : "border-gray-100 focus:border-blue-500"
+              ? "border-red-500 bg-red-50/30"
+              : "border-gray-100 focus:border-blue-500"
               }`}
             value={searchTermArea}
             onChange={(e) => {
@@ -157,8 +157,8 @@ export default function TabPrincipal({ areas }: TabPrincipalProps) {
                       onClick={() => selecionarArea(a)}
                       onMouseEnter={() => setFocusedAreaIndex(index)}
                       className={`w-full text-left px-4 py-3 rounded-[16px] text-sm font-medium cursor-pointer transition-colors ${isFocused
-                          ? "bg-blue-50 text-blue-700"
-                          : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
+                        ? "bg-blue-50 text-blue-700"
+                        : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
                         }`}
                     >
                       {a.nome}
@@ -273,7 +273,20 @@ export default function TabPrincipal({ areas }: TabPrincipalProps) {
             error={errors.data_encerramento?.message}
           />
           <p className="text-[10px] text-gray-500 ml-1">
-            A vaga será ocultada automaticamente após esta data.
+            A vaga será encerrada automaticamente após esta data ou após 15 dias.
+          </p>
+        </div>
+        <div className="space-y-1.5">
+          <Input
+            label="Data limite para candidaturas (Opcional)"
+            type="date"
+            {...register("data_fechamento")}
+            className={getFieldStatus("data_fechamento")}
+
+            error={errors.data_fechamento?.message}
+          />
+          <p className="text-[10px] text-gray-500 ml-1">
+            A vaga será pausada automaticamente nesta data. Você poderá reabrir o recebimento de novos candidatos a qualquer momento.
           </p>
         </div>
       </div>
