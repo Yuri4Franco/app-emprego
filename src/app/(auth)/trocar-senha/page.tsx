@@ -22,6 +22,7 @@ const trocarSenhaSchema = z.object({
     nova_senha: z
         .string()
         .min(8, "A senha deve ter no mínimo 8 caracteres")
+        .regex(/[a-z]/, "Deve conter ao menos uma letra minúscula")
         .regex(/[A-Z]/, "Deve conter ao menos uma letra maiúscula")
         .regex(/[0-9]/, "Deve conter ao menos um número")
         .regex(/[^a-zA-Z0-9]/, "Deve conter ao menos um caractere especial"),
@@ -61,6 +62,7 @@ export default function TrocarSenhaPage() {
     // ✨ Regras visuais para o checklist
     const passwordRules = [
         { label: "Mínimo de 8 caracteres", isValid: currentPassword.length >= 8 },
+        { label: "Pelo menos uma letra minúscula", isValid: /[a-z]/.test(currentPassword) },
         { label: "Pelo menos uma letra maiúscula", isValid: /[A-Z]/.test(currentPassword) },
         { label: "Pelo menos um número", isValid: /[0-9]/.test(currentPassword) },
         { label: "Um caractere especial (@, #, $...)", isValid: /[^a-zA-Z0-9]/.test(currentPassword) },
