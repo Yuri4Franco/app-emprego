@@ -56,13 +56,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isAuthenticated = !!user;
 
-  // Logout modificado para verificar dinamicamente a origem/regra da empresa
+  // Logout com remoção de cookies padronizada (path: "/")
   const logout = useCallback(() => {
     const isEmpresa = user?.role === "EMPRESA" || pathname.startsWith("/empresa") || pathname === "/entrar-empresa";
 
-    Cookies.remove("aci_token");
-    Cookies.remove("user_role");
-    Cookies.remove("exigir_troca_senha");
+    Cookies.remove("aci_token", { path: "/" });
+    Cookies.remove("user_role", { path: "/" });
+    Cookies.remove("exigir_troca_senha", { path: "/" });
     setUser(null);
     setPerfil(null);
 
@@ -87,6 +87,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // ✨ O SEGREDO ESTÁ AQUI: Uma função única para decodificar o usuário e evitar erros de tipagem
+  const extrairUsuarioDoToken = (token: string): User => {
+    const decoded: any = jwtDecode(token);
+    return {
+      id: decoded.sub,
+      role: decoded.role || decoded.tipo,
+      // Fallback para as duas chaves que o backend pode enviar
+      is_master: Boolean(decoded.is_master || decoded.master),
+      exigir_troca_senha: Boolean(decoded.exigir_troca_senha),
+    };
+  };
+
   // 1. CARREGAMENTO INICIAL
   useEffect(() => {
     const carregarSessao = async () => {
@@ -94,18 +106,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (token) {
         try {
-          const decoded: any = jwtDecode(token);
-          setUser({
-            id: decoded.sub,
-            role: decoded.role,
-            is_master: !!decoded.is_master,
-            exigir_troca_senha: decoded.exigir_troca_senha,
-          });
-
+          const userData = extrairUsuarioDoToken(token);
+          setUser(userData);
           await fetchPerfil();
         } catch (error) {
           console.error("Token inválido ou sessão expirada", error);
-          Cookies.remove("aci_token");
+          Cookies.remove("aci_token", { path: "/" });
           setUser(null);
           setPerfil(null);
         }
@@ -132,19 +138,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       router.push("/trocar-senha");
     }
   }, [isLoading, isAuthenticated, user, pathname, router]);
+
   // 3. FLUXO DE LOGIN ASSÍNCRONO
   const login = async (token: string) => {
     setIsLoading(true);
 
     try {
-      const decoded: any = jwtDecode(token);
-
-      const userData: User = {
-        id: decoded.sub,
-        role: decoded.role,
-        is_master: decoded.master,
-        exigir_troca_senha: decoded.exigir_troca_senha,
-      };
+      const userData = extrairUsuarioDoToken(token);
 
       Cookies.set("aci_token", token, { expires: 1, path: "/" });
       Cookies.set("user_role", userData.role, { expires: 1, path: "/" });
