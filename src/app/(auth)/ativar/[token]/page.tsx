@@ -12,6 +12,7 @@ import {
 import api from "@/src/services/api";
 
 import Logo from "@/src/assets/logos/logo-transparente.webp";
+import { useAuth } from "@/src/AuthContext";
 
 export default function AtivarContaPage({
   params,
@@ -19,9 +20,8 @@ export default function AtivarContaPage({
   // 1. Tipagem atualizada para o Next.js mais recente
   params: Promise<{ token: string }>;
 }) {
+  const { login } = useAuth();
   const router = useRouter();
-
-  // 2. A MÁGICA AQUI: Desempacotando a Promise com o hook use()
   const { token } = use(params);
 
   const jaValidou = useRef(false);
@@ -32,21 +32,22 @@ export default function AtivarContaPage({
   );
   const [errorMessage, setErrorMessage] = useState("");
 
-useEffect(() => {
+  useEffect(() => {
     const validarToken = async () => {
       // Se a requisição já foi feita, aborta a execução duplicada do Strict Mode
       if (jaValidou.current) return;
-      
+
       // Marca que a requisição está sendo feita
       jaValidou.current = true;
 
       try {
-        await api.post("/ativar", { token });
+        const response = await api.post("/ativar", { token });
 
-        setStatus("success");
-        setTimeout(() => {
-          router.push("/entrar");
-        }, 3000);
+        const tokenDeLogin = response.data.data.token;
+
+        setTimeout(async () => {
+          await login(tokenDeLogin);
+        }, 2500);
       } catch (error: any) {
         setStatus("error");
         setErrorMessage(
@@ -58,7 +59,7 @@ useEffect(() => {
     if (token) {
       validarToken();
     }
-  }, [token, router]);
+  }, [token, login]);
 
   return (
     <div className="min-h-screen w-full bg-gray-50 flex flex-col justify-center items-center p-6">

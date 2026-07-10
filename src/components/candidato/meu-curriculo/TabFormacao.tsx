@@ -10,7 +10,12 @@ import {
   HiOutlinePlus,
   HiOutlineTrash,
   HiOutlineSave,
+  HiOutlineBookOpen,
+  HiOutlineDesktopComputer,
 } from "react-icons/hi";
+
+import { PiCertificate } from "react-icons/pi";
+
 
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
@@ -42,7 +47,7 @@ export default function TabFormacao({
     watch: watchForm,
     formState: { errors: errorsForm },
   } = useForm<FormacaoData>({
-    resolver: zodResolver(formacaoSchema) as any, // "as any" para evitar conflito de tipos do superRefine
+    resolver: zodResolver(formacaoSchema) as any,
     defaultValues: {
       instituicao: "",
       nivel: "",
@@ -55,7 +60,9 @@ export default function TabFormacao({
   // =========================================================================
   // LÓGICA DO FORMULÁRIO DE FORMAÇÃO
   // =========================================================================
-  const abrirFormFormacao = (form?: any) => {
+
+  // ✨ Modificado para aceitar um pré-nível via Quick Add
+  const abrirFormFormacao = (form?: any, nivelPreSelecionado?: string) => {
     if (form) {
       setEditingFormId(form.id_formacao);
       resetForm({
@@ -71,7 +78,7 @@ export default function TabFormacao({
       setEditingFormId(null);
       resetForm({
         instituicao: "",
-        nivel: "",
+        nivel: nivelPreSelecionado || "", // ✨ Se vier do Quick Add, já preenche
         curso: "",
         status: "",
         data_conclusao: "",
@@ -90,17 +97,12 @@ export default function TabFormacao({
 
       const payload = {
         ...data,
-        // Se for básico, o curso é igual ao nível (ex: "Ensino Médio"). Senão, é o curso que a pessoa digitou.
         curso: isBasico ? data.nivel : data.curso,
-        // Instituição e Série vão nulos se for básico
         instituicao: isBasico ? null : data.instituicao,
         serie: null,
-        // A data só é enviada se não for básico E estiver concluído
         data_conclusao:
           !isBasico && isConcluido && data.data_conclusao
-            ? new Date(
-                `${data.data_conclusao}-01-01T12:00:00.000Z`,
-              ).toISOString()
+            ? new Date(`${data.data_conclusao}-01-01T12:00:00.000Z`).toISOString()
             : null,
       };
 
@@ -140,18 +142,17 @@ export default function TabFormacao({
   };
 
   const excluirFormacao = async (id: number) => {
-    if (!confirm("Excluir esta formação?")) return;
+    if (!confirm("Excluir esta escolaridade?")) return;
     try {
       await api.delete(`/candidato/formacoes/${id}`);
       setFormacoes((prev) => prev.filter((f) => f.id_formacao !== id));
-      toast.success("Formação removida.");
+      toast.success("Escolaridade removida.");
       onAtualizarProgresso();
     } catch (error) {
       toast.error("Erro ao excluir.");
     }
   };
 
-  // Variável para facilitar a leitura no JSX
   const nivelAtual = watchForm("nivel");
   const isEnsinoBasico =
     nivelAtual === "Ensino Fundamental" || nivelAtual === "Ensino Médio";
@@ -165,38 +166,83 @@ export default function TabFormacao({
         <div className="bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] shadow-sm border border-gray-100 space-y-6 md:space-y-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
+              {/* ✨ Título atualizado para quebrar a barreira do "Acadêmico" */}
               <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
-                Formação Acadêmica
+                Educação e Escolaridade
               </h2>
-              <p className="text-sm text-gray-500 mt-1 font-medium">
-                Adicione seu nível de ensino, graduações ou cursos técnicos.
+              <p className="text-sm text-gray-500 mt-1 font-medium leading-relaxed">
+                Empresas valorizam sua trajetória completa! Não deixe de incluir seu grau escolar, cursos técnicos ou qualificações complementares.
               </p>
             </div>
             {formacoes.length > 0 && (
               <button
                 onClick={() => abrirFormFormacao()}
-                className="w-full sm:w-auto flex justify-center items-center gap-2 bg-blue-50 text-primary px-5 py-3 md:py-2.5 rounded-full text-sm font-bold hover:bg-blue-100 transition-colors"
+                className="w-full sm:w-auto flex justify-center items-center gap-2 bg-blue-50 text-primary px-5 py-3 md:py-2.5 rounded-full text-sm font-bold hover:bg-blue-100 transition-colors shrink-0"
               >
-                <HiOutlinePlus size={18} /> Adicionar Mais Formações
+                <HiOutlinePlus size={18} /> Nova Escolaridade
               </button>
             )}
           </div>
 
-          {/* Estado Vazio */}
+          {/* ✨ Estado Vazio Redesenhado com Quick Add */}
           {formacoes.length === 0 ? (
-            <div
-              onClick={() => abrirFormFormacao()}
-              className="p-10 md:p-16 rounded-[24px] md:rounded-[32px] border-2 border-dashed border-gray-200 bg-gray-50/50 text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50/50 transition-all group"
-            >
-              <div className="w-16 h-16 md:w-20 md:h-20 bg-white text-gray-400 shadow-sm border border-gray-100 group-hover:text-blue-500 group-hover:border-blue-200 transition-colors rounded-full flex items-center justify-center mx-auto mb-4 md:mb-5">
-                <HiOutlineAcademicCap size={32} className="md:w-10 md:h-10" />
+            <div className="bg-gray-50/50 rounded-[32px] border border-gray-100 overflow-hidden">
+              <div className="p-8 md:p-10 text-center border-b border-gray-100">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-white text-blue-500 shadow-sm border border-blue-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                  <HiOutlineAcademicCap size={32} className="md:w-10 md:h-10" />
+                </div>
+                <h3 className="text-lg md:text-xl font-black text-gray-800">
+                  Qual o seu nível de escolaridade?
+                </h3>
+                <p className="text-sm text-gray-500 mt-2 font-medium max-w-md mx-auto">
+                  Mesmo que não tenha faculdade, adicione até onde você estudou. Isso ajuda os recrutadores a encontrarem a vaga ideal para você.
+                </p>
               </div>
-              <h3 className="text-lg md:text-xl font-black text-gray-800">
-                Nenhuma Formação Cadastrada
-              </h3>
-              <p className="text-sm text-gray-500 mt-1.5 font-medium max-w-sm mx-auto">
-                Clique aqui para começar a adicionar suas formações. Quanto mais adicionar, melhor!
-              </p>
+
+              {/* Botões de Ação Rápida */}
+              <div>
+                <p className="text-sm text-gray-500 p-2 ml-4 font-medium">
+                  Selecione as opções abaixo para começar a adicionar:
+                </p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-100 bg-white">
+                <button
+                  onClick={() => abrirFormFormacao(null, "Ensino Fundamental")}
+                  className="flex flex-col items-center justify-center gap-2 p-5 sm:p-6 hover:bg-orange-50/50 transition-colors group"
+                >
+                  <HiOutlineBookOpen size={24} className="text-gray-400 group-hover:text-orange-500 transition-colors" />
+                  <span className="font-bold text-gray-700 group-hover:text-orange-700 text-xs sm:text-sm text-center">Ensino Fundamental</span>
+                </button>
+                <button
+                  onClick={() => abrirFormFormacao(null, "Ensino Médio")}
+                  className="flex flex-col items-center justify-center gap-2 p-5 sm:p-6 hover:bg-blue-50/50 transition-colors group"
+                >
+                  <PiCertificate size={24} className="text-gray-400 group-hover:text-blue-500 transition-colors" />
+                  <span className="font-bold text-gray-700 group-hover:text-blue-700 text-xs sm:text-sm text-center">Ensino Médio</span>
+                </button>
+                <button
+                  onClick={() => abrirFormFormacao(null, "Curso Técnico")}
+                  className="flex flex-col items-center justify-center gap-2 p-5 sm:p-6 hover:bg-emerald-50/50 transition-colors group"
+                >
+                  <HiOutlineDesktopComputer size={24} className="text-gray-400 group-hover:text-emerald-500 transition-colors" />
+                  <span className="font-bold text-gray-700 group-hover:text-emerald-700 text-xs sm:text-sm text-center">Curso Técnico</span>
+                </button>
+                <button
+                  onClick={() => abrirFormFormacao(null, "")}
+                  className="flex flex-col items-center justify-center gap-2 p-5 sm:p-6 hover:bg-purple-50/50 transition-colors group"
+                >
+                  <HiOutlineAcademicCap size={24} className="text-gray-400 group-hover:text-purple-500 transition-colors" />
+                  <span className="font-bold text-gray-700 group-hover:text-purple-700 text-xs sm:text-sm text-center">Ensino Superior</span>
+                </button>
+              </div>
+              <div className="p-4 bg-gray-50 text-center border-t border-gray-100">
+                <button
+                  onClick={() => abrirFormFormacao()}
+                  className="text-xs font-bold text-gray-500 hover:text-blue-600 uppercase tracking-widest"
+                >
+                  Outras formações...
+                </button>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
@@ -230,11 +276,12 @@ export default function TabFormacao({
 
                         <div>
                           <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                              f.status === "CONCLUÍDO"
-                                ? "bg-emerald-50 text-emerald-600 border border-emerald-100/50"
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${f.status === "CONCLUÍDO"
+                              ? "bg-emerald-50 text-emerald-600 border border-emerald-100/50"
+                              : f.status === "CURSANDO"
+                                ? "bg-blue-50 text-blue-600 border border-blue-100/50"
                                 : "bg-amber-50 text-amber-600 border border-amber-100/50"
-                            }`}
+                              }`}
                           >
                             {f.status}
                             {!isBasico &&
@@ -260,7 +307,7 @@ export default function TabFormacao({
                       <button
                         onClick={() => excluirFormacao(f.id_formacao)}
                         className="flex items-center justify-center p-2.5 md:p-2 bg-white border border-gray-200 hover:border-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl md:rounded-full transition-colors shrink-0"
-                        title="Excluir formação"
+                        title="Excluir escolaridade"
                       >
                         <HiOutlineTrash size={18} className="md:w-4 md:h-4" />
                       </button>
@@ -285,10 +332,10 @@ export default function TabFormacao({
 
           <div className="relative z-10 border-b border-gray-200/60 pb-4 md:pb-5">
             <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
-              {editingFormId ? "Editar Formação Acadêmica" : "Adicionar Formação Acadêmica"}
+              {editingFormId ? "Editar Escolaridade" : "Adicionar Escolaridade"}
             </h2>
             <p className="text-sm text-gray-500 mt-1 font-medium">
-              Preencha as informações solicitadas abaixo e clique em salvar para adicionar a formação no seu currículo.
+              Preencha as informações solicitadas abaixo.
             </p>
           </div>
 
@@ -304,7 +351,7 @@ export default function TabFormacao({
               <option value="Ensino Fundamental">Ensino Fundamental</option>
               <option value="Ensino Médio">Ensino Médio</option>
               <option value="Curso Técnico">Curso Técnico</option>
-              <option value="Superior (Tecnólogo)">Superior (Tecnólogo)</option>
+              <option value="Superior (Tecnólogo)">Graduação (Tecnólogo)</option>
               <option value="Graduação">
                 Graduação (Bacharel/Licenciatura)
               </option>
@@ -330,13 +377,13 @@ export default function TabFormacao({
                 <>
                   <Input
                     label="Instituição de Ensino"
-                    placeholder="Ex: UNIJUÍ, IFFar, Fisk..."
+                    placeholder="Ex: UNIJUÍ, SENAI, Fisk..."
                     {...registerForm("instituicao")}
                     error={errorsForm.instituicao?.message}
                   />
                   <Input
                     label="Nome do Curso"
-                    placeholder="Ex: Administração, Marketing..."
+                    placeholder="Ex: Administração, Soldador..."
                     {...registerForm("curso")}
                     error={errorsForm.curso?.message}
                   />
@@ -354,7 +401,8 @@ export default function TabFormacao({
                   <option value="">Selecione o status...</option>
                   <option value="CURSANDO">Cursando</option>
                   <option value="CONCLUÍDO">Concluído</option>
-                  <option value="INTERROMPIDO">Incompleto / Trancado</option>
+                  {/* ✨ Mudança de Copywriting para validar a trajetória do usuário */}
+                  <option value="INTERROMPIDO">Em curso ou Interrompido</option>
                 </select>
                 {errorsForm.status && (
                   <p className="text-[11px] font-bold text-red-500 ml-2 mt-1">
@@ -392,7 +440,7 @@ export default function TabFormacao({
               disabled={isSavingForm}
               className="w-full md:w-auto px-10 py-4 rounded-full md:rounded-2xl shadow-lg shadow-blue-500/20 flex justify-center uppercase tracking-widest text-xs font-black transition-all hover:scale-105 active:scale-95 disabled:hover:scale-100"
             >
-              {isSavingForm ? "Salvando..." : "Salvar"}
+              {isSavingForm ? "Salvando..." : "Salvar Escolaridade"}
             </ButtonType>
           </div>
         </form>

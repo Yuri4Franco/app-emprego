@@ -43,7 +43,7 @@ export default function TabCompetencias({
         if (Array.isArray(compData)) {
           // Garante que só carrega para a busca as competências aprovadas pela ACI
           const apenasAprovadas = compData.filter(
-            (c) => c.status === "APROVADA" || !c.status, // fallback caso o backend ainda não mande o status
+            (c) => c.status === "APROVADA" || !c.status,
           );
           setListaTaxonomiaCompetencias(apenasAprovadas);
         }
@@ -54,7 +54,7 @@ export default function TabCompetencias({
     carregarTaxonomia();
   }, []);
 
-  // Filtra as habilidades (remove as que o usuário já adicionou e aplica a busca)
+  // Filtra as habilidades
   const filteredCompetencias = listaTaxonomiaCompetencias.filter((tax) => {
     const jaAdicionou = competencias.some(
       (c) => c.id_competencia === tax.id_competencia,
@@ -65,9 +65,16 @@ export default function TabCompetencias({
     return !jaAdicionou && bateComBusca;
   });
 
-  // Verifica se o texto digitado não é exatamente igual a nenhuma competência já listada
+  // ✨ TRAVA DE TEXTÃO: Uma habilidade dificilmente terá mais que 35 letras.
+  // Se tiver vírgula, ele provavelmente está listando coisas.
+  const isInputMuitoLongoOuLista =
+    searchTermComp.length > 35 || searchTermComp.includes(",");
+
+  // Verifica se o texto digitado não é exatamente igual a nenhuma já listada, 
+  // e bloqueia a sugestão se for um "textão".
   const mostrarSugestao =
     searchTermComp.trim().length > 1 &&
+    !isInputMuitoLongoOuLista &&
     !listaTaxonomiaCompetencias.some(
       (c) => c.nome.toLowerCase() === searchTermComp.trim().toLowerCase(),
     );
@@ -77,11 +84,11 @@ export default function TabCompetencias({
     nivel: string,
   ) => {
     if (competencias.length >= 10) {
-      toast.error("Você já atingiu o limite máximo de 10 competências.");
+      toast.error("Você já atingiu o limite máximo de 10 habilidades.");
       return;
     }
     if (competencias.find((c) => c.id_competencia === id_competencia)) {
-      toast.error("Você já adicionou essa competência.");
+      toast.error("Você já adicionou essa habilidade.");
       return;
     }
 
@@ -101,13 +108,13 @@ export default function TabCompetencias({
       toast.success("Habilidade adicionada!");
       onAtualizarProgresso();
     } catch (error) {
-      toast.error("Erro ao adicionar competência.");
+      toast.error("Erro ao adicionar habilidade.");
     }
   };
 
   const sugerirCompetencia = async (nome: string, nivel: string) => {
     if (competencias.length >= 10) {
-      toast.error("Você já atingiu o limite máximo de 10 competências.");
+      toast.error("Você já atingiu o limite de 10 habilidades.");
       return;
     }
 
@@ -116,9 +123,8 @@ export default function TabCompetencias({
       const payload = { nome: nome.trim(), nivel };
       const res = await api.post("/candidato/competencias/sugerir", payload);
 
-      // Assumindo que o backend retorna o vínculo recém criado ou os dados para montar o card
       const novaCompetencia = {
-        id_competencia: res.data?.data?.id_competencia || Date.now(), // Fallback de ID para a UI não quebrar
+        id_competencia: res.data?.data?.id_competencia || Date.now(),
         nivel,
         competencia: {
           nome: payload.nome,
@@ -145,7 +151,7 @@ export default function TabCompetencias({
       setCompetencias((prev) =>
         prev.filter((c) => c.id_competencia !== id_competencia),
       );
-      toast.success("Competência removida.");
+      toast.success("Habilidade removida.");
       onAtualizarProgresso();
     } catch (error) {
       toast.error("Erro ao remover.");
@@ -206,13 +212,10 @@ export default function TabCompetencias({
             />
             <div>
               <h4 className="text-xs font-black text-amber-900 uppercase tracking-widest mb-1">
-                Construa com a gente
+                Uma de cada vez!
               </h4>
               <p className="text-xs text-amber-800/80 leading-relaxed font-medium">
-                Nosso banco de dados está em fase de crescimento. Se você não
-                encontrar a sua habilidade na busca,{" "}
-                <strong>basta sugerir</strong>! Ela entra no seu currículo e a
-                equipe da ACI-Panambi revisa.
+                <strong>Adicione apenas uma habilidade por vez.</strong> Por exemplo, digite "Excel" e salve, depois digite "Liderança" e salve de novo.  Se você não encontrar a sua habilidade na busca, basta sugerir!
               </p>
             </div>
           </div>
@@ -223,11 +226,8 @@ export default function TabCompetencias({
         {/* LADO ESQUERDO: BUSCA E SELEÇÃO */}
         <div className="space-y-4">
           <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
-            Buscar ou Sugerir Habilidade
+            Pesquisar Habilidade (Uma por vez)
           </label>
-          <p className="text-xs text-gray-500 leading-relaxed font-medium mb-2  ml-1">
-            Digite o nome da habilidade que deseja adicionar. Caso não encontre, use a opção de sugerir para que ela seja avaliada pela equipe da ACI e adicionada ao seu perfil.
-          </p>
           <div className="relative group">
             <HiOutlineSearch
               className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 z-10"
@@ -235,16 +235,16 @@ export default function TabCompetencias({
             />
             <input
               type="text"
-              placeholder="Ex: Liderança, Empilhadeira, Excel..."
+              // ✨ Placeholder mais claro
+              placeholder="Ex: Liderança, Excel, Solda..."
               disabled={competencias.length >= 10 || compSelecionada !== null}
-              className="w-full pl-14 pr-4 py-3.5 md:py-4 bg-gray-50 border border-gray-100 rounded-full md:rounded-[24px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 disabled:opacity-50"
+              className={`w-full pl-14 pr-4 py-3.5 md:py-4 bg-gray-50 border rounded-full md:rounded-[24px] outline-none text-sm transition-all focus:ring-4 focus:ring-blue-500/5 disabled:opacity-50 ${isInputMuitoLongoOuLista ? "border-red-300 focus:border-red-500 text-red-700" : "border-gray-100 focus:border-blue-500"}`}
               value={compSelecionada ? compSelecionada.nome : searchTermComp}
               onChange={(e) => {
                 setSearchTermComp(e.target.value);
                 setIsCompDropdownOpen(true);
               }}
               onFocus={() => setIsCompDropdownOpen(true)}
-              // Atraso no onBlur para dar tempo de clicar na sugestão
               onBlur={() => setTimeout(() => setIsCompDropdownOpen(false), 200)}
             />
             {compSelecionada && (
@@ -255,6 +255,13 @@ export default function TabCompetencias({
               >
                 <HiOutlineX size={14} />
               </button>
+            )}
+
+            {/* Aviso visual se a pessoa estiver escrevendo um textão */}
+            {isInputMuitoLongoOuLista && !compSelecionada && (
+              <p className="absolute -bottom-6 left-2 text-[10px] font-bold text-red-500 animate-in fade-in">
+                Erro: Por favor, adicione apenas uma habilidade por vez (sem vírgulas ou frases).
+              </p>
             )}
 
             {/* DROPDOWN DE RESULTADOS */}
@@ -278,11 +285,13 @@ export default function TabCompetencias({
                     ))
                   ) : (
                     <div className="px-5 py-3 text-sm text-gray-400 font-medium italic">
-                      Nenhuma habilidade cadastrada encontrada.
+                      {isInputMuitoLongoOuLista
+                        ? "Texto muito longo ou listado. Uma habilidade por vez, por favor."
+                        : "Nenhuma habilidade encontrada."}
                     </div>
                   )}
 
-                  {/* BOTÃO DE SUGERIR (Sempre aparece se não houver match exato) */}
+                  {/* BOTÃO DE SUGERIR */}
                   {mostrarSugestao && (
                     <button
                       type="button"
@@ -303,10 +312,10 @@ export default function TabCompetencias({
               )}
           </div>
 
-          {/* ESCOLHA O NÍVEL (Aparece após selecionar ou sugerir) */}
+          {/* ESCOLHA O NÍVEL */}
           {compSelecionada && (
             <div
-              className={`p-5 md:p-6 rounded-[24px] md:rounded-[32px] border animate-in slide-in-from-top-2 ${compSelecionada.isSuggestion ? "bg-amber-50/50 border-amber-100" : "bg-blue-50 border-blue-100"}`}
+              className={`p-5 md:p-6 rounded-[24px] md:rounded-[32px] border animate-in slide-in-from-top-2 ${compSelecionada.isSuggestion ? "bg-amber-50/50 border-amber-100" : "bg-blue-50 border-blue-100"} mt-4`}
             >
               <p
                 className={`text-[11px] md:text-xs font-black uppercase tracking-widest mb-3 md:mb-4 ${compSelecionada.isSuggestion ? "text-amber-800" : "text-blue-800"}`}
@@ -341,13 +350,13 @@ export default function TabCompetencias({
         </div>
 
         {/* MOSTRUÁRIO DE HABILIDADES SALVAS */}
-        <div className="bg-gray-50 border border-gray-100 rounded-[24px] md:rounded-[32px] p-5 md:p-6  overflow-y-auto">
+        <div className="bg-gray-50 border border-gray-100 rounded-[24px] md:rounded-[32px] p-5 md:p-6 mt-4">
           <h3 className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-widest mb-4 ml-1 md:ml-2">
             Suas Seleções
           </h3>
 
           {competencias.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
+            <div className="h-full flex flex-col items-center justify-center text-center opacity-50 py-8">
               <HiOutlineLightningBolt
                 size={40}
                 className="text-gray-300 mb-2 md:w-12 md:h-12"

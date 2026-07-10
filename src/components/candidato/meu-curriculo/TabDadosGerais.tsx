@@ -13,6 +13,7 @@ import {
   HiOutlinePencilAlt,
   HiOutlineArrowRight,
   HiOutlineSave,
+  HiOutlineSparkles,
 } from "react-icons/hi";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
@@ -144,6 +145,17 @@ export default function TabDadosGerais({
       setAreasSelecionadas(areasSalvas);
     }
   }, [dadosIniciais]);
+
+  const handleAutoPreencherPrimeiroEmprego = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setValue("resumo_profissional", "Sou um profissional em início de carreira, motivado a aprender e desenvolver novas habilidades na prática. Possuo facilidade de adaptação, compromisso com resultados e grande vontade de contribuir com o crescimento da empresa.");
+      setValue("objetivo_profissional", "Busco minha primeira oportunidade profissional para aplicar meus conhecimentos, adquirir experiência prática e construir uma trajetória sólida e de longo prazo dentro da empresa.");
+    } else {
+      // Se desmarcar, limpa os campos para ele digitar manualmente
+      setValue("resumo_profissional", "");
+      setValue("objetivo_profissional", "");
+    }
+  };
 
   const handleUploadFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -674,6 +686,30 @@ export default function TabDadosGerais({
                 </div>
               </div>
             )}
+
+          {/* ✨ CHECKBOX DE AUTO-PREENCHIMENTO PARA INICIANTES */}
+          <div className="flex items-center gap-3 bg-white p-4 rounded-2xl border border-gray-100 hover:border-gray-200 transition-all shadow-sm">
+            <label className="flex items-start gap-4 cursor-pointer group w-full">
+              {/* Checkbox estilizado com um toque mais suave */}
+              <div className="mt-0.5">
+                <input
+                  type="checkbox"
+                  onChange={handleAutoPreencherPrimeiroEmprego}
+                  className="w-5 h-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer accent-blue-600"
+                />
+              </div>
+
+              <div>
+                <span className="block text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                  <HiOutlineSparkles className="text-blue-400" size={18} />
+                  Ainda não possuo experiência profissional
+                </span>
+                <span className="block text-xs text-gray-400 mt-1 font-medium leading-snug max-w-sm">
+                  Marque esta opção para gerar textos sugeridos focados em primeiro emprego para os campos abaixo.
+                </span>
+              </div>
+            </label>
+          </div>
 
           <div className="space-y-2">
             <label className="text-xs md:text-sm font-bold text-gray-700 ml-1">
