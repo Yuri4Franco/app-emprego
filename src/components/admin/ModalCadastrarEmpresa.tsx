@@ -45,7 +45,7 @@ export function ModalCadastrarEmpresa({ isOpen, onClose, onSuccess }: ModalProps
         defaultValues: {
             cidade: "Panambi",
             uf: "RS",
-            tipo_vinculo_aci: "NAO_ASSOCIADA",
+            tipo_vinculo_aci: "ASSOCIADA",
             cnpj: "",
             cep: "98280-000",
             senha: "@Acivagas555",

@@ -168,7 +168,7 @@ export default function RecuperarSenhaPage() {
                             Se você não consegue mais acessar o e-mail cadastrado, nossa equipe pode ajudar a recuperar sua conta.
                         </p>
                         <Link
-                            href="/contato"
+                            href="https://wa.me/555533759350"
                             className="inline-block px-5 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-full text-xs font-black uppercase tracking-widest transition-colors"
                         >
                             Falar com o Suporte
