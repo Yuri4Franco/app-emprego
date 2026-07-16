@@ -26,6 +26,7 @@ interface EmpresaPerfil {
   creditos_vagas: number;
   creditos_curriculos: number;
   slug: string;
+  tipo_vinculo_aci: "ASSOCIADA" | "NAO_ASSOCIADA";
 }
 
 interface PerfilCompleto {
@@ -40,6 +41,7 @@ interface AuthContextData {
   user: User | null;
   perfil: PerfilCompleto | null;
   isAuthenticated: boolean;
+  isAssociada: boolean;
   login: (token: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
@@ -55,6 +57,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const isAuthenticated = !!user;
+
+  const isAssociada = perfil?.empresa?.tipo_vinculo_aci === "ASSOCIADA";
 
   // Logout com remoção de cookies padronizada (path: "/")
   const logout = useCallback(() => {
@@ -181,6 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         perfil,
         isAuthenticated,
+        isAssociada,
         login,
         logout,
         isLoading,

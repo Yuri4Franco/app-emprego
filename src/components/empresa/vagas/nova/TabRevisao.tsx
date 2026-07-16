@@ -11,6 +11,7 @@ import {
 } from "react-icons/hi";
 import { ButtonType } from "@/src/components/ButtonType";
 import { VagaFormData } from "@/src/schemas/vagaSchemas";
+import { AlertaPagamentoNaoAssociada } from "./StepRevisao";
 
 interface TabRevisaoProps {
   isPublishing: boolean;
@@ -227,7 +228,9 @@ export default function TabRevisao({ isPublishing }: TabRevisaoProps) {
               )}
             </div>
           </div>
+
         </div>
+        <AlertaPagamentoNaoAssociada />
       </div>
 
       {/* BOTÃO DE SUBMISSÃO (Só é ativado se isValid for true) */}

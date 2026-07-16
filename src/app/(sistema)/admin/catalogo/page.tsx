@@ -1,17 +1,25 @@
 "use client";
 
+import { useAuth } from "@/src/AuthContext";
 import { TabAreasAtuacao } from "@/src/components/admin/catalogo/TabAreas";
 import { TabBeneficios } from "@/src/components/admin/catalogo/TabBeneficios";
 import TabCompetencias from "@/src/components/admin/catalogo/TabCompetencias";
+import { TabPrecos } from "@/src/components/admin/catalogo/TabPrecos"; // 👈 Importação nova
 import { useState } from "react";
 import {
   HiOutlineLightningBolt,
   HiOutlineBriefcase,
   HiOutlineHeart,
+  HiOutlineCurrencyDollar, // 👈 Ícone novo
 } from "react-icons/hi";
+
+
 
 export default function CatalogoAdminPage() {
   const [activeTab, setActiveTab] = useState("competencias");
+
+  const { user } = useAuth();
+  const isMaster = user?.is_master;
 
   return (
     <div className="max-w-7xl mx-auto p-6 md:p-10 space-y-8 animate-in fade-in duration-500">
@@ -28,34 +36,43 @@ export default function CatalogoAdminPage() {
       <div className="flex flex-wrap gap-2 p-1.5 bg-white border border-gray-100 rounded-[20px] shadow-sm overflow-x-auto w-full md:w-fit">
         <button
           onClick={() => setActiveTab("competencias")}
-          className={`flex items-center gap-2 px-6 py-3 rounded-[16px] text-sm font-bold transition-all ${
-            activeTab === "competencias"
-              ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100"
-              : "text-gray-500 hover:bg-gray-50 hover:text-gray-800 border border-transparent"
-          }`}
+          className={`flex items-center gap-2 px-6 py-3 rounded-[16px] text-sm font-bold transition-all ${activeTab === "competencias"
+            ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100"
+            : "text-gray-500 hover:bg-gray-50 hover:text-gray-800 border border-transparent"
+            }`}
         >
           <HiOutlineLightningBolt size={18} /> Habilidades
         </button>
         <button
           onClick={() => setActiveTab("areas")}
-          className={`flex items-center gap-2 px-6 py-3 rounded-[16px] text-sm font-bold transition-all ${
-            activeTab === "areas"
-              ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100"
-              : "text-gray-500 hover:bg-gray-50 hover:text-gray-800 border border-transparent"
-          }`}
+          className={`flex items-center gap-2 px-6 py-3 rounded-[16px] text-sm font-bold transition-all ${activeTab === "areas"
+            ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100"
+            : "text-gray-500 hover:bg-gray-50 hover:text-gray-800 border border-transparent"
+            }`}
         >
           <HiOutlineBriefcase size={18} /> Áreas de Atuação
         </button>
         <button
           onClick={() => setActiveTab("beneficios")}
-          className={`flex items-center gap-2 px-6 py-3 rounded-[16px] text-sm font-bold transition-all ${
-            activeTab === "beneficios"
-              ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100"
-              : "text-gray-500 hover:bg-gray-50 hover:text-gray-800 border border-transparent"
-          }`}
+          className={`flex items-center gap-2 px-6 py-3 rounded-[16px] text-sm font-bold transition-all ${activeTab === "beneficios"
+            ? "bg-blue-50 text-blue-700 shadow-sm border border-blue-100"
+            : "text-gray-500 hover:bg-gray-50 hover:text-gray-800 border border-transparent"
+            }`}
         >
           <HiOutlineHeart size={18} /> Benefícios
         </button>
+
+        {isMaster && (
+          <button
+            onClick={() => setActiveTab("precos")}
+            className={`flex items-center gap-2 px-6 py-3 rounded-[16px] text-sm font-bold transition-all ${activeTab === "precos"
+              ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-200"
+              : "text-gray-500 hover:bg-gray-50 hover:text-gray-800 border border-transparent"
+              }`}
+          >
+            <HiOutlineCurrencyDollar size={18} /> Preços e Taxas
+          </button>
+        )}
       </div>
 
       {/* CONTEÚDO DA ABA */}
@@ -63,6 +80,7 @@ export default function CatalogoAdminPage() {
         {activeTab === "competencias" && <TabCompetencias />}
         {activeTab === "areas" && <TabAreasAtuacao />}
         {activeTab === "beneficios" && <TabBeneficios />}
+        {activeTab === "precos" && isMaster && <TabPrecos />}
       </div>
     </div>
   );
