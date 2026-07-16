@@ -1,15 +1,36 @@
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from "@sentry/nextjs";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
     qualities: [60, 75],
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
       },
     ],
+  },
+
+  // ✨ GERADOR DE ID: Ajuda o navegador a saber que houve uma atualização
+  generateBuildId: async () => {
+    return `build-${new Date().getTime()}`;
+  },
+
+  // ✨ CABEÇALHOS ANTI-CACHE: Força a atualização de Server Actions em abas antigas
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
+        ],
+      },
+    ];
   },
 };
 
