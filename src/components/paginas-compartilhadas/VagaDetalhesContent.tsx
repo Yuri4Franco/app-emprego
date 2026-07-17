@@ -199,7 +199,7 @@ export default function VagaDetalhesContent({
                 !isNaN(new Date(vaga.data_fechamento).getTime()) && (
                   <Badge
                     icon={<HiOutlineCalendar size={18} />}
-                    text={`Inscrições até: ${new Date(vaga.data_fechamento).toLocaleDateString("pt-BR")}`}
+                    text={`Inscrições até: ${new Date(vaga.data_fechamento).toLocaleDateString("pt-BR", { timeZone: "UTC" })}`}
                     color="bg-amber-50 text-amber-700 border-amber-200"
                   />
                 )}
@@ -210,14 +210,14 @@ export default function VagaDetalhesContent({
               vaga.tipo_diversidade !== "AMPLA_CONCORRENCIA" && (
                 <div
                   className={`w-full p-6 rounded-3xl border flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 mt-6 ${vaga.tipo_diversidade === "EXCLUSIVA_PCD"
-                      ? "bg-purple-50/60 border-purple-200 text-purple-950"
-                      : "bg-blue-50/40 border-blue-200 text-blue-950"
+                    ? "bg-purple-50/60 border-purple-200 text-purple-950"
+                    : "bg-blue-50/40 border-blue-200 text-blue-950"
                     }`}
                 >
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-white shadow-sm border ${vaga.tipo_diversidade === "EXCLUSIVA_PCD"
-                        ? "border-purple-200 text-purple-600"
-                        : "border-blue-200 text-blue-600"
+                      ? "border-purple-200 text-purple-600"
+                      : "border-blue-200 text-blue-600"
                       }`}
                   >
                     <HiOutlineInformationCircle size={24} />
