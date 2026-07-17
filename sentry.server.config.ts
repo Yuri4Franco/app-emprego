@@ -7,7 +7,7 @@ Sentry.init({
   tracesSampleRate: 1,
 
   // Enable logs to be sent to Sentry
-  enableLogs: true,
+  enableLogs: false,
 
   // Enable sending user PII
   sendDefaultPii: true,
@@ -19,6 +19,7 @@ Sentry.init({
     "ETIMEDOUT",
     "Failed to proxy",
     "AggregateError",
+    "Connection reset",
   ],
 
   // ✨ TRAVA DE SEGURANÇA EXTRA: Caso algo escape da lista acima
