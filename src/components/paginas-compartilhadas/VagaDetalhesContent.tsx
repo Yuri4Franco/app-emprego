@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   HiOutlineBriefcase,
   HiOutlineLocationMarker,
@@ -11,6 +12,9 @@ import {
   HiOutlineCalendar,
   HiOutlineInformationCircle,
   HiOutlineExternalLink,
+  HiOutlineExclamationCircle,
+  HiOutlineSearch,
+  HiOutlineUserAdd,
 } from "react-icons/hi";
 import { FaInstagram, FaLinkedin, FaFacebook } from "react-icons/fa";
 import logoDefault from "@/src/assets/default/logo.webp";
@@ -69,6 +73,9 @@ export default function VagaDetalhesContent({
 }: VagaDetalhesContentProps) {
   const isConfidencial = vaga.empresa_confidencial;
   const empresa = isConfidencial ? null : vaga.empresa;
+
+  // ✨ VERIFICAÇÃO PRINCIPAL: A vaga está realmente ativa?
+  const isAtiva = vaga.status === "ATIVA";
 
   const nomeEmpresa = isConfidencial
     ? "Empresa Confidencial"
@@ -134,9 +141,19 @@ export default function VagaDetalhesContent({
           </div>
 
           <div className="space-y-3 w-full flex flex-col items-center">
-            <span className="inline-block text-xs font-black text-primary uppercase tracking-widest bg-blue-50 px-4 py-1.5 rounded-full">
-              {vaga.area_atuacao?.nome || "Geral"}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="inline-block text-xs font-black text-primary uppercase tracking-widest bg-blue-50 px-4 py-1.5 rounded-full">
+                {vaga.area_atuacao?.nome || "Geral"}
+              </span>
+
+              {/* ✨ SELO DE VAGA ENCERRADA NO TOPO */}
+              {!isAtiva && (
+                <span className="inline-flex items-center gap-1.5 text-xs font-black text-amber-800 uppercase tracking-widest bg-amber-100 px-4 py-1.5 rounded-full border border-amber-200">
+                  <HiOutlineExclamationCircle size={16} className="text-amber-600" />
+                  Encerrada
+                </span>
+              )}
+            </div>
 
             <h1 className="text-3xl font-black text-gray-900 leading-tight tracking-tight">
               {vaga.titulo}
@@ -188,19 +205,19 @@ export default function VagaDetalhesContent({
                 )}
             </div>
 
-            {/* === AVISO DE DIVERSIDADE (SÉRIO E OBJETIVO) === */}
+            {/* === AVISO DE DIVERSIDADE === */}
             {vaga.tipo_diversidade &&
               vaga.tipo_diversidade !== "AMPLA_CONCORRENCIA" && (
                 <div
                   className={`w-full p-6 rounded-3xl border flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-4 mt-6 ${vaga.tipo_diversidade === "EXCLUSIVA_PCD"
-                    ? "bg-purple-50/60 border-purple-200 text-purple-950"
-                    : "bg-blue-50/40 border-blue-200 text-blue-950"
+                      ? "bg-purple-50/60 border-purple-200 text-purple-950"
+                      : "bg-blue-50/40 border-blue-200 text-blue-950"
                     }`}
                 >
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-white shadow-sm border ${vaga.tipo_diversidade === "EXCLUSIVA_PCD"
-                      ? "border-purple-200 text-purple-600"
-                      : "border-blue-200 text-blue-600"
+                        ? "border-purple-200 text-purple-600"
+                        : "border-blue-200 text-blue-600"
                       }`}
                   >
                     <HiOutlineInformationCircle size={24} />
@@ -221,9 +238,47 @@ export default function VagaDetalhesContent({
               )}
           </div>
 
-          {/* === LOGICA DE VAGA EXTERNA VS INTERNA === */}
+          {/* === ÁREA DE AÇÃO: VAGA ATIVA VS VAGA ENCERRADA === */}
           <div className="w-full mt-4 pt-6 border-t border-gray-100">
-            {vaga.vaga_externa ? (
+            {!isAtiva ? (
+              /* ✨ MENSAGEM PARA VAGA ENCERRADA OU INATIVA */
+              <div className="w-full bg-gradient-to-br from-amber-50 via-orange-50/40 to-amber-50 border-2 border-amber-200/80 rounded-3xl p-6 md:p-8 text-left space-y-6 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-amber-500/15 text-amber-600 rounded-2xl flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                    <HiOutlineExclamationCircle size={28} />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-200/60 text-amber-950 rounded-full text-[11px] font-black uppercase tracking-widest">
+                      Processo Finalizado
+                    </span>
+                    <h3 className="text-lg md:text-xl font-black text-gray-900 tracking-tight">
+                      Esta oportunidade não está mais disponível
+                    </h3>
+                    <p className="text-xs md:text-sm text-gray-600 leading-relaxed font-medium">
+                      O período de inscrições para <strong>{vaga.titulo}</strong> foi encerrado ou a vaga já foi preenchida pela empresa.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <Link
+                    href="/vagas"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-gray-900 hover:bg-blue-600 text-white rounded-2xl font-black text-sm shadow-md hover:shadow-blue-500/20 transition-all duration-300 group"
+                  >
+                    <HiOutlineSearch size={18} className="text-amber-400 group-hover:scale-110 transition-transform" />
+                    Explorar Vagas Ativas
+                  </Link>
+                  <Link
+                    href="/candidato/entrar"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-sm shadow-md shadow-amber-500/20 transition-all duration-300"
+                  >
+                    <HiOutlineUserAdd size={18} />
+                    Entrar no Banco de Talentos
+                  </Link>
+                </div>
+              </div>
+            ) : vaga.vaga_externa ? (
+              /* FLUXO DE VAGA EXTERNA ATIVA */
               <div className="w-full bg-gray-50 border border-gray-200 rounded-3xl p-6 text-left space-y-4">
                 <div className="flex items-center gap-2 text-gray-800 font-bold text-sm">
                   <HiOutlineInformationCircle
@@ -260,13 +315,16 @@ export default function VagaDetalhesContent({
                 )}
               </div>
             ) : (
-              <div className="max-w-md mx-auto w-full flex items-center justify-center">{botaoAcao}</div>
+              /* FLUXO DE VAGA INTERNA ATIVA */
+              <div className="max-w-md mx-auto w-full flex items-center justify-center">
+                {botaoAcao}
+              </div>
             )}
           </div>
         </div>
 
-        {/* 3. CONTEÚDO EM SEQUÊNCIA */}
-        <div className="space-y-8">
+        {/* 3. CONTEÚDO EM SEQUÊNCIA (Levemente opaco se a vaga não estiver ativa) */}
+        <div className={`space-y-8 transition-opacity duration-300 ${!isAtiva ? "opacity-75" : ""}`}>
           <Section title="Descrição da Vaga">
             <div
               className="rich-text text-gray-600 leading-relaxed text-lg"
@@ -403,20 +461,40 @@ export default function VagaDetalhesContent({
 
                   {/* Área de Ações */}
                   <div className="flex flex-col sm:flex-row sm:items-center gap-6 pt-6 border-t border-gray-200">
-
-                    {/* Grupo de Social Links (Ícones circulares minimalistas) */}
+                    {/* Grupo de Social Links */}
                     <div className="flex items-center gap-3">
                       {empresa.site && (
-                        <SocialLink href={formatSocialUrl("https://", empresa.site)} icon={<HiOutlineGlobeAlt size={20} />} />
+                        <SocialLink
+                          href={formatSocialUrl("https://", empresa.site)}
+                          icon={<HiOutlineGlobeAlt size={20} />}
+                        />
                       )}
                       {empresa.linkedin && (
-                        <SocialLink href={formatSocialUrl("https://linkedin.com/in/", empresa.linkedin)} icon={<FaLinkedin size={20} />} />
+                        <SocialLink
+                          href={formatSocialUrl(
+                            "https://linkedin.com/in/",
+                            empresa.linkedin
+                          )}
+                          icon={<FaLinkedin size={20} />}
+                        />
                       )}
                       {empresa.instagram && (
-                        <SocialLink href={formatSocialUrl("https://instagram.com/", empresa.instagram)} icon={<FaInstagram size={20} />} />
+                        <SocialLink
+                          href={formatSocialUrl(
+                            "https://instagram.com/",
+                            empresa.instagram
+                          )}
+                          icon={<FaInstagram size={20} />}
+                        />
                       )}
                       {empresa.facebook && (
-                        <SocialLink href={formatSocialUrl("https://facebook.com/", empresa.facebook)} icon={<FaFacebook size={20} />} />
+                        <SocialLink
+                          href={formatSocialUrl(
+                            "https://facebook.com/",
+                            empresa.facebook
+                          )}
+                          icon={<FaFacebook size={20} />}
+                        />
                       )}
                     </div>
 
@@ -428,7 +506,10 @@ export default function VagaDetalhesContent({
                       className="group flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 hover:bg-blue-600 text-white rounded-2xl transition-all duration-300 font-bold shadow-lg hover:shadow-blue-500/20"
                     >
                       Ver todas as vagas
-                      <HiOutlineArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+                      <HiOutlineArrowRight
+                        className="group-hover:translate-x-1 transition-transform"
+                        size={20}
+                      />
                     </a>
                   </div>
                 </div>
