@@ -12,7 +12,6 @@ export default function Error({
     reset: () => void;
 }) {
     useEffect(() => {
-        // Aqui você pode integrar com sistemas como Sentry, Datadog ou LogRocket
         console.error("Erro capturado pelo Error Boundary:", error);
     }, [error]);
 

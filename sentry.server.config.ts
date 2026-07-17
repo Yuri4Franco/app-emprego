@@ -12,14 +12,24 @@ Sentry.init({
   // Enable sending user PII
   sendDefaultPii: true,
 
-  // ✨ A TRAVA DE SEGURANÇA QUE EVITA QUEDA DO SERVIDOR
+  // ✨ LISTA NEGRA: O Sentry descarta imediatamente sem usar a rede (Evita ETIMEDOUT)
+  ignoreErrors: [
+    "Failed to find Server Action",
+    "Expected RSC response, got text/plain",
+    "ETIMEDOUT",
+    "Failed to proxy",
+    "AggregateError",
+  ],
+
+  // ✨ TRAVA DE SEGURANÇA EXTRA: Caso algo escape da lista acima
   beforeSend(event, hint) {
     const error = hint.originalException as Error;
 
     if (error?.message) {
       if (
         error.message.includes("Failed to find Server Action") ||
-        error.message.includes("Expected RSC response, got text/plain")
+        error.message.includes("Expected RSC response, got text/plain") ||
+        error.message.includes("ETIMEDOUT")
       ) {
         // Retornar null cancela o envio para a rede, salvando os Sockets do servidor
         return null;

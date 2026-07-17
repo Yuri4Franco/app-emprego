@@ -5,7 +5,7 @@ import "../globals.css";
 import Header from "./Header";
 import Footer from "./Footer";
 import { Toaster } from "react-hot-toast";
-// <--- Importe o novo componente
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://acivagas.com.br"),
   title: {
     template: "%s | ACI Vagas",
     default: "ACI Vagas - Banco de Talentos e Portal de Empregos em Panambi",
@@ -34,6 +35,22 @@ export const metadata: Metadata = {
       "max-image-preview": "large",
       "max-snippet": -1,
     },
+  },
+  openGraph: {
+    title: "ACI Vagas | Portal de Empregos",
+    description: "O portal oficial de oportunidades e talentos de Panambi e região.",
+    url: "https://acivagas.com.br",
+    siteName: "ACI Vagas",
+    locale: "pt_BR",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "ACI Vagas Panambi",
+      },
+    ],
   },
 };
 
