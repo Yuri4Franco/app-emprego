@@ -266,7 +266,7 @@ export default function VagaDetalhesContent({
                     className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-gray-900 hover:bg-blue-600 text-white rounded-2xl font-black text-sm shadow-md hover:shadow-blue-500/20 transition-all duration-300 group"
                   >
                     <HiOutlineSearch size={18} className="text-amber-400 group-hover:scale-110 transition-transform" />
-                    Explorar Vagas Ativas
+                    Explorar Vagas
                   </Link>
                   <Link
                     href="/candidato/entrar"
