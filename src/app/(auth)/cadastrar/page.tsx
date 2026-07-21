@@ -148,7 +148,7 @@ export default function RegisterPage() {
       if (token) {
         await login(token);
         toast.success("Conta criada e login realizado com sucesso!");
-        router.push("/entrar");
+        router.push("/candidato/inicio");
       } else {
         sessionStorage.setItem("@ACI:pendingEmail", data.email);
         toast.success("Conta criada com sucesso!");
