@@ -22,12 +22,24 @@ import toast from "react-hot-toast";
 import Logo from "@/src/assets/logos/logo-transparente.webp";
 import bgAuth from "@/src/assets/backgrounds/bg-cadastrar.webp";
 import api from "@/src/services/api";
+import { validarCPF } from "@/src/utils/validarCpf";
+import { useAuth } from "@/src/AuthContext";
+
+// ✨ IMPORTS ADICIONADOS (Ajuste os caminhos conforme sua estrutura)
+
 
 // 1. Schema de Validação
 const registerSchema = z
   .object({
     name: z.string().min(3, "Por favor, digite seu nome completo"),
     email: z.string().email("Digite um e-mail válido"),
+    // ✨ VALIDAÇÃO DE CPF COM ZOD + FUNÇÃO CUSTOMIZADA
+    cpf: z
+      .string()
+      .min(1, "O CPF é obrigatório")
+      .refine((val) => validarCPF(val), {
+        message: "CPF inválido",
+      }),
     password: z
       .string()
       .min(8, "A senha deve ter no mínimo 8 caracteres")
@@ -44,10 +56,22 @@ const registerSchema = z
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
+// ✨ MÁSCARA PARA VALIDAÇÃO VISUAL DO CPF (000.000.000-00)
+const formatarCPFInput = (value: string) => {
+  return value
+    .replace(/\D/g, "")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})/, "$1-$2")
+    .replace(/(-\d{2})\d+?$/, "$1");
+};
+
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const router = useRouter();
+  const { login } = useAuth();
 
   const {
     register,
@@ -77,14 +101,24 @@ export default function RegisterPage() {
       const payload = {
         nome: data.name,
         email: data.email,
+        // ✨ ENVIA APENAS OS NÚMEROS DO CPF PARA O BANCO DE DADOS
+        cpf: data.cpf.replace(/\D/g, ""),
         senha: data.password,
       };
 
-      await api.post("/register", payload);
+      const res = await api.post("/register", payload);
 
-      sessionStorage.setItem("@ACI:pendingEmail", data.email);
-      toast.success("Conta criada com sucesso!");
-      router.push("/verificar-email");
+      // ✨ LOGIN AUTOMÁTICO COM O TOKEN RECEBIDO
+      const token = res.data?.token || res.data?.accessToken;
+      if (token) {
+        await login(token);
+        toast.success("Conta criada e login realizado com sucesso!");
+        router.push("/entrar");
+      } else {
+        sessionStorage.setItem("@ACI:pendingEmail", data.email);
+        toast.success("Conta criada com sucesso!");
+        router.push("/entrar");
+      }
     } catch (error: any) {
       const mensagemErro =
         error.response?.data?.error ||
@@ -96,14 +130,10 @@ export default function RegisterPage() {
   };
 
   return (
-    // ✨ h-screen e overflow-hidden para travar o layout global
     <div className="flex min-h-screen lg:h-screen w-full bg-gray-50 overflow-y-auto lg:overflow-hidden">
-
       {/* LADO ESQUERDO: FORMULÁRIO */}
-      {/* Adicionado painel levemente mais largo (45/50%) e escondido a scrollbar interna */}
       <div className="w-full lg:w-[50%] xl:w-[45%] h-full flex flex-col items-center p-6 sm:p-10 bg-white relative z-10 shadow-[20px_0_40px_rgba(0,0,0,0.04)] lg:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-
-        {/* Link para Entrar (Fixo no topo no celular, Flutuante no desktop) */}
+        {/* Link para Entrar */}
         <div className="w-full flex justify-end sm:absolute sm:top-6 sm:right-6 mb-6 sm:mb-0 z-20">
           <Link
             href="/entrar"
@@ -116,7 +146,6 @@ export default function RegisterPage() {
 
         {/* Container interno flexível */}
         <div className="w-full max-w-[400px] sm:max-w-[420px] space-y-5 my-auto py-8 lg:py-4 animate-in fade-in slide-in-from-bottom-3 duration-500">
-
           <div className="text-center">
             <Link href="/" className="inline-block mb-4">
               <Image
@@ -140,6 +169,19 @@ export default function RegisterPage() {
               placeholder="Ex: Maria da Silva"
               error={errors.name?.message}
               {...register("name")}
+            />
+
+            {/* ✨ INPUT DE CPF COM MÁSCARA INTEGRADA AO REACT HOOK FORM */}
+            <Input
+              label="CPF"
+              placeholder="000.000.000-00"
+              maxLength={14}
+              error={errors.cpf?.message}
+              {...register("cpf")}
+              onChange={(e) => {
+                e.target.value = formatarCPFInput(e.target.value);
+                register("cpf").onChange(e);
+              }}
             />
 
             <div>
@@ -197,7 +239,7 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* ✨ CHECKLIST COMPACTO */}
+            {/* CHECKLIST COMPACTO */}
             <div className="bg-gray-50/70 p-3.5 rounded-xl border border-gray-100">
               <p className="text-[11px] font-bold text-gray-600 mb-2.5 uppercase tracking-wider">Requisitos da senha:</p>
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-1.5 gap-x-2">
@@ -242,7 +284,6 @@ export default function RegisterPage() {
               )}
             </ButtonType>
           </form>
-
         </div>
       </div>
 
