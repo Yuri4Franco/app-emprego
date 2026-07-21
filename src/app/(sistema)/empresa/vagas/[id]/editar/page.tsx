@@ -129,10 +129,6 @@ export default function EditarVagaPage({
             requer_agendamento: Boolean(e.requer_agendamento),
           }));
 
-        const dataEncerramentoFormatada = vaga.data_encerramento
-          ? vaga.data_encerramento.split("T")[0]
-          : "";
-
         const dataFechamentoFormatada = vaga.data_fechamento
           ? vaga.data_fechamento.split("T")[0]
           : "";
@@ -143,7 +139,6 @@ export default function EditarVagaPage({
           nivel_hierarquico: vaga.nivel_hierarquico,
           modelo_trabalho: vaga.modelo_trabalho,
           tipo_contrato: vaga.tipo_contrato,
-          data_encerramento: dataEncerramentoFormatada,
           data_fechamento: dataFechamentoFormatada,
           tipo_salario: vaga.ocultar_salario
             ? "OCULTO"

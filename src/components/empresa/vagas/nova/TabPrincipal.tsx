@@ -265,19 +265,6 @@ export default function TabPrincipal({ areas }: TabPrincipalProps) {
         {/* DATA DE ENCERRAMENTO AQUI */}
         <div className="space-y-1.5">
           <Input
-            label="Data de Encerramento (Opcional)"
-            type="date"
-            {...register("data_encerramento")}
-            className={getFieldStatus("data_encerramento")}
-
-            error={errors.data_encerramento?.message}
-          />
-          <p className="text-[10px] text-gray-500 ml-1">
-            A vaga será encerrada automaticamente após esta data ou após 15 dias.
-          </p>
-        </div>
-        <div className="space-y-1.5">
-          <Input
             label="Data limite para candidaturas (Opcional)"
             type="date"
             {...register("data_fechamento")}

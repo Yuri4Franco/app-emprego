@@ -58,9 +58,9 @@ export function VagaCard({ vaga, menuAberto, setMenuAberto, isDuplicating, onDup
   let textoData = "";
   let dataExibicao = "";
 
-  if (isEncerrada && vaga.data_encerramento) {
+  if (isEncerrada && vaga.data_fechamento) {
     textoData = "Encerrada em";
-    dataExibicao = vaga.data_encerramento;
+    dataExibicao = vaga.data_fechamento;
   } else if (isAtivaOuPausada && vaga.data_publicacao) {
     textoData = "Publicada em";
     dataExibicao = vaga.data_publicacao;

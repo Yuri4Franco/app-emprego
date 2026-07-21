@@ -19,13 +19,6 @@ export const vagaSchema = z.object({
   uf: z.string().length(2, "UF obrigatória").default("RS"),
   beneficios_ids: z.array(z.number()).default([]),
   tipo_diversidade: z.string().default("AMPLA_CONCORRENCIA"),
-  data_encerramento: z.string().optional().refine((val) => {
-    if (!val) return true;
-    const dataEscolhida = new Date(`${val}T12:00:00`);
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    return dataEscolhida >= hoje;
-  }, "A data de encerramento não pode estar no passado."),
   data_fechamento: z.string().optional().refine((val) => {
     if (!val) return true;
     const dataEscolhida = new Date(`${val}T12:00:00`);

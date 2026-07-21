@@ -23,15 +23,9 @@ export function AlertaPagamentoNaoAssociada() {
     const [loadingPreco, setLoadingPreco] = useState(true);
     const [copiadoTipo, setCopiadoTipo] = useState<string | null>(null);
 
-    // 1. Busca o preço oficial no backend
+    // 1. Busca o preço oficial no backend para AMBOS os casos (para mostrar o desconto ou cobrar)
     useEffect(() => {
         const buscarPreco = async () => {
-            // Se for associada, nem gastamos requisição, pois para ela é gratuito/isento
-            if (isAssociada) {
-                setLoadingPreco(false);
-                return;
-            }
-
             try {
                 const res = await api.get("/precos");
                 const dadosPreco = res.data?.data || res.data || {};
@@ -48,7 +42,7 @@ export function AlertaPagamentoNaoAssociada() {
         };
 
         buscarPreco();
-    }, [isAssociada]);
+    }, []); // ✨ Removida a dependência [isAssociada] pois a busca agora é universal
 
     // Função para copiar dados (WhatsApp ou E-mail)
     const copiarParaAreaDeTransferencia = (texto: string, tipo: string) => {
@@ -89,19 +83,27 @@ export function AlertaPagamentoNaoAssociada() {
 
                 <hr className="border-emerald-200/60 relative z-10" />
 
-                {/* BLOCO DE DESTAQUE DO VALOR ISENTO */}
+                {/* BLOCO DE DESTAQUE DO VALOR ISENTO COM PREÇO RISCADO */}
                 <div className="bg-white/90 border border-emerald-100 p-5 rounded-[24px] flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10 shadow-2xs">
                     <div className="space-y-0.5">
                         <span className="text-xs font-black text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
                             <HiOutlineCurrencyDollar size={18} className="text-emerald-600" /> Custo de Publicação
                         </span>
                         <p className="text-xs text-gray-500">
-                            Beneficício exclusivo para empresas associadas da ACI-Panambi.
+                            Benefício exclusivo para empresas associadas da ACI-Panambi.
                         </p>
                     </div>
 
-                    <div className="flex items-baseline gap-1.5 text-right">
-                        <span className="text-xs font-bold text-gray-400 line-through">{precoVaga?.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <div className="flex items-baseline gap-2 text-right">
+                        {/* ✨ EXIBIÇÃO DO PREÇO REAL RISCADO COM LOADING */}
+                        {loadingPreco ? (
+                            <div className="w-16 h-4 bg-emerald-100 animate-pulse rounded"></div>
+                        ) : (
+                            <span className="text-sm font-bold text-gray-400 line-through">
+                                R$ {precoVaga?.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                        )}
+
                         <span className="text-3xl font-black text-emerald-600 tracking-tight">
                             R$ 0,00
                         </span>

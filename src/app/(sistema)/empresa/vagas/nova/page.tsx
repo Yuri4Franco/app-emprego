@@ -183,10 +183,6 @@ export default function NovaVagaPage() {
         salario_a_combinar: data.tipo_salario === "COMBINAR",
         ocultar_salario: data.tipo_salario === "OCULTO",
         enviar_para_aprovacao: !isDraft,
-
-        data_encerramento: data.data_encerramento
-          ? `${data.data_encerramento}T23:59:59.000Z`
-          : null,
       };
 
       if (payload.tipo_salario !== "FAIXA") {

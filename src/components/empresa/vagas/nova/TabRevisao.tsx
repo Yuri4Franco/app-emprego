@@ -191,7 +191,7 @@ export default function TabRevisao({ isPublishing }: TabRevisaoProps) {
               Configurações Especiais
             </p>
 
-            {valoresAtuais.data_encerramento && (
+            {valoresAtuais.data_fechamento && (
               <div className="flex items-start gap-2 text-sm text-gray-700 font-medium bg-white p-3 rounded-xl border border-gray-100">
                 <HiOutlineCalendar
                   className="text-blue-500 shrink-0 mt-0.5"
@@ -203,7 +203,7 @@ export default function TabRevisao({ isPublishing }: TabRevisaoProps) {
                   </span>
                   Encerra dia{" "}
                   {new Date(
-                    `${valoresAtuais.data_encerramento}T12:00:00`,
+                    `${valoresAtuais.data_fechamento}T12:00:00`,
                   ).toLocaleDateString("pt-BR")}
                 </div>
               </div>

@@ -156,9 +156,9 @@ export default function RegisterPage() {
       }
     } catch (error: any) {
       const mensagemErro =
-        error.response?.data?.erro ||    // 1º Tenta pegar em português
-        error.response?.data?.error ||   // 2º Tenta pegar em inglês
-        error.response?.data?.message || // 3º Tenta pegar chave padrão de mensagem
+        error.response?.data?.erro ||
+        error.response?.data?.error ||
+        error.response?.data?.message ||
         "Ocorreu um erro ao criar a conta. Tente novamente.";
 
       toast.error(mensagemErro);

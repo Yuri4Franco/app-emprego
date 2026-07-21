@@ -88,7 +88,7 @@ export function ModalVagasAtivas({ isOpen, onClose }: ModalVagasAtivasProps) {
                             {/* ITENS DO EXTRATO */}
                             <div className="divide-y divide-gray-100">
                                 {vagas.map((vaga) => {
-                                    const isEncerrandoBreve = vaga.data_encerramento && new Date(vaga.data_encerramento).getTime() < new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
+                                    const isEncerrandoBreve = vaga.data_fechamento && new Date(vaga.data_fechamento).getTime() < new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
 
                                     return (
                                         <div
@@ -113,9 +113,9 @@ export function ModalVagasAtivas({ isOpen, onClose }: ModalVagasAtivasProps) {
                                             {/* Data Info */}
                                             <div className="col-span-5 flex items-center md:justify-end gap-2 text-xs md:pl-0 pl-[46px]">
                                                 <HiOutlineCalendar size={14} className={isEncerrandoBreve ? "text-red-400" : "text-gray-400"} />
-                                                {vaga.data_encerramento ? (
+                                                {vaga.data_fechamento ? (
                                                     <span className={`font-bold ${isEncerrandoBreve ? "text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100" : "text-gray-600"}`}>
-                                                        {new Date(vaga.data_encerramento).toLocaleDateString("pt-BR")}
+                                                        {new Date(vaga.data_fechamento).toLocaleDateString("pt-BR")}
                                                     </span>
                                                 ) : (
                                                     <span className="font-medium text-gray-400 italic">
