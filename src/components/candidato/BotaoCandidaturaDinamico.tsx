@@ -55,7 +55,7 @@ export function BotaoCandidaturaDinamico({ idVaga, tituloVaga }: BotaoProps) {
         }
 
         if (jaInscrito) {
-            router.push("/candidato/minhas-vagas"); // Redireciona para onde ele acompanha
+            router.push("/candidato/candidaturas"); // Redireciona para onde ele acompanha
             return;
         }
 
