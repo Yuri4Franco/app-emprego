@@ -14,8 +14,12 @@ import {
   HiOutlineArchive,
   HiOutlineBriefcase,
   HiOutlineCheckCircle,
+  HiOutlineDownload,
 } from "react-icons/hi";
 import { FaWhatsapp } from "react-icons/fa";
+import { pdf } from "@react-pdf/renderer";
+import JSZip from "jszip";
+import { CurriculoCandidaturaPDF } from "./pdf/CurriculoCandidaturaPDF";
 
 interface Candidato {
   id_candidatura: number;
@@ -79,6 +83,97 @@ export function ListaCandidatos({
   const candidatosEncerrados = colunas.flatMap((col) =>
     col.candidatos.filter((c) => statusEncerrados.includes(c.status || "")),
   );
+
+  const [isExportandoPDF, setIsExportandoPDF] = useState(false);
+  const [progressoPDF, setProgressoPDF] = useState("");
+
+  const exportarLoteParaPDF = async () => {
+    if (selecionados.length === 0) return;
+
+    try {
+      setIsExportandoPDF(true);
+      setProgressoPDF("Buscando dados...");
+      toast.loading("Buscando dados completos dos candidatos...", {
+        id: "pdf-export",
+      });
+
+      // 1. Chama o seu endpoint para buscar os dados dos currículos selecionados
+      const response = await api.post("/empresa/candidaturas/perfil-lote", {
+        idsCandidaturas: selecionados,
+      });
+
+      const candidaturas = response.data?.data || response.data;
+      if (
+        !candidaturas ||
+        !Array.isArray(candidaturas) ||
+        candidaturas.length === 0
+      ) {
+        throw new Error(
+          "Nenhum dado retornado para os candidatos selecionados.",
+        );
+      }
+
+      const zip = new JSZip();
+      const pasta = zip.folder("Curriculos_Selecionados");
+
+      // 2. Loop gerando os PDFs vetoriais via Web Workers
+      for (let i = 0; i < candidaturas.length; i++) {
+        const item = candidaturas[i];
+        setProgressoPDF(`Gerando (${i + 1}/${candidaturas.length})...`);
+        toast.loading(`Gerando PDF ${i + 1} de ${candidaturas.length}...`, {
+          id: "pdf-export",
+        });
+
+        // Compila o componente React nativamente para um Blob vetorial de PDF
+        const pdfBlob = await pdf(
+          <CurriculoCandidaturaPDF item={item} />,
+        ).toBlob();
+
+        // Nome limpo: joao_silva_102.pdf
+        const nomeLimpo = (
+          item.curriculo?.nome ||
+          item.curriculo?.usuario?.nome ||
+          "Candidato"
+        )
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+          .replace(/\s+/g, "_");
+
+        pasta?.file(`${nomeLimpo}_${item.id_candidatura}.pdf`, pdfBlob);
+      }
+
+      setProgressoPDF("Compactando ZIP...");
+      toast.loading("Compactando arquivo ZIP...", { id: "pdf-export" });
+
+      // 3. Compila o ZIP e dispara o download nativo
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+
+      const downloadUrl = window.URL.createObjectURL(zipBlob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `curriculos_exportados_${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(link);
+      link.click();
+
+      // Limpeza
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      toast.success(
+        `${candidaturas.length} currículo(s) exportado(s) com sucesso!`,
+        { id: "pdf-export" },
+      );
+    } catch (error: any) {
+      console.error("Erro na exportação de PDFs:", error);
+      toast.error(error.message || "Erro ao exportar currículos em lote.", {
+        id: "pdf-export",
+      });
+    } finally {
+      setIsExportandoPDF(false);
+      setProgressoPDF("");
+    }
+  };
 
   // ==================== LÓGICA DE ETAPAS ====================
   useEffect(() => {
@@ -282,12 +377,27 @@ export function ListaCandidatos({
               {selecionados.length} selecionado(s) na etapa{" "}
               {colunaAtual?.nome_etapa}
             </span>
+
             <div className="flex gap-2 w-full sm:w-auto">
+              {/* ✨ NOVO BOTÃO DE EXPORTAR PDF EM LOTE */}
+              <button
+                onClick={exportarLoteParaPDF}
+                disabled={isExportandoPDF || isProcessandoLote}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 hover:border-gray-600 px-3 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-tighter transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
+                title="Baixar currículos selecionados em arquivo ZIP"
+              >
+                <HiOutlineDownload
+                  size={16}
+                  className="text-blue-400 shrink-0"
+                />
+                <span>{isExportandoPDF ? progressoPDF : "Exportar PDF"}</span>
+              </button>
+
               {/* Oculta o botão Reprovar se for a etapa de Aprovados */}
               {!isUltimaEtapa && (
                 <button
                   onClick={() => setModalLoteAberto(true)}
-                  disabled={isProcessandoLote}
+                  disabled={isProcessandoLote || isExportandoPDF}
                   className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-gray-700 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-tighter transition-colors text-gray-300 disabled:opacity-50"
                 >
                   <HiOutlineXCircle size={16} /> Reprovar
@@ -298,7 +408,7 @@ export function ListaCandidatos({
               {!isUltimaEtapa && (
                 <button
                   onClick={handleAvancarEmLoteClick}
-                  disabled={isProcessandoLote}
+                  disabled={isProcessandoLote || isExportandoPDF}
                   className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-tighter transition-colors text-white disabled:opacity-50 shadow-lg ${isPenultimaEtapa ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" : "bg-blue-500 hover:bg-blue-600 shadow-blue-500/20"}`}
                 >
                   {isPenultimaEtapa ? (
