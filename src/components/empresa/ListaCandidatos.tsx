@@ -99,7 +99,7 @@ export function ListaCandidatos({
 
       // 1. Chama o seu endpoint para buscar os dados dos currículos selecionados
       const response = await api.post("/empresa/candidaturas/perfil-lote", {
-        idsCandidaturas: selecionados,
+        ids: selecionados,
       });
 
       const candidaturas = response.data?.data || response.data;

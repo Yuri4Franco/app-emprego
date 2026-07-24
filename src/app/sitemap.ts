@@ -27,7 +27,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch (error) {
     console.error("Erro ao buscar vagas para o sitemap:", error);
-    // Em caso de falha na API, o sitemap estático ainda será gerado
   }
 
   // 2. Define as rotas estáticas que você já tinha
