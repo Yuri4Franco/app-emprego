@@ -45,30 +45,34 @@ interface ListaCandidatosProps {
   colunas: Coluna[];
   onAtualizar: () => void;
   onAbrirCandidato: (id: number) => void;
+  etapaAtivaId: number | null;
+  onMudancaEtapa: (id: number) => void;
 }
 
 export function ListaCandidatos({
   colunas,
   onAtualizar,
   onAbrirCandidato,
+  etapaAtivaId,
+  onMudancaEtapa,
 }: ListaCandidatosProps) {
   // ==================== ESTADOS DE VISÃO ====================
   const [viewAtiva, setViewAtiva] = useState<"ATIVOS" | "ENCERRADOS">("ATIVOS");
-  const [etapaAtivaId, setEtapaAtivaId] = useState<number | null>(null);
 
-  // ==================== ESTADOS DE AÇÃO ====================
+  // ==================== ESTADOS DE AÇÃO EM LOTE ====================
   const [selecionados, setSelecionados] = useState<number[]>([]);
   const [isProcessandoLote, setIsProcessandoLote] = useState(false);
 
-  // Modais
-  const [isReprovando, setIsReprovando] = useState(false);
+  // ==================== BARREIRA DE PROTEÇÃO: MODAIS ====================
+  // Modal de Reprovação (Serve para 1 ou N candidatos)
+  const [modalReprovacaoAberto, setModalReprovacaoAberto] = useState(false);
+  const [candidatoParaReprovar, setCandidatoParaReprovar] = useState<number | null>(null);
   const [motivoLote, setMotivoLote] = useState("");
-  const [modalLoteAberto, setModalLoteAberto] = useState(false);
+  const [isReprovando, setIsReprovando] = useState(false);
 
-  const [modalAprovacaoAberto, setModalAprovacaoAberto] = useState(false);
-  const [candidatoParaAprovar, setCandidatoParaAprovar] = useState<
-    number | null
-  >(null);
+  // Modal de Avanço/Aprovação (Serve para 1 ou N candidatos)
+  const [modalAvancoAberto, setModalAvancoAberto] = useState(false);
+  const [candidatoParaAvancar, setCandidatoParaAvancar] = useState<number | null>(null);
 
   // ==================== PROCESSAMENTO DE DADOS ====================
   const statusEncerrados = ["REPROVADO", "DESISTENCIA"];
@@ -93,43 +97,27 @@ export function ListaCandidatos({
     try {
       setIsExportandoPDF(true);
       setProgressoPDF("Buscando dados...");
-      toast.loading("Buscando dados completos dos candidatos...", {
-        id: "pdf-export",
-      });
+      toast.loading("Buscando dados completos dos candidatos...", { id: "pdf-export" });
 
-      // 1. Chama o seu endpoint para buscar os dados dos currículos selecionados
       const response = await api.post("/empresa/candidaturas/perfil-lote", {
         ids: selecionados,
       });
 
       const candidaturas = response.data?.data || response.data;
-      if (
-        !candidaturas ||
-        !Array.isArray(candidaturas) ||
-        candidaturas.length === 0
-      ) {
-        throw new Error(
-          "Nenhum dado retornado para os candidatos selecionados.",
-        );
+      if (!candidaturas || !Array.isArray(candidaturas) || candidaturas.length === 0) {
+        throw new Error("Nenhum dado retornado para os candidatos selecionados.");
       }
 
       const zip = new JSZip();
       const pasta = zip.folder("Curriculos_Selecionados");
 
-      // 2. Loop gerando os PDFs vetoriais via Web Workers
       for (let i = 0; i < candidaturas.length; i++) {
         const item = candidaturas[i];
         setProgressoPDF(`Gerando (${i + 1}/${candidaturas.length})...`);
-        toast.loading(`Gerando PDF ${i + 1} de ${candidaturas.length}...`, {
-          id: "pdf-export",
-        });
+        toast.loading(`Gerando PDF ${i + 1} de ${candidaturas.length}...`, { id: "pdf-export" });
 
-        // Compila o componente React nativamente para um Blob vetorial de PDF
-        const pdfBlob = await pdf(
-          <CurriculoCandidaturaPDF item={item} />,
-        ).toBlob();
+        const pdfBlob = await pdf(<CurriculoCandidaturaPDF item={item} />).toBlob();
 
-        // Nome limpo: joao_silva_102.pdf
         const nomeLimpo = (
           item.curriculo?.nome ||
           item.curriculo?.usuario?.nome ||
@@ -137,7 +125,7 @@ export function ListaCandidatos({
         )
           .toLowerCase()
           .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+          .replace(/[\u0300-\u036f]/g, "")
           .replace(/\s+/g, "_");
 
         pasta?.file(`${nomeLimpo}_${item.id_candidatura}.pdf`, pdfBlob);
@@ -146,9 +134,7 @@ export function ListaCandidatos({
       setProgressoPDF("Compactando ZIP...");
       toast.loading("Compactando arquivo ZIP...", { id: "pdf-export" });
 
-      // 3. Compila o ZIP e dispara o download nativo
       const zipBlob = await zip.generateAsync({ type: "blob" });
-
       const downloadUrl = window.URL.createObjectURL(zipBlob);
       const link = document.createElement("a");
       link.href = downloadUrl;
@@ -156,19 +142,13 @@ export function ListaCandidatos({
       document.body.appendChild(link);
       link.click();
 
-      // Limpeza
       link.remove();
       window.URL.revokeObjectURL(downloadUrl);
 
-      toast.success(
-        `${candidaturas.length} currículo(s) exportado(s) com sucesso!`,
-        { id: "pdf-export" },
-      );
+      toast.success(`${candidaturas.length} currículo(s) exportado(s) com sucesso!`, { id: "pdf-export" });
     } catch (error: any) {
       console.error("Erro na exportação de PDFs:", error);
-      toast.error(error.message || "Erro ao exportar currículos em lote.", {
-        id: "pdf-export",
-      });
+      toast.error(error.message || "Erro ao exportar currículos em lote.", { id: "pdf-export" });
     } finally {
       setIsExportandoPDF(false);
       setProgressoPDF("");
@@ -178,43 +158,31 @@ export function ListaCandidatos({
   // ==================== LÓGICA DE ETAPAS ====================
   useEffect(() => {
     if (colunasAtivas.length > 0 && !etapaAtivaId) {
-      setEtapaAtivaId(colunasAtivas[0].id_etapa);
+      onMudancaEtapa(colunasAtivas[0].id_etapa);
     }
-  }, [colunasAtivas, etapaAtivaId]);
+  }, [colunasAtivas, etapaAtivaId, onMudancaEtapa]);
 
   useEffect(() => {
     if (colunasAtivas.length > 0 && etapaAtivaId) {
-      const abaAindaExiste = colunasAtivas.some(
-        (col) => col.id_etapa === etapaAtivaId,
-      );
+      const abaAindaExiste = colunasAtivas.some((col) => col.id_etapa === etapaAtivaId);
       if (!abaAindaExiste) {
-        setEtapaAtivaId(colunasAtivas[0].id_etapa);
+        onMudancaEtapa(colunasAtivas[0].id_etapa);
         setSelecionados([]);
       }
     }
-  }, [colunasAtivas, etapaAtivaId]);
+  }, [colunasAtivas, etapaAtivaId, onMudancaEtapa]);
 
-  const colunaAtual =
-    colunasAtivas.find((col) => col.id_etapa === etapaAtivaId) ||
-    colunasAtivas[0];
-  const listaExibida =
-    viewAtiva === "ATIVOS"
-      ? colunaAtual?.candidatos || []
-      : candidatosEncerrados;
+  const colunaAtual = colunasAtivas.find((col) => col.id_etapa === etapaAtivaId) || colunasAtivas[0];
+  const listaExibida = viewAtiva === "ATIVOS" ? colunaAtual?.candidatos || [] : candidatosEncerrados;
 
-  // Verifica se a coluna atual é a última do processo
-  const indexColunaAtual = colunasAtivas.findIndex(
-    (c) => c.id_etapa === etapaAtivaId,
-  );
+  const indexColunaAtual = colunasAtivas.findIndex((c) => c.id_etapa === etapaAtivaId);
   const isUltimaEtapa = indexColunaAtual === colunasAtivas.length - 1;
   const isPenultimaEtapa = indexColunaAtual === colunasAtivas.length - 2;
+  const proximaColuna = colunasAtivas[indexColunaAtual + 1];
 
   // ==================== CONTROLE DE SELEÇÃO ====================
   const toggleSelectAll = () => {
-    if (
-      selecionados.length === listaExibida.length &&
-      listaExibida.length > 0
-    ) {
+    if (selecionados.length === listaExibida.length && listaExibida.length > 0) {
       setSelecionados([]);
     } else {
       setSelecionados(listaExibida.map((c) => c.id_candidatura));
@@ -229,19 +197,35 @@ export function ListaCandidatos({
     }
   };
 
-  // ==================== FUNÇÕES DE API ====================
-  const confirmarReprovacaoEmLote = async () => {
-    if (selecionados.length === 0) return;
+  // ==================== HANDLERS DE INTERCEPTAÇÃO (BARREIRA) ====================
+  const handleReprovarClick = (id: number | null, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setCandidatoParaReprovar(id);
+    setModalReprovacaoAberto(true);
+  };
+
+  const handleAvancarClick = (id: number | null, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setCandidatoParaAvancar(id);
+    setModalAvancoAberto(true);
+  };
+
+  // ==================== FUNÇÕES DE EXECUÇÃO REAL VIA API ====================
+  const confirmarReprovacao = async () => {
+    const idsAlvo = candidatoParaReprovar ? [candidatoParaReprovar] : selecionados;
+    if (idsAlvo.length === 0) return;
+
     setIsReprovando(true);
     try {
       await api.post(`/empresa/candidaturas/reprovar-lote`, {
-        id_candidaturas: selecionados,
-        motivo:
-          motivoLote.trim() || "Candidato não atende aos requisitos da etapa.",
+        id_candidaturas: idsAlvo,
+        motivo: motivoLote.trim() || "Candidato não atende aos requisitos da etapa.",
       });
-      toast.success(`${selecionados.length} candidato(s) reprovado(s).`);
-      setModalLoteAberto(false);
+      toast.success(`${idsAlvo.length} candidato(s) reprovado(s) com sucesso.`);
+      setModalReprovacaoAberto(false);
+      setCandidatoParaReprovar(null);
       setSelecionados([]);
+      setMotivoLote("");
       onAtualizar();
     } catch (error) {
       toast.error("Erro ao processar reprovação.");
@@ -250,19 +234,23 @@ export function ListaCandidatos({
     }
   };
 
-  // Centraliza a lógica real de avanço (usada tanto no individual direto quanto no confirm do modal)
-  const executarAvancoAPI = async (ids: number[], emLote: boolean) => {
+  const confirmarAvanco = async () => {
+    const idsAlvo = candidatoParaAvancar ? [candidatoParaAvancar] : selecionados;
+    if (idsAlvo.length === 0) return;
+
     setIsProcessandoLote(true);
     try {
-      if (emLote) {
+      if (idsAlvo.length > 1 || !candidatoParaAvancar) {
         await api.patch(`/empresa/candidaturas/avancar-massa`, {
-          id_candidaturas: ids,
+          id_candidaturas: idsAlvo,
         });
-        toast.success(`${ids.length} candidato(s) avançado(s) com sucesso!`);
+        toast.success(`${idsAlvo.length} candidato(s) avançado(s) com sucesso!`);
       } else {
-        await api.patch(`/empresa/candidaturas/${ids[0]}/avancar`);
+        await api.patch(`/empresa/candidaturas/${idsAlvo[0]}/avancar`);
         toast.success("Candidato avançado para a próxima etapa!");
       }
+      setModalAvancoAberto(false);
+      setCandidatoParaAvancar(null);
       setSelecionados([]);
       onAtualizar();
     } catch (error) {
@@ -270,41 +258,6 @@ export function ListaCandidatos({
     } finally {
       setIsProcessandoLote(false);
     }
-  };
-
-  const handleAvancarEmLoteClick = () => {
-    if (selecionados.length === 0) return;
-    if (isPenultimaEtapa) {
-      // Se for a penúltima, avisa que vai aprovar
-      setCandidatoParaAprovar(null); // null indica que é em lote
-      setModalAprovacaoAberto(true);
-    } else {
-      // Se não, só avança normal
-      executarAvancoAPI(selecionados, true);
-    }
-  };
-
-  const handleAvancarIndividualClick = (
-    id_candidatura: number,
-    e: React.MouseEvent,
-  ) => {
-    e.stopPropagation();
-    if (isPenultimaEtapa) {
-      setCandidatoParaAprovar(id_candidatura);
-      setModalAprovacaoAberto(true);
-    } else {
-      executarAvancoAPI([id_candidatura], false);
-    }
-  };
-
-  const confirmarAprovacao = async () => {
-    if (candidatoParaAprovar) {
-      await executarAvancoAPI([candidatoParaAprovar], false);
-    } else {
-      await executarAvancoAPI(selecionados, true);
-    }
-    setModalAprovacaoAberto(false);
-    setCandidatoParaAprovar(null);
   };
 
   return (
@@ -316,11 +269,10 @@ export function ListaCandidatos({
             setViewAtiva("ATIVOS");
             setSelecionados([]);
           }}
-          className={`flex-1 sm:flex-none px-4 py-2 md:py-2.5 rounded-[16px] md:rounded-[20px] text-[11px] sm:text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-            viewAtiva === "ATIVOS"
+          className={`flex-1 sm:flex-none px-4 py-2 md:py-2.5 rounded-[16px] md:rounded-[20px] text-[11px] sm:text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${viewAtiva === "ATIVOS"
               ? "bg-white text-primary shadow-sm border border-gray-100"
               : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
-          }`}
+            }`}
         >
           <HiOutlineBriefcase size={16} /> Em Andamento
         </button>
@@ -329,31 +281,29 @@ export function ListaCandidatos({
             setViewAtiva("ENCERRADOS");
             setSelecionados([]);
           }}
-          className={`flex-1 sm:flex-none px-4 py-2 md:py-2.5 rounded-[16px] md:rounded-[20px] text-[11px] sm:text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-            viewAtiva === "ENCERRADOS"
+          className={`flex-1 sm:flex-none px-4 py-2 md:py-2.5 rounded-[16px] md:rounded-[20px] text-[11px] sm:text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${viewAtiva === "ENCERRADOS"
               ? "bg-white text-red-600 shadow-sm border border-gray-100"
               : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
-          }`}
+            }`}
         >
           <HiOutlineArchive size={16} /> Histórico (Encerrados)
         </button>
       </div>
 
-      {/* ==================== NAVEGAÇÃO DE ETAPAS (SÓ MOSTRA SE ATIVO) ==================== */}
+      {/* ==================== NAVEGAÇÃO DE ETAPAS ==================== */}
       {viewAtiva === "ATIVOS" && (
         <div className="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar px-2">
           {colunasAtivas.map((coluna) => (
             <button
               key={coluna.id_etapa}
               onClick={() => {
-                setEtapaAtivaId(coluna.id_etapa);
+                onMudancaEtapa(coluna.id_etapa);
                 setSelecionados([]);
               }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border-2 shrink-0
-                ${
-                  etapaAtivaId === coluna.id_etapa
-                    ? "bg-white border-primary text-primary shadow-sm"
-                    : "bg-gray-100/80 border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-200"
+                ${etapaAtivaId === coluna.id_etapa
+                  ? "bg-white border-primary text-primary shadow-sm"
+                  : "bg-gray-100/80 border-transparent text-gray-400 hover:text-gray-600 hover:bg-gray-200"
                 }
               `}
             >
@@ -374,48 +324,38 @@ export function ListaCandidatos({
         {selecionados.length > 0 && viewAtiva === "ATIVOS" && (
           <div className="absolute top-0 left-0 right-0 bg-gray-900 text-white p-4 flex flex-col sm:flex-row items-center justify-between z-10 animate-in slide-in-from-top-4 gap-3">
             <span className="text-xs md:text-sm font-bold text-center sm:text-left">
-              {selecionados.length} selecionado(s) na etapa{" "}
-              {colunaAtual?.nome_etapa}
+              {selecionados.length} selecionado(s) na etapa {colunaAtual?.nome_etapa}
             </span>
 
             <div className="flex gap-2 w-full sm:w-auto">
-              {/* ✨ NOVO BOTÃO DE EXPORTAR PDF EM LOTE */}
               <button
                 onClick={exportarLoteParaPDF}
                 disabled={isExportandoPDF || isProcessandoLote}
                 className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 hover:border-gray-600 px-3 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-tighter transition-colors disabled:opacity-50 cursor-pointer shadow-sm"
                 title="Baixar currículos selecionados em arquivo ZIP"
               >
-                <HiOutlineDownload
-                  size={16}
-                  className="text-blue-400 shrink-0"
-                />
+                <HiOutlineDownload size={16} className="text-blue-400 shrink-0" />
                 <span>{isExportandoPDF ? progressoPDF : "Exportar PDF"}</span>
               </button>
 
-              {/* Oculta o botão Reprovar se for a etapa de Aprovados */}
               {!isUltimaEtapa && (
                 <button
-                  onClick={() => setModalLoteAberto(true)}
+                  onClick={() => handleReprovarClick(null)}
                   disabled={isProcessandoLote || isExportandoPDF}
                   className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-gray-700 hover:bg-red-500 hover:text-white px-3 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-tighter transition-colors text-gray-300 disabled:opacity-50"
                 >
-                  <HiOutlineXCircle size={16} /> Reprovar
+                  <HiOutlineXCircle size={16} /> Reprovar Lote
                 </button>
               )}
 
-              {/* Oculta Avançar se for a última etapa */}
               {!isUltimaEtapa && (
                 <button
-                  onClick={handleAvancarEmLoteClick}
+                  onClick={() => handleAvancarClick(null)}
                   disabled={isProcessandoLote || isExportandoPDF}
-                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-tighter transition-colors text-white disabled:opacity-50 shadow-lg ${isPenultimaEtapa ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" : "bg-blue-500 hover:bg-blue-600 shadow-blue-500/20"}`}
+                  className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-tighter transition-colors text-white disabled:opacity-50 shadow-lg ${isPenultimaEtapa ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20" : "bg-blue-500 hover:bg-blue-600 shadow-blue-500/20"
+                    }`}
                 >
-                  {isPenultimaEtapa ? (
-                    <HiOutlineCheckCircle size={16} />
-                  ) : (
-                    <HiOutlineArrowRight size={16} />
-                  )}
+                  {isPenultimaEtapa ? <HiOutlineCheckCircle size={16} /> : <HiOutlineArrowRight size={16} />}
                   {isPenultimaEtapa ? "Aprovar Lote" : "Avançar Lote"}
                 </button>
               )}
@@ -423,7 +363,7 @@ export function ListaCandidatos({
           </div>
         )}
 
-        {/* CONTAINER DA TABELA (COM SCROLL HORIZONTAL) */}
+        {/* CONTAINER DA TABELA */}
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
@@ -432,23 +372,16 @@ export function ListaCandidatos({
                   <th className="p-4 md:p-5 w-12 text-center">
                     <input
                       type="checkbox"
-                      checked={
-                        listaExibida.length > 0 &&
-                        selecionados.length === listaExibida.length
-                      }
+                      checked={listaExibida.length > 0 && selecionados.length === listaExibida.length}
                       onChange={toggleSelectAll}
                       className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                     />
                   </th>
                 )}
-                <th
-                  className={`p-4 md:p-5 ${viewAtiva === "ENCERRADOS" ? "pl-8" : "pl-0"}`}
-                >
-                  Candidato
-                </th>
+                <th className={`p-4 md:p-5 ${viewAtiva === "ENCERRADOS" ? "pl-8" : "pl-0"}`}>Candidato</th>
                 <th className="p-4 md:p-5">Avaliação</th>
                 <th className="p-4 md:p-5 text-center">Detalhes</th>
-                <th className="p-4 md:p-5 text-right pr-8">Status / Ação</th>
+                <th className="p-4 md:p-5 text-right pr-8">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -470,41 +403,28 @@ export function ListaCandidatos({
                   let rowColorClass = "bg-white hover:bg-blue-50/20";
 
                   if (viewAtiva === "ENCERRADOS") {
-                    rowColorClass =
-                      "bg-gray-50/30 opacity-80 hover:opacity-100 grayscale hover:grayscale-0";
+                    rowColorClass = "bg-gray-50/30 opacity-80 hover:opacity-100 grayscale hover:grayscale-0";
                   } else if (selecionados.includes(candidato.id_candidatura)) {
                     rowColorClass = "bg-blue-50/50";
                   } else if (candidato.avaliacao_nota) {
-                    if (candidato.avaliacao_nota >= 4)
-                      rowColorClass = "bg-amber-50/20 hover:bg-amber-50/50";
-                    else if (candidato.avaliacao_nota <= 2)
-                      rowColorClass =
-                        "bg-gray-50/50 opacity-80 hover:opacity-100";
+                    if (candidato.avaliacao_nota >= 4) rowColorClass = "bg-amber-50/20 hover:bg-amber-50/50";
+                    else if (candidato.avaliacao_nota <= 2) rowColorClass = "bg-gray-50/50 opacity-80 hover:opacity-100";
                   }
 
                   const diasInscrito = Math.floor(
-                    (new Date().getTime() -
-                      new Date(candidato.data_inscricao).getTime()) /
-                      (1000 * 3600 * 24),
+                    (new Date().getTime() - new Date(candidato.data_inscricao).getTime()) / (1000 * 3600 * 24)
                   );
                   const isNovo = diasInscrito <= 2;
                   const isNaoLido = !candidato.visualizada;
 
                   return (
-                    <tr
-                      key={candidato.id_candidatura}
-                      className={`transition-all group ${rowColorClass}`}
-                    >
+                    <tr key={candidato.id_candidatura} className={`transition-all group ${rowColorClass}`}>
                       {viewAtiva === "ATIVOS" && (
                         <td className="p-4 md:p-5 text-center">
                           <input
                             type="checkbox"
-                            checked={selecionados.includes(
-                              candidato.id_candidatura,
-                            )}
-                            onChange={() =>
-                              toggleSelectOne(candidato.id_candidatura)
-                            }
+                            checked={selecionados.includes(candidato.id_candidatura)}
+                            onChange={() => toggleSelectOne(candidato.id_candidatura)}
                             className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                           />
                         </td>
@@ -512,47 +432,38 @@ export function ListaCandidatos({
 
                       <td
                         className={`p-4 md:p-5 cursor-pointer ${viewAtiva === "ENCERRADOS" ? "pl-8" : "pl-0"}`}
-                        onClick={() =>
-                          onAbrirCandidato(candidato.id_candidatura)
-                        }
+                        onClick={() => onAbrirCandidato(candidato.id_candidatura)}
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-2 h-2 shrink-0 flex items-center justify-center">
                             {isNaoLido && viewAtiva === "ATIVOS" && (
-                              <div
-                                className="w-2 h-2 rounded-full bg-blue-500 shadow-sm"
-                                title="Não visualizado"
-                              ></div>
+                              <div className="w-2 h-2 rounded-full bg-blue-500 shadow-sm" title="Não visualizado"></div>
                             )}
                           </div>
 
                           <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0
-                              ${candidato.avaliacao_nota && candidato.avaliacao_nota >= 4 ? "bg-amber-100 text-amber-600" : "bg-blue-50 text-primary"}
-                            `}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0 ${candidato.avaliacao_nota && candidato.avaliacao_nota >= 4
+                                ? "bg-amber-100 text-amber-600"
+                                : "bg-blue-50 text-primary"
+                              }`}
                           >
                             {candidato.nome.charAt(0)}
                           </div>
                           <div className="flex flex-col">
                             <span
-                              className={`text-sm group-hover:text-primary transition-colors whitespace-nowrap truncate max-w-[200px] md:max-w-xs ${isNaoLido && viewAtiva === "ATIVOS" ? "font-black text-gray-900" : "font-bold text-gray-800"}`}
+                              className={`text-sm group-hover:text-primary transition-colors whitespace-nowrap truncate max-w-[200px] md:max-w-xs ${isNaoLido && viewAtiva === "ATIVOS" ? "font-black text-gray-900" : "font-bold text-gray-800"
+                                }`}
                             >
                               {candidato.nome}
                             </span>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-[10px] text-gray-400 font-medium">
-                                #{candidato.id_candidatura}
-                              </span>
+                              <span className="text-[10px] text-gray-400 font-medium">#{candidato.id_candidatura}</span>
                               {candidato.whatsapp && (
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    const zapLimpo =
-                                      candidato.whatsapp!.replace(/\D/g, "");
-                                    window.open(
-                                      `https://wa.me/55${zapLimpo}`,
-                                      "_blank",
-                                    );
+                                    const zapLimpo = candidato.whatsapp!.replace(/\D/g, "");
+                                    window.open(`https://wa.me/55${zapLimpo}`, "_blank");
                                   }}
                                   className="text-emerald-500 hover:text-emerald-600 transition-colors"
                                   title="Chamar no WhatsApp"
@@ -565,86 +476,56 @@ export function ListaCandidatos({
                         </div>
                       </td>
 
-                      <td
-                        className="p-4 md:p-5 cursor-pointer"
-                        onClick={() =>
-                          onAbrirCandidato(candidato.id_candidatura)
-                        }
-                      >
+                      <td className="p-4 md:p-5 cursor-pointer" onClick={() => onAbrirCandidato(candidato.id_candidatura)}>
                         {candidato.avaliacao_nota ? (
                           <div className="flex items-center text-amber-400 gap-1">
                             <HiStar size={16} />
-                            <span className="text-xs font-black text-amber-600">
-                              {candidato.avaliacao_nota}/5
-                            </span>
+                            <span className="text-xs font-black text-amber-600">{candidato.avaliacao_nota}/5</span>
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-300 font-medium italic">
-                            Pendente
-                          </span>
+                          <span className="text-xs text-gray-300 font-medium italic">Pendente</span>
                         )}
                       </td>
 
-                      <td
-                        className="p-4 md:p-5 cursor-pointer"
-                        onClick={() =>
-                          onAbrirCandidato(candidato.id_candidatura)
-                        }
-                      >
+                      <td className="p-4 md:p-5 cursor-pointer" onClick={() => onAbrirCandidato(candidato.id_candidatura)}>
                         <div className="flex flex-col items-center justify-center gap-2">
                           <span className="text-[11px] md:text-xs text-gray-500 font-medium">
-                            {new Date(
-                              candidato.data_inscricao,
-                            ).toLocaleDateString("pt-BR")}
+                            {new Date(candidato.data_inscricao).toLocaleDateString("pt-BR")}
                           </span>
                           <div className="flex gap-1">
-                            {isNovo && (
-                              <span
-                                className="w-2 h-2 rounded-full bg-emerald-400"
-                                title="Inscrição Recente"
-                              ></span>
-                            )}
-                            {candidato.fora_do_perfil && (
-                              <span
-                                className="w-2 h-2 rounded-full bg-red-400"
-                                title="Fora do Perfil"
-                              ></span>
-                            )}
-                            {candidato.possui_agendamento && (
-                              <span
-                                className="w-2 h-2 rounded-full bg-purple-400"
-                                title="Entrevista Agendada"
-                              ></span>
-                            )}
+                            {isNovo && <span className="w-2 h-2 rounded-full bg-emerald-400" title="Inscrição Recente"></span>}
+                            {candidato.fora_do_perfil && <span className="w-2 h-2 rounded-full bg-red-400" title="Fora do Perfil"></span>}
+                            {candidato.possui_agendamento && <span className="w-2 h-2 rounded-full bg-purple-400" title="Entrevista Agendada"></span>}
                           </div>
                         </div>
                       </td>
 
+                      {/* ✨ AÇÕES DE LINHA COM BOTÃO DE REPROVAR E AVANÇAR */}
                       <td className="p-4 md:p-5 text-right pr-6 md:pr-8">
                         {viewAtiva === "ATIVOS" ? (
-                          // Lógica visual do botão: Avançar ou Aprovar, some na última etapa
                           !isUltimaEtapa && (
-                            <button
-                              onClick={(e) =>
-                                handleAvancarIndividualClick(
-                                  candidato.id_candidatura,
-                                  e,
-                                )
-                              }
-                              className={`opacity-100 md:opacity-0 group-hover:opacity-100 flex items-center gap-1.5 ml-auto px-3 py-1.5 border rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-sm ${isPenultimaEtapa ? "bg-white border-emerald-200 text-emerald-600 hover:bg-emerald-50" : "bg-white border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50"}`}
-                              title={
-                                isPenultimaEtapa
-                                  ? "Aprovar Candidato"
-                                  : "Avançar 1 Etapa"
-                              }
-                            >
-                              {isPenultimaEtapa ? "Aprovar" : "Avançar"}{" "}
-                              {isPenultimaEtapa ? (
-                                <HiOutlineCheckCircle size={14} />
-                              ) : (
-                                <HiOutlineArrowRight size={14} />
-                              )}
-                            </button>
+                            <div className="flex items-center justify-end gap-1.5 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all">
+                              <button
+                                onClick={(e) => handleReprovarClick(candidato.id_candidatura, e)}
+                                className="px-2.5 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-xs flex items-center gap-1"
+                                title="Reprovar Candidato"
+                              >
+                                <HiOutlineXCircle size={14} />
+                                <span className="hidden xl:inline">Reprovar</span>
+                              </button>
+
+                              <button
+                                onClick={(e) => handleAvancarClick(candidato.id_candidatura, e)}
+                                className={`px-3 py-1.5 border rounded-lg text-[10px] font-black uppercase tracking-wider transition-all shadow-xs flex items-center gap-1 ${isPenultimaEtapa
+                                    ? "bg-white border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                                    : "bg-white border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50"
+                                  }`}
+                                title={isPenultimaEtapa ? "Aprovar Candidato" : "Avançar 1 Etapa"}
+                              >
+                                <span>{isPenultimaEtapa ? "Aprovar" : "Avançar"}</span>
+                                {isPenultimaEtapa ? <HiOutlineCheckCircle size={14} /> : <HiOutlineArrowRight size={14} />}
+                              </button>
+                            </div>
                           )
                         ) : (
                           <span className="inline-block px-3 py-1 bg-red-50 text-red-600 border border-red-100 rounded-lg text-[10px] font-black uppercase tracking-wider">
@@ -661,81 +542,106 @@ export function ListaCandidatos({
         </div>
       </div>
 
-      {/* MODAL DE REPROVAÇÃO */}
-      {modalLoteAberto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      {/* ==================== MODAL DE REPROVAÇÃO (BLINDAGEM) ==================== */}
+      {modalReprovacaoAberto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-[32px] p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95">
+            <div className="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-4">
+              <HiOutlineExclamationCircle size={28} />
+            </div>
             <h3 className="text-xl font-black text-gray-800 mb-2">
-              Reprovar em Lote
+              Confirmar Reprovação
             </h3>
             <p className="text-sm text-gray-500 font-medium mb-6 leading-relaxed">
-              Você está reprovando <b>{selecionados.length}</b> candidatos da
-              etapa <b>{colunaAtual?.nome_etapa}</b>. Eles serão movidos para o
-              Histórico.
+              Você está prestes a reprovar{" "}
+              <b>
+                {candidatoParaReprovar
+                  ? "este candidato"
+                  : `${selecionados.length} candidato(s)`}
+              </b>{" "}
+              da etapa <b>{colunaAtual?.nome_etapa}</b>. Ele(s) será(ão) movido(s) para o Histórico.
             </p>
 
             <textarea
               value={motivoLote}
               onChange={(e) => setMotivoLote(e.target.value)}
-              placeholder="Digite o feedback para os candidatos..."
-              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl h-32 outline-none text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 resize-none transition-all mb-8"
+              placeholder="Motivo ou feedback interno da reprovação (opcional)..."
+              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl h-28 outline-none text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 resize-none transition-all mb-8"
             />
 
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
-                onClick={() => setModalLoteAberto(false)}
-                className="flex-1 py-3 font-bold text-gray-500 hover:bg-gray-50 rounded-xl"
+                onClick={() => {
+                  setModalReprovacaoAberto(false);
+                  setCandidatoParaReprovar(null);
+                }}
+                className="flex-1 py-3.5 font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-colors"
               >
                 Cancelar
               </button>
               <button
-                onClick={confirmarReprovacaoEmLote}
+                onClick={confirmarReprovacao}
                 disabled={isReprovando}
-                className="flex-1 py-3 font-bold text-white bg-red-500 hover:bg-red-600 rounded-xl shadow-lg shadow-red-500/30 disabled:opacity-50"
+                className="flex-1 py-3.5 font-bold text-white bg-red-500 hover:bg-red-600 rounded-xl shadow-lg shadow-red-500/30 disabled:opacity-50 transition-all"
               >
-                {isReprovando ? "Processando..." : "Confirmar Reprovação"}
+                {isReprovando ? "Reprovando..." : "Sim, Reprovar"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL DE CONFIRMAÇÃO DE APROVAÇÃO */}
-      {modalAprovacaoAberto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      {/* ==================== MODAL DE AVANÇO/APROVAÇÃO (BLINDAGEM) ==================== */}
+      {modalAvancoAberto && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-[32px] p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 text-center">
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <HiOutlineCheckCircle size={32} />
+            <div
+              className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${isPenultimaEtapa ? "bg-emerald-100 text-emerald-600" : "bg-blue-100 text-blue-600"
+                }`}
+            >
+              {isPenultimaEtapa ? <HiOutlineCheckCircle size={36} /> : <HiOutlineArrowRight size={36} />}
             </div>
+
             <h3 className="text-xl font-black text-gray-800 mb-2">
-              Aprovar Candidato(s)?
+              {isPenultimaEtapa ? "Aprovar Candidato(s)?" : "Avançar de Etapa?"}
             </h3>
+
             <p className="text-sm text-gray-500 font-medium mb-8 leading-relaxed">
-              Ao avançar,{" "}
+              Ao confirmar,{" "}
               <b>
-                {candidatoParaAprovar
-                  ? "este candidato será aprovado"
-                  : `estes ${selecionados.length} candidatos serão aprovados`}
+                {candidatoParaAvancar
+                  ? "este candidato será"
+                  : `estes ${selecionados.length} candidatos serão`}
               </b>{" "}
-              no processo seletivo. Confirma esta ação?
+              {isPenultimaEtapa ? (
+                <span className="text-emerald-600 font-bold">aprovado(s) definitivamente no processo seletivo!</span>
+              ) : (
+                <>
+                  movido(s) para a próxima etapa:{" "}
+                  <span className="text-blue-600 font-bold block mt-1 text-base">{proximaColuna?.nome_etapa || "Próxima Etapa"}</span>
+                </>
+              )}
             </p>
 
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
                 onClick={() => {
-                  setModalAprovacaoAberto(false);
-                  setCandidatoParaAprovar(null);
+                  setModalAvancoAberto(false);
+                  setCandidatoParaAvancar(null);
                 }}
-                className="flex-1 py-3 font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-colors"
+                className="flex-1 py-3.5 font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-colors"
               >
                 Cancelar
               </button>
               <button
-                onClick={confirmarAprovacao}
+                onClick={confirmarAvanco}
                 disabled={isProcessandoLote}
-                className="flex-1 py-3 font-bold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl shadow-lg shadow-emerald-500/30 disabled:opacity-50 transition-colors"
+                className={`flex-1 py-3.5 font-bold text-white rounded-xl shadow-lg disabled:opacity-50 transition-all ${isPenultimaEtapa
+                    ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30"
+                    : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/30"
+                  }`}
               >
-                {isProcessandoLote ? "Aprovando..." : "Sim, Aprovar"}
+                {isProcessandoLote ? "Processando..." : isPenultimaEtapa ? "Sim, Aprovar" : "Sim, Avançar"}
               </button>
             </div>
           </div>

@@ -34,7 +34,7 @@ export default function BancoTalentosDashboard() {
       try {
         const [resAreas, resPerfil] = await Promise.all([
           api.get("/empresas/banco-talentos/areas"),
-          api.get("/empresas/perfil").catch(() => null),
+          api.get("/empresa/perfil").catch(() => null),
         ]);
 
         const responseData = resAreas.data.data || resAreas.data;

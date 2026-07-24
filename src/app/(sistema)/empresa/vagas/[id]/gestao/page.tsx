@@ -98,6 +98,10 @@ export default function GestaoVagaPage({
   const [filtroNovos, setFiltroNovos] = useState(false);
   const [colunasOcultas, setColunasOcultas] = useState<number[]>([]);
 
+  const [etapaAtivaId, setEtapaAtivaId] = useState<number | null>(null);
+
+
+
   const OPCOES_DESTAQUE = [
     {
       id: "localizacao",
@@ -280,6 +284,34 @@ export default function GestaoVagaPage({
     filtroNovos,
   ]);
 
+  const candidatosDaEtapaAtual = useMemo(() => {
+    const colunaAtual = colunasFiltradas.find((c) => c.id_etapa === etapaAtivaId) || colunasFiltradas[0];
+    return colunaAtual?.candidatos || [];
+  }, [colunasFiltradas, etapaAtivaId]);
+
+  // Descobre o índice (posição) do candidato aberto no momento
+  const indexAtual = useMemo(() => {
+    if (!candidatoSelecionadoId) return -1;
+    return candidatosDaEtapaAtual.findIndex((c) => c.id_candidatura === candidatoSelecionadoId);
+  }, [candidatosDaEtapaAtual, candidatoSelecionadoId]);
+
+  const hasAnterior = indexAtual > 0;
+  const hasProximo = indexAtual !== -1 && indexAtual < candidatosDaEtapaAtual.length - 1;
+
+  const handleAnterior = () => {
+    if (hasAnterior) {
+      const idAnterior = candidatosDaEtapaAtual[indexAtual - 1].id_candidatura;
+      handleAbrirCandidato(idAnterior);
+    }
+  };
+
+  const handleProximo = () => {
+    if (hasProximo) {
+      const idProximo = candidatosDaEtapaAtual[indexAtual + 1].id_candidatura;
+      handleAbrirCandidato(idProximo);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -352,10 +384,10 @@ export default function GestaoVagaPage({
                 </h1>
                 <span
                   className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest shrink-0 ${isAtiva
-                      ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
-                      : isPausada
-                        ? "bg-amber-50 border border-amber-200 text-amber-700"
-                        : "bg-gray-100 border border-gray-200 text-gray-600"
+                    ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
+                    : isPausada
+                      ? "bg-amber-50 border border-amber-200 text-amber-700"
+                      : "bg-gray-100 border border-gray-200 text-gray-600"
                     }`}
                 >
                   {vaga?.status}
@@ -438,8 +470,8 @@ export default function GestaoVagaPage({
               <button
                 onClick={() => setMenuEtapasAberto(!menuEtapasAberto)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-[14px] border text-xs font-black uppercase tracking-widest transition-colors select-none ${menuEtapasAberto
-                    ? "bg-gray-100 border-gray-300 text-gray-700"
-                    : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
+                  ? "bg-gray-100 border-gray-300 text-gray-700"
+                  : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
                   }`}
               >
                 <HiOutlineEye size={16} />
@@ -505,6 +537,8 @@ export default function GestaoVagaPage({
           colunas={colunasFiltradas}
           onAtualizar={carregarDados}
           onAbrirCandidato={handleAbrirCandidato}
+          etapaAtivaId={etapaAtivaId}
+          onMudancaEtapa={setEtapaAtivaId}
         />
       </main>
 
@@ -513,6 +547,10 @@ export default function GestaoVagaPage({
         idCandidatura={candidatoSelecionadoId}
         onClose={() => setCandidatoSelecionadoId(null)}
         onAtualizar={carregarDados}
+        onAnterior={handleAnterior}
+        onProximo={handleProximo}
+        hasAnterior={hasAnterior}
+        hasProximo={hasProximo}
       />
 
       {/* ✨ RENDERIZAÇÃO DO MODAL DE CONFIRMAÇÃO */}

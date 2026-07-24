@@ -124,6 +124,37 @@ export function CandidatoDrawer({
 
   return (
     <>
+      {/* ✨ ISOLAMENTO TOTAL DE IMPRESSÃO (Só roda quando está expandido) */}
+      {isExpanded && (
+        <style dangerouslySetInnerHTML={{
+          __html: `
+          @media print {
+            /* Esconde todo o DOM da página de fundo (Kanban, Header, Filtros) */
+            body * {
+              visibility: hidden !important;
+            }
+            /* Torna visível APENAS o container do Laboratório/Dossiê e seus filhos */
+            #dossie-lab-container,
+            #dossie-lab-container * {
+              visibility: visible !important;
+            }
+            /* Posiciona a folha no topo absoluto do papel na impressão */
+            #dossie-lab-container {
+              position: absolute !important;
+              left: 0 !important;
+              top: 0 !important;
+              width: 100% !important;
+              height: auto !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              background: white !important;
+              overflow: visible !important;
+            }
+          }
+        `}} />
+      )}
+
+      {/* Backdrop para fechar clicando fora (apenas no modo gaveta) */}
       {!isExpanded && (
         <div
           className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs z-40 transition-opacity animate-in fade-in print:hidden"
@@ -131,9 +162,11 @@ export function CandidatoDrawer({
         />
       )}
 
+      {/* CONTAINER PRINCIPAL (ID #dossie-lab-container usado no CSS de impressão acima) */}
       <div
+        id="dossie-lab-container"
         className={`fixed top-0 right-0 h-full bg-white shadow-2xl flex flex-col transition-all duration-300 ease-in-out print:static print:h-auto print:w-full print:max-w-none print:shadow-none print:border-none print:z-0 ${isExpanded
-            ? "inset-0 w-screen h-screen max-w-none z-[100] bg-slate-100/95 backdrop-blur-md"
+            ? "inset-0 w-screen h-screen max-w-none z-[100] bg-slate-100"
             : "w-full max-w-[640px] z-50"
           }`}
       >
@@ -144,25 +177,28 @@ export function CandidatoDrawer({
           </div>
         ) : (
           <>
-            {/* 1. TOPO DA GAVETA / TELA CHEIA */}
-            <DrawerHeader
-              isExpanded={isExpanded}
-              setIsExpanded={setIsExpanded}
-              onClose={onClose}
-              onAnterior={onAnterior}
-              onProximo={onProximo}
-              hasAnterior={hasAnterior}
-              hasProximo={hasProximo}
-              dados={dados}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-            />
+            {/* 1. TOPO DA GAVETA / LABORATÓRIO (Oculto na Impressão) */}
+            <div className="print:hidden shrink-0">
+              <DrawerHeader
+                isExpanded={isExpanded}
+                setIsExpanded={setIsExpanded}
+                onClose={onClose}
+                onAnterior={onAnterior}
+                onProximo={onProximo}
+                hasAnterior={hasAnterior}
+                hasProximo={hasProximo}
+                dados={dados}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+              />
+            </div>
 
-            {/* 2. CORPO ROLÁVEL COM A FOLHA DO CURRÍCULO OU AS ABAS */}
-            <div className="flex-1 overflow-y-auto bg-white p-6 md:p-8 scrollbar-thin scrollbar-thumb-gray-200 print:overflow-visible print:h-auto print:p-0 print:bg-white print:static print:max-w-none">
+            {/* 2. CORPO ROLÁVEL (Mesa de Trabalho) */}
+            <div className={`flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 print:overflow-visible print:h-auto print:p-0 print:bg-white print:static print:max-w-none ${isExpanded ? "p-6 md:p-10 bg-slate-100" : "p-6 md:p-8 bg-white"
+              }`}>
               {isExpanded ? (
-                /* MODO FOCO: Estrutura idêntica à página de detalhes A4 */
-                <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-300 pb-24 print:pb-0 print:max-w-none print:space-y-6">
+                /* 🔬 MODO LABORATÓRIO: Folha A4 Centralizada como um Documento Real */
+                <div className="max-w-[850px] mx-auto bg-white p-8 sm:p-12 md:p-14 rounded-[32px] shadow-xl border border-gray-200/60 space-y-8 animate-in zoom-in-[0.98] duration-300 pb-20 print:pb-0 print:max-w-none print:space-y-6 print:shadow-none print:border-none print:rounded-none print:p-0">
                   <div className="print:break-inside-avoid">
                     <CurriculoIdentidade
                       perfil={dados.candidato}
@@ -173,20 +209,26 @@ export function CandidatoDrawer({
                       idade={idade}
                     />
                   </div>
-                  <div className="bg-white p-6 sm:p-8 md:p-10 rounded-[28px] border border-gray-100 shadow-xs print:shadow-none print:border-gray-300 print:p-6 print:rounded-2xl print:break-inside-avoid">
+
+                  <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-gray-100 shadow-xs print:shadow-none print:border-gray-300 print:p-4 print:rounded-xl print:break-inside-avoid">
                     <PerfilProfissional perfil={dados.candidato} />
                   </div>
-                  <div className="bg-white p-6 sm:p-8 md:p-10 rounded-[28px] border border-gray-100 shadow-xs print:shadow-none print:border-gray-300 print:p-6 print:rounded-2xl print:break-inside-avoid">
+
+                  <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-gray-100 shadow-xs print:shadow-none print:border-gray-300 print:p-4 print:rounded-xl print:break-inside-avoid">
                     <CurriculoLogistica perfil={dados.candidato} />
                   </div>
-                  <div className="bg-white p-6 sm:p-8 md:p-10 rounded-[28px] border border-gray-100 shadow-xs space-y-8 print:shadow-none print:border-gray-300 print:p-6 print:rounded-2xl print:space-y-6">
+
+                  <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-gray-100 shadow-xs space-y-8 print:shadow-none print:border-gray-300 print:p-4 print:rounded-xl print:space-y-6">
                     <div className="print:break-inside-avoid">
                       <Experiencias experiencias={dados.candidato.experiencias || []} primeiroEmprego={dados.candidato.primeiro_emprego || false} />
                     </div>
+
                     <hr className="border-gray-100 print:border-gray-200" />
+
                     <div className="print:break-inside-avoid">
                       <FormacaoAcad formacoes={dados.candidato.formacoes || []} />
                     </div>
+
                     {dados.candidato.competencias?.length > 0 && (
                       <>
                         <hr className="border-gray-100 print:border-gray-200" />
@@ -222,20 +264,22 @@ export function CandidatoDrawer({
               )}
             </div>
 
-            {/* 3. RODAPÉ FIXO DE TRIAGEM RÁPIDA */}
+            {/* 3. RODAPÉ DE TRIAGEM RÁPIDA (Oculto na Impressão) */}
             {isExpanded && (
-              <DrawerFooter
-                idCandidatura={idCandidatura}
-                nota={nota}
-                setNota={setNota}
-                obs={obs}
-                onAtualizar={onAtualizar}
-                setIsExpanded={setIsExpanded}
-                setActiveTab={setActiveTab}
-                onClose={onClose}
-                hasProximo={hasProximo}
-                onProximo={onProximo}
-              />
+              <div className="print:hidden shrink-0">
+                <DrawerFooter
+                  idCandidatura={idCandidatura}
+                  nota={nota}
+                  setNota={setNota}
+                  obs={obs}
+                  onAtualizar={onAtualizar}
+                  setIsExpanded={setIsExpanded}
+                  setActiveTab={setActiveTab}
+                  onClose={onClose}
+                  hasProximo={hasProximo}
+                  onProximo={onProximo}
+                />
+              </div>
             )}
           </>
         )}
