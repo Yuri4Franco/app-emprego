@@ -15,6 +15,7 @@ import {
   HiOutlineUsers,
 } from "react-icons/hi";
 import toast from "react-hot-toast";
+import { AlertaCreditosCurriculo } from "@/src/components/empresa/banco-talentos/BancoTalentosBanner";
 
 interface AreaCount {
   id_area: number;
@@ -80,6 +81,7 @@ export default function BancoTalentosDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-6 md:px-10 space-y-10 animate-in fade-in duration-700">
+      <AlertaCreditosCurriculo />
       {/* ================= HEADER PREMIUM ================= */}
       <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 bg-surface p-8 md:p-12 rounded-[32px] md:rounded-[48px] shadow-sm border border-gray-100 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
@@ -122,7 +124,11 @@ export default function BancoTalentosDashboard() {
             <HiOutlineUserGroup size={40} className="opacity-30 mb-1" />
           </div>
         </div>
+
+
       </header>
+
+
 
       {/* ================= BARRA DE BUSCA E CONTROLES ================= */}
       <div className="flex flex-col lg:flex-row items-center justify-between gap-5 md:gap-6 bg-surface p-3 md:p-4 rounded-[28px] md:rounded-full border border-gray-100 shadow-sm">

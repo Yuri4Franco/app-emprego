@@ -19,6 +19,7 @@ import toast from "react-hot-toast";
 import CandidatoCard from "@/src/components/empresa/banco-talentos/CandidatoCard";
 import FiltrosSidebar from "@/src/components/empresa/banco-talentos/FiltrosSidebar";
 import { CandidatoResumo, Competencia, escolaridadeOptions, turnosOptions, cnhOptions, generoOptions, toggleArrayItem } from "@/src/components/empresa/banco-talentos/constants";
+import { AlertaCreditosCurriculo } from "@/src/components/empresa/banco-talentos/BancoTalentosBanner";
 
 function VitrineConteudo() {
   const router = useRouter();
@@ -203,9 +204,12 @@ function VitrineConteudo() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-4 py-10 px-6 md:px-10 animate-in fade-in duration-700">
+      <AlertaCreditosCurriculo />
+
       <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-bold transition-colors bg-white px-5 py-2.5 rounded-full border border-gray-200 shadow-sm hover:shadow-md">
         <HiOutlineArrowLeft size={18} /> Voltar
       </button>
+
 
       <header className="mb-8 bg-surface p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>

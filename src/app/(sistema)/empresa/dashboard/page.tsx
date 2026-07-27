@@ -34,7 +34,7 @@ interface EntrevistaResumo {
 }
 
 export default function EmpresaDashboard() {
-  const { perfil, isLoading: authLoading } = useAuth();
+  const { perfil, isLoading: authLoading, isAssociada } = useAuth();
 
   const [vagas, setVagas] = useState<VagaResumo[]>([]);
   const [entrevistas, setEntrevistas] = useState<EntrevistaResumo[]>([]);
@@ -113,22 +113,24 @@ export default function EmpresaDashboard() {
         </div>
 
         {/* CARTEIRA DE CRÉDITOS */}
-        <div className="relative z-10 flex items-center gap-3 bg-gray-50 px-6 py-2 rounded-full border border-gray-100">
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">
-              Seu Saldo
-            </span>
-            <div className="flex items-center gap-3 text-sm font-black text-gray-800">
-              <div
-                className="flex items-center gap-1.5"
-                title="Créditos de Currículos"
-              >
-                <HiOutlineDocumentText className="text-emerald-500" size={16} />
-                {perfil?.empresa?.creditos_curriculos || 0}
+        {!isAssociada && (
+          <div className="relative z-10 flex items-center gap-3 bg-gray-50 px-6 py-2 rounded-full border border-gray-100">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">
+                Seu Saldo
+              </span>
+              <div className="flex items-center gap-3 text-sm font-black text-gray-800">
+                <div
+                  className="flex items-center gap-1.5"
+                  title="Créditos de Currículos"
+                >
+                  <HiOutlineDocumentText className="text-emerald-500" size={16} />
+                  {perfil?.empresa?.creditos_curriculos || 0}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </header>
 
       {/* ================= MÉTRICAS EM CARDS ================= */}
