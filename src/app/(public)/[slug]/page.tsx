@@ -96,7 +96,7 @@ export default async function PerfilPublicoEmpresaPage({ params }: PageProps) {
                 src={logotipo}
                 alt={empresa.nome_fantasia}
                 fill
-                className="object-contain p-3"
+                className="object-contain"
               />
             </div>
           </div>

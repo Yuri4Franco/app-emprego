@@ -67,7 +67,6 @@ export function ListaCandidatos({
   // Modal de Reprovação (Serve para 1 ou N candidatos)
   const [modalReprovacaoAberto, setModalReprovacaoAberto] = useState(false);
   const [candidatoParaReprovar, setCandidatoParaReprovar] = useState<number | null>(null);
-  const [motivoLote, setMotivoLote] = useState("");
   const [isReprovando, setIsReprovando] = useState(false);
 
   // Modal de Avanço/Aprovação (Serve para 1 ou N candidatos)
@@ -218,14 +217,12 @@ export function ListaCandidatos({
     setIsReprovando(true);
     try {
       await api.post(`/empresa/candidaturas/reprovar-lote`, {
-        id_candidaturas: idsAlvo,
-        motivo: motivoLote.trim() || "Candidato não atende aos requisitos da etapa.",
+        id_candidaturas: idsAlvo
       });
       toast.success(`${idsAlvo.length} candidato(s) reprovado(s) com sucesso.`);
       setModalReprovacaoAberto(false);
       setCandidatoParaReprovar(null);
       setSelecionados([]);
-      setMotivoLote("");
       onAtualizar();
     } catch (error) {
       toast.error("Erro ao processar reprovação.");
@@ -561,13 +558,6 @@ export function ListaCandidatos({
               </b>{" "}
               da etapa <b>{colunaAtual?.nome_etapa}</b>. Ele(s) será(ão) movido(s) para o Histórico.
             </p>
-
-            <textarea
-              value={motivoLote}
-              onChange={(e) => setMotivoLote(e.target.value)}
-              placeholder="Motivo ou feedback interno da reprovação (opcional)..."
-              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl h-28 outline-none text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 resize-none transition-all mb-8"
-            />
 
             <div className="flex gap-3">
               <button
