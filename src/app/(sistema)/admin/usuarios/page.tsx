@@ -76,7 +76,7 @@ function AdminUsuariosContent() {
           tipo: activeTab,
           busca: termoBuscado || undefined,
           page: paginaAtual,
-          limit: 10, // Força paginação de 10 por página no backend
+          limit: 10,
         },
       });
       setUsuarios(response.data.dados || response.data.data || response.data);
@@ -234,7 +234,7 @@ function AdminUsuariosContent() {
               <tr>
                 <th className="px-8 py-4">Nome e Contato</th>
                 <th className="px-8 py-4">Status</th>
-                <th className="px-8 py-4">Último Acesso</th>
+                <th className="px-8 py-4">Última Atividade</th>
                 <th className="px-8 py-4 text-right">Ações Rápidas</th>
               </tr>
             </thead>
@@ -273,13 +273,13 @@ function AdminUsuariosContent() {
                     <td className="px-8 py-4">
                       <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
                         <HiOutlineCalendar className="text-gray-300" size={16} />
-                        {user.ultimo_login ? (
+                        {user.ultima_atividade ? (
                           <div className="flex flex-col">
-                            <span className="font-bold text-gray-700">{new Date(user.ultimo_login).toLocaleDateString("pt-BR")}</span>
-                            <span className="text-[10px] text-gray-400">às {new Date(user.ultimo_login).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
+                            <span className="font-bold text-gray-700">{new Date(user.ultima_atividade).toLocaleDateString("pt-BR")}</span>
+                            <span className="text-[10px] text-gray-400">às {new Date(user.ultima_atividade).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
                           </div>
                         ) : (
-                          <span className="text-gray-400 italic">Nunca acessou</span>
+                          <span className="text-gray-400 italic">Sem atividade</span>
                         )}
                       </div>
                     </td>
