@@ -258,6 +258,8 @@ export function CandidatoDrawer({
                   setHoraEntrevista={setHoraEntrevista}
                   localEntrevista={localEntrevista}
                   setLocalEntrevista={setLocalEntrevista}
+                  observacoesEntrevista={observacoesEntrevista}
+                  setObservacoesEntrevista={setObservacoesEntrevista}
                   agendarEntrevista={agendarEntrevista}
                   isAgendando={isAgendando}
                 />
