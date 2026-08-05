@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/src/AuthContext";
 import Logo from "@/src/assets/logos/logo-transparente-branca.webp";
 import LogoCor from "@/src/assets/logos/logo-transparente.webp";
-// ✨ NOVO: Importação da logo minimizada (apenas o ícone)
 import LogoMinimizado from "@/src/assets/logos/logo-lupa-transparente-branca.webp";
 import {
   HiOutlineHome,
@@ -25,14 +24,12 @@ import {
   HiOutlineCheckCircle,
   HiOutlineInformationCircle,
   HiOutlineCollection,
-  // ✨ NOVO: Ícones para o botão de expandir/minimizar
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
 } from "react-icons/hi";
 import { useEffect, useState } from "react";
 import api from "@/src/services/api";
 
-// 1. DICIONÁRIO DE MENUS POR TIPO DE USUÁRIO
 const MENU_CONFIG = {
   CANDIDATO: [
     { label: "Início", href: "/candidato/inicio", icon: <HiOutlineHome size={22} /> },

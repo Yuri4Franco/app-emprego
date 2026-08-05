@@ -43,7 +43,7 @@ const registerSchema = z
   .object({
     name: z.string().min(3, "Por favor, digite seu nome completo"),
     email: z.string().email("Digite um e-mail válido"),
-    // ✨ VALIDAÇÃO DE CPF COM ZOD + FUNÇÃO CUSTOMIZADA
+    whatsapp: z.string().optional(),
     cpf: z
       .string()
       .min(1, "O CPF é obrigatório")
@@ -76,9 +76,41 @@ const formatarCPFInput = (value: string) => {
     .replace(/(-\d{2})\d+?$/, "$1");
 };
 
+
+const mascaraWhatsApp = (valor: string) => {
+  // Remove tudo o que não for número
+  let v = valor.replace(/\D/g, "");
+  
+  // Limita a 11 números no máximo (DDD + 9 dígitos)
+  v = v.slice(0, 11);
+
+  // Aplica a formatação
+  if (v.length >= 11) {
+    return `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+  } else if (v.length >= 7) {
+    // Quando o usuário ainda está digitando a primeira parte do número
+    return `(${v.slice(0, 2)}) ${v.slice(2, 6)}-${v.slice(6)}`;
+  } else if (v.length >= 3) {
+    // Quando o usuário só digitou o DDD
+    return `(${v.slice(0, 2)}) ${v.slice(2)}`;
+  } else if (v.length > 0) {
+    // Começando a digitar o DDD
+    return `(${v}`;
+  }
+  
+  return v;
+};
+
+
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [whatsapp, setWhatsapp] = useState("");
+
+  const handleWhatsAppChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const valorFormatado = mascaraWhatsApp(e.target.value);
+    setWhatsapp(valorFormatado);
+  };
 
   const router = useRouter();
   const { login } = useAuth();
@@ -130,14 +162,13 @@ export default function RegisterPage() {
         action: "register",
       });
 
-      console.log("Token do reCAPTCHA V3 gerado:", recaptchaToken);
-
       // D. Monta o payload enviando o token junto com os dados do usuário
       const payload = {
         nome: data.name,
         email: data.email,
         cpf: data.cpf.replace(/\D/g, ""),
         senha: data.password,
+        whatsapp: whatsapp ? whatsapp.replace(/\D/g, "") : null,
         recaptchaToken,
       };
 
@@ -166,6 +197,8 @@ export default function RegisterPage() {
       setIsLoading(false);
     }
   };
+
+
 
   return (
     <>
@@ -253,6 +286,19 @@ export default function RegisterPage() {
                     </a>
                   </span>
                 </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 ml-1">
+                  WhatsApp (Opcional)
+                </label>
+                <input
+                  type="tel"
+                  value={whatsapp}
+                  onChange={handleWhatsAppChange}
+                  placeholder="(55) 99999-9999"
+                  maxLength={15} // (2) 5-4 = 15 caracteres no total
+                  className="w-full p-3 border rounded-lg border-gray-300 outline-none transition-all duration-200 placeholder:text-gray-400 focus:border-primary focus:ring-blue-50 hover:border-blue-300"
+                />
               </div>
 
               {/* Grid compacto para senhas */}

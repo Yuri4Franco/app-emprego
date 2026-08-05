@@ -35,6 +35,9 @@ interface PerfilCompleto {
   email: string;
   tipo_usuario: string;
   empresa?: EmpresaPerfil;
+  email_confirmado: boolean;
+  email_pendente?: boolean;
+  link_enviado?: boolean;
 }
 
 interface AuthContextData {

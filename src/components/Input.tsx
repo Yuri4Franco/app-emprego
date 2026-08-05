@@ -28,7 +28,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                         className={twMerge(
                             "w-full py-3 rounded-lg border bg-white outline-none transition-all duration-200",
                             "placeholder:text-gray-400 focus:ring-2",
-                            // LÓGICA DO PADDING: pl-12 se houver ícone, senão px-4 normal
                             icon ? "pl-12 pr-4" : "px-4",
                             error
                                 ? "border-red-300 focus:border-red-500 focus:ring-red-100"

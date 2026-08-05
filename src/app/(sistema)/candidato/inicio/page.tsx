@@ -18,6 +18,7 @@ import {
   HiOutlineHeart, // <-- IMPORT NOVO PARA O CARD DE FAVORITOS
 } from "react-icons/hi";
 import toast from "react-hot-toast";
+import { BannerConfirmacaoEmail } from "@/src/components/candidato/BannerConfirmacaoEmail";
 
 // Tipagens Atualizadas
 interface Metricas {
@@ -162,6 +163,7 @@ export default function DashboardCandidatoPage() {
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-4 space-y-8 animate-in fade-in duration-700">
+      <BannerConfirmacaoEmail />
       {/* ============================================================== */}
       {/* CABEÇALHO "TUTORIAL": BOAS-VINDAS E STATUS DO CURRÍCULO          */}
       {/* ============================================================== */}
