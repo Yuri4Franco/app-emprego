@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { HiOutlineBriefcase, HiOutlineClipboardList } from "react-icons/hi";
 import { CandidaturaCard } from "@/src/components/candidato/candidaturas/CandidaturaCard";
 import { CompromissosList } from "@/src/components/candidato/candidaturas/CompromissosList";
+import { BannerConfirmacaoEmail } from "@/src/components/candidato/BannerConfirmacaoEmail";
 
 
 export default function MinhasCandidaturasPage() {
@@ -67,7 +68,7 @@ export default function MinhasCandidaturasPage() {
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4 space-y-8 animate-in fade-in duration-500">
-      
+      <BannerConfirmacaoEmail />
       {/* HEADER */}
       <div className="bg-white p-6 md:p-8 rounded-[32px] md:rounded-[40px] border border-gray-100 shadow-sm flex flex-col sm:flex-row justify-between gap-6 items-center">
         <div className="text-center sm:text-left">

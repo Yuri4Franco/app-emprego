@@ -1,3 +1,4 @@
+import { BannerConfirmacaoEmail } from "@/src/components/candidato/BannerConfirmacaoEmail";
 import VagasListagemContent from "@/src/components/vagas/VagasListagemContent";
 import { mapearVagaBackendParaFrontend } from "@/src/utils/vaga-adapter";
 
@@ -17,6 +18,9 @@ export default async function VagasCandidatoPage() {
 
   return (
     <div className="p-4 md:p-0">
+      <div className="p-6">
+        <BannerConfirmacaoEmail />
+      </div>
       <VagasListagemContent
         initialJobs={mappedJobs}
         initialTotal={response.paginacao.total}

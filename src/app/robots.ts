@@ -22,7 +22,7 @@ export default function robots(): MetadataRoute.Robots {
         '/recuperar-senha',
         '/verificar-email',
         '/trocar-senha',
-        '/ativar',
+        '/confirmar-email',
         '/api/',
       ],
     },
