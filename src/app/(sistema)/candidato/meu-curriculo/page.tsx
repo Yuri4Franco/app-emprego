@@ -17,6 +17,7 @@ import TabExperiencia from "@/src/components/candidato/meu-curriculo/TabExperien
 import TabFormacao from "@/src/components/candidato/meu-curriculo/TabFormacao";
 import TabCompetencias from "@/src/components/candidato/meu-curriculo/TabCompetencias";
 import TabRevisao from "@/src/components/candidato/meu-curriculo/TabRevisao";
+import { BannerConfirmacaoEmail } from "@/src/components/candidato/BannerConfirmacaoEmail";
 
 // import TabRevisao from "@/src/components/candidatos/meu-curriculo/TabRevisao"; // Ativaremos na próxima etapa
 
@@ -27,7 +28,6 @@ export default function MeuCurriculoRefatoradoPage() {
   const [dadosCandidato, setDadosCandidato] = useState<any>(null);
   const [isVisivel, setIsVisivel] = useState(true);
 
-  // O Estado Inteligente do Progresso
   const [progresso, setProgresso] = useState(0);
   const [statusAbas, setStatusAbas] = useState({
     dados: false,
@@ -54,11 +54,35 @@ export default function MeuCurriculoRefatoradoPage() {
     }
   };
 
+  const atualizarProgressoLocal = (
+    novaPorcentagem: number,
+    abaId?: string,
+    isOk?: boolean,
+    chaveBanco?: string,
+    novosDados?: any
+  ) => {
+    setProgresso(novaPorcentagem);
+    if (abaId && isOk !== undefined) {
+      setStatusAbas((prev) => ({ ...prev, [abaId]: isOk }));
+    }
+
+    if (chaveBanco && novosDados !== undefined) {
+      // ✨ Se for o root (Dados Gerais), nós mesclamos o objeto inteiro mantendo as listas (experiencias, formacoes, etc)
+      if (chaveBanco === "root") {
+        setDadosCandidato((prev: any) => ({ ...prev, ...novosDados }));
+      } else {
+        // Para as outras abas (formacoes, experiencias)
+        setDadosCandidato((prev: any) => ({ ...prev, [chaveBanco]: novosDados }));
+      }
+    }
+  };
+
+
   useEffect(() => {
     setIsSubFormOpen(false);
   }, [activeTab]);
 
-  // Função que avalia o que falta no currículo
+  // Função que avalia o que falta no currículo (USADA APENAS NO GET INICIAL)
   const avaliarProgresso = (dados: any) => {
     if (!dados) return;
 
@@ -82,13 +106,9 @@ export default function MeuCurriculoRefatoradoPage() {
 
     setStatusAbas(status);
 
-    let concluidos = 0;
-    if (status.dados) concluidos++;
-    if (status.experiencia) concluidos++;
-    if (status.formacao) concluidos++;
-    if (status.competencias) concluidos++;
-
-    setProgresso((concluidos / 4) * 100);
+    // ✨ A MÁGICA AQUI: O front-end agora aceita a nota oficial do back-end
+    // (Certifique-se de que o backend já está devolvendo "porcentagem_curriculo" no GET)
+    setProgresso(dados.porcentagem_curriculo || 0);
   };
 
   const carregarCurriculo = async () => {
@@ -173,6 +193,7 @@ export default function MeuCurriculoRefatoradoPage() {
 
   return (
     <div className="max-w-5xl mx-auto pb-20 pt-6 md:pt-10 md:px-8 space-y-6 md:space-y-8 px-8 md:px-0 animate-in fade-in duration-700">
+      <BannerConfirmacaoEmail />
       <header className="mb-6 md:mb-10 space-y-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="text-center md:text-left">
@@ -265,28 +286,28 @@ export default function MeuCurriculoRefatoradoPage() {
         {activeTab === "dados" && (
           <TabDadosGerais
             dadosIniciais={dadosCandidato}
-            onAtualizarProgresso={carregarCurriculo}
+            onAtualizarProgresso={atualizarProgressoLocal}
             onNextTab={irParaProxima}
           />
         )}
         {activeTab === "experiencia" && (
           <TabExperiencia
             dadosIniciais={dadosCandidato}
-            onAtualizarProgresso={carregarCurriculo}
+            onAtualizarProgresso={atualizarProgressoLocal}
             onFormOpenChange={setIsSubFormOpen}
           />
         )}
         {activeTab === "formacao" && (
           <TabFormacao
             dadosIniciais={dadosCandidato}
-            onAtualizarProgresso={carregarCurriculo}
+            onAtualizarProgresso={atualizarProgressoLocal}
             onFormOpenChange={setIsSubFormOpen}
           />
         )}
         {activeTab === "competencias" && (
           <TabCompetencias
             dadosIniciais={dadosCandidato}
-            onAtualizarProgresso={carregarCurriculo}
+            onAtualizarProgresso={atualizarProgressoLocal}
           />
         )}
         {activeTab === "revisao" && (

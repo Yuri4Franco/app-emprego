@@ -23,7 +23,7 @@ import {
 
 interface TabExperienciaProps {
   dadosIniciais: any;
-  onAtualizarProgresso: () => void;
+  onAtualizarProgresso: (nota: number, aba: string, isOk: boolean, chaveBanco?: string, novosDados?: any) => void;
   onFormOpenChange?: (isOpen: boolean) => void;
 }
 
@@ -71,24 +71,26 @@ export default function TabExperiencia({
     const isChecked = e.target.checked;
     const toastId = toast.loading("Salvando preferência...");
 
-    // UI Otimista: Já vira a chavinha na tela para o usuário não sentir lentidão
+    // UI Otimista
     setPrimeiroEmprego(isChecked);
 
     try {
-      // O payload agora tem literalmente apenas 1 linha! ✨
       const res = await api.patch("/candidato/primeiro-emprego", {
         primeiro_emprego: isChecked,
       });
 
-      // Usamos a mensagem que o nosso backend devolveu
-      toast.success(res.data.message, { id: toastId });
+      toast.success(res.data.message || "Preferência salva!", { id: toastId });
 
-      // Atualiza a barra de progresso de preenchimento do currículo
       if (onAtualizarProgresso) {
-        onAtualizarProgresso();
+        const isAbaOk = isChecked || experiencias.length > 0;
+        const novaNota = res.data?.data?.porcentagem_curriculo ?? res.data?.porcentagem_curriculo;
+
+        if (novaNota !== undefined) {
+          // ✨ Enviamos a chave "primeiro_emprego" e o valor para o Pai salvar na memória!
+          onAtualizarProgresso(novaNota, "experiencia", isAbaOk, "primeiro_emprego", isChecked);
+        }
       }
     } catch (error: any) {
-      // Se a API falhar, desfazemos a chavinha otimista
       setPrimeiroEmprego(!isChecked);
       toast.error(
         error.response?.data?.error || "Erro ao atualizar a preferência de primeiro emprego.",
@@ -159,20 +161,37 @@ export default function TabExperiencia({
           `/candidato/experiencias/${editingExpId}`,
           payload,
         );
-        setExperiencias((prev) =>
-          prev.map((e) =>
-            e.id_experiencia === editingExpId ? res.data.data : e,
-          ),
+
+        const experienciaAtualizada = res.data.data.experiencia;
+        const novaNota = res.data.data.porcentagem_curriculo;
+
+        // ✨ 1. Criamos a lista nova
+        const novaLista = experiencias.map((e) =>
+          e.id_experiencia === editingExpId ? experienciaAtualizada : e
         );
+
+        setExperiencias(novaLista);
         toast.success("Experiência atualizada!");
+
+        // ✨ 2. Passamos os 5 parâmetros para o Pai
+        onAtualizarProgresso(novaNota, "experiencia", true, "experiencias", novaLista);
       } else {
         const res = await api.post("/candidato/experiencias", payload);
-        setExperiencias((prev) => [...prev, res.data.data]);
+
+        const novaExperiencia = res.data.data.experiencia;
+        const novaNota = res.data.data.porcentagem_curriculo;
+
+        // ✨ 1. Criamos a lista nova
+        const novaLista = [...experiencias, novaExperiencia];
+
+        setExperiencias(novaLista);
         toast.success("Experiência adicionada!");
+
+        // ✨ 2. Passamos os 5 parâmetros para o Pai
+        onAtualizarProgresso(novaNota, "experiencia", true, "experiencias", novaLista);
       }
 
       fecharFormExperiencia();
-      onAtualizarProgresso();
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Erro ao salvar experiência.");
     } finally {
@@ -183,11 +202,25 @@ export default function TabExperiencia({
   const excluirExperiencia = async (id: number) => {
     if (!confirm("Tem certeza que deseja excluir esta experiência?")) return;
     try {
-      await api.delete(`/candidato/experiencias/${id}`);
-      setExperiencias((prev) => prev.filter((e) => e.id_experiencia !== id));
+      const res = await api.delete(`/candidato/experiencias/${id}`);
+
+      // ✨ 1. Criamos a lista nova
+      const novaLista = experiencias.filter((e) => e.id_experiencia !== id);
+      setExperiencias(novaLista);
+
       toast.success("Experiência removida.");
-      onAtualizarProgresso();
+
+      const isAbaOk = novaLista.length > 0 || primeiroEmprego;
+
+      // ✨ 2. Lendo a nota do local correto de forma segura
+      const novaNota = res.data?.data?.porcentagem_curriculo ?? res.data?.porcentagem_curriculo;
+
+      if (novaNota !== undefined) {
+        // ✨ 3. Passamos os 5 parâmetros para o Pai
+        onAtualizarProgresso(novaNota, "experiencia", isAbaOk, "experiencias", novaLista);
+      }
     } catch (error) {
+      console.error("Erro no delete:", error);
       toast.error("Erro ao excluir experiência.");
     }
   };

@@ -34,7 +34,7 @@ import { ESTADOS_BRASIL } from "@/src/schemas/vagaSchemas";
 
 interface TabDadosGeraisProps {
   dadosIniciais: any;
-  onAtualizarProgresso: () => void;
+  onAtualizarProgresso: (nota: number, aba: string, isOk: boolean, chaveBanco?: string, novosDados?: any) => void;
   onNextTab: () => void;
 }
 
@@ -232,16 +232,14 @@ export default function TabDadosGerais({
         },
       };
 
-      // 1. Salva os dados básicos
-      await api.put("/candidato/meu-curriculo", payload);
+      // ✨ 1. Salva os dados básicos e CAPTURA a resposta
+      const resDados = await api.put("/candidato/meu-curriculo", payload);
 
-      // 2. Salva as áreas de atuação
+      // ✨ 2. Salva as áreas de atuação e CAPTURA a resposta
       const areas_ids = areasSelecionadas.map((a) => a.id_area || a.id);
-      await api.put("/candidato/areas/sync", { areas_ids });
+      const resAreas = await api.put("/candidato/areas/sync", { areas_ids });
 
-      // ✨ 3. O GATILHO MÁGICO DE VISIBILIDADE
-      // Se o currículo estava invisível (novo cadastro ou o candidato tinha ocultado)
-      // nós ativamos ele automaticamente agora que temos os dados mínimos!
+      // 3. O GATILHO MÁGICO DE VISIBILIDADE
       if (dadosIniciais?.perfil_visivel_empresas === false) {
         await api.patch("/candidato/visibilidade", {
           perfil_visivel_empresas: true,
@@ -254,9 +252,33 @@ export default function TabDadosGerais({
         toast.success("Dados atualizados com sucesso!", { id: toastId });
       }
 
-      // Avisa o componente Pai (page.tsx) para buscar os dados frescos.
-      // Isso vai atualizar a barra de progresso e o botãozinho toggle do cabeçalho sozinhos!
-      onAtualizarProgresso();
+      // 4. Valida se a aba tem os dados essenciais preenchidos para ficar com a bolinha verde
+      const isAbaOk = !!(
+        payload.cpf &&
+        payload.data_nascimento &&
+        payload.objetivo_profissional &&
+        payload.endereco.bairro &&
+        payload.endereco.cidade &&
+        areas_ids.length > 0
+      );
+
+      // 5. BUSCA SEGURA DA NOTA
+      const novaNota =
+        resAreas.data?.data?.porcentagem_curriculo ??
+        resAreas.data?.porcentagem_curriculo ??
+        resDados.data?.data?.porcentagem_curriculo ??
+        resDados.data?.porcentagem_curriculo;
+
+      // ✨ 6. PREPARA OS DADOS ATUALIZADOS PARA O PAI
+      // Extrai o objeto candidato atualizado da resposta
+      const dadosAtualizados = resDados.data?.data?.candidato || resDados.data?.candidato;
+
+      if (novaNota !== undefined) {
+        // Envia a nota, o status da aba, e pede para o pai atualizar todo o objeto "dadosCandidato"
+        // Como a chave original no Pai é o próprio objeto inteiro, passamos "root" ou podemos espalhar lá no Pai.
+        // Para simplificar, vou passar o objeto atualizado como um todo.
+        onAtualizarProgresso(novaNota, "dados", isAbaOk, "root", dadosAtualizados);
+      }
 
       if (onNextTab) {
         onNextTab();
@@ -269,7 +291,6 @@ export default function TabDadosGerais({
       setIsSaving(false);
     }
   };
-
   // Funções Auxiliares para Áreas
   const filteredAreas = listaTaxonomiaAreas.filter((tax) => {
     const idReal = tax.id_area || tax.id;

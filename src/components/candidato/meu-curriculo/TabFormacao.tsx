@@ -23,7 +23,7 @@ import { formacaoSchema, FormacaoData } from "@/src/schemas/curriculoSchemas";
 
 interface TabFormacaoProps {
   dadosIniciais: any;
-  onAtualizarProgresso: () => void;
+  onAtualizarProgresso: (nota: number, aba: string, isOk: boolean, chaveBanco?: string, novosDados?: any) => void;
   onFormOpenChange?: (isOpen: boolean) => void;
 }
 
@@ -107,25 +107,28 @@ export default function TabFormacao({
       };
 
       if (editingFormId) {
-        const res = await api.put(
-          `/candidato/formacoes/${editingFormId}`,
-          payload,
-        );
-        setFormacoes((prev) =>
-          prev.map((f) =>
-            f.id_formacao === editingFormId ? res.data.data : f,
-          ),
-        );
+        const res = await api.put(`/candidato/formacoes/${editingFormId}`, payload);
+        const formacaoAtualizada = res.data.data.formacao;
+        const novaNota = res.data.data.porcentagem_curriculo;
+
+        const novaLista = formacoes.map((f) => f.id_formacao === editingFormId ? formacaoAtualizada : f);
+        setFormacoes(novaLista);
         toast.success("Formação atualizada!");
+        onAtualizarProgresso(novaNota, "formacao", true, "formacoes", novaLista);
       } else {
         const res = await api.post("/candidato/formacoes", payload);
-        setFormacoes((prev) => [...prev, res.data.data]);
+        const novaFormacao = res.data.data.formacao;
+        const novaNota = res.data.data.porcentagem_curriculo;
+
+        const novaLista = [...formacoes, novaFormacao];
+        setFormacoes(novaLista);
         toast.success("Formação adicionada!");
+
+        onAtualizarProgresso(novaNota, "formacao", true, "formacoes", novaLista);
       }
 
       setShowFormFormacao(false);
       if (onFormOpenChange) onFormOpenChange(false);
-      onAtualizarProgresso();
     } catch (error: any) {
       toast.error(
         error.response?.data?.error || "Erro ao salvar formação.",
@@ -144,11 +147,24 @@ export default function TabFormacao({
   const excluirFormacao = async (id: number) => {
     if (!confirm("Excluir esta escolaridade?")) return;
     try {
-      await api.delete(`/candidato/formacoes/${id}`);
-      setFormacoes((prev) => prev.filter((f) => f.id_formacao !== id));
+      const res = await api.delete(`/candidato/formacoes/${id}`);
+
+      const novaLista = formacoes.filter((f) => f.id_formacao !== id);
+      setFormacoes(novaLista);
+
       toast.success("Escolaridade removida.");
-      onAtualizarProgresso();
+
+      const isAbaOk = novaLista.length > 0;
+
+      // ✨ Lendo a nota com Optional Chaining para não quebrar
+      const novaNota = res.data?.data?.porcentagem_curriculo ?? res.data?.porcentagem_curriculo;
+
+      if (novaNota !== undefined) {
+        // ✨ Passando todos os 5 parâmetros para o Pai salvar a novaLista globalmente
+        onAtualizarProgresso(novaNota, "formacao", isAbaOk, "formacoes", novaLista);
+      }
     } catch (error) {
+      console.error("Erro no delete:", error);
       toast.error("Erro ao excluir.");
     }
   };

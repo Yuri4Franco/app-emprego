@@ -15,7 +15,7 @@ import {
 
 interface TabCompetenciasProps {
   dadosIniciais: any;
-  onAtualizarProgresso: () => void;
+  onAtualizarProgresso: (nota: number, aba: string, isOk: boolean, chaveBanco?: string, novosDados?: any) => void;
 }
 
 export default function TabCompetencias({
@@ -87,26 +87,28 @@ export default function TabCompetencias({
       toast.error("Você já atingiu o limite máximo de 10 habilidades.");
       return;
     }
-    if (competencias.find((c) => c.id_competencia === id_competencia)) {
+    // Opcional: blindado com "?."
+    if (competencias.find((c) => c?.id_competencia === id_competencia)) {
       toast.error("Você já adicionou essa habilidade.");
       return;
     }
 
     try {
       const payload = { id_competencia, nivel };
-      await api.post("/candidato/competencias", payload);
+      const res = await api.post("/candidato/competencias", payload);
 
-      const compTaxonomia = listaTaxonomiaCompetencias.find(
-        (c) => c.id_competencia === id_competencia,
-      );
-      setCompetencias((prev) => [
-        ...prev,
-        { ...payload, competencia: compTaxonomia },
-      ]);
+      const novaCompetencia = res.data.data.competencia;
+      const novaNota = res.data.data.porcentagem_curriculo;
+
+      // ✨ 1. Criamos a lista nova
+      const novaLista = [...competencias, novaCompetencia];
+      setCompetencias(novaLista);
 
       resetarBusca();
       toast.success("Habilidade adicionada!");
-      onAtualizarProgresso();
+
+      // ✨ 2. Passamos os 5 parâmetros para o Pai salvar no estado global
+      onAtualizarProgresso(novaNota, "competencias", true, "competencias", novaLista);
     } catch (error) {
       toast.error("Erro ao adicionar habilidade.");
     }
@@ -123,21 +125,22 @@ export default function TabCompetencias({
       const payload = { nome: nome.trim(), nivel };
       const res = await api.post("/candidato/competencias/sugerir", payload);
 
-      const novaCompetencia = {
-        id_competencia: res.data?.data?.id_competencia || Date.now(),
-        nivel,
-        competencia: {
-          nome: payload.nome,
-          status: "PENDENTE",
-        },
-      };
+      const novaCompetencia = res.data.data.competencia;
+      const novaNota = res.data.data.porcentagem_curriculo;
 
-      setCompetencias((prev) => [...prev, novaCompetencia]);
+      // ✨ 1. Criamos a lista nova
+      const novaLista = [...competencias, novaCompetencia];
+      setCompetencias(novaLista);
+
       resetarBusca();
       toast.success("Sugestão enviada e adicionada ao perfil!", {
         id: toastId,
       });
-      onAtualizarProgresso();
+
+      // ✨ 2. Passamos os 5 parâmetros para o Pai
+      if (novaNota !== undefined) {
+        onAtualizarProgresso(novaNota, "competencias", true, "competencias", novaLista);
+      }
     } catch (error) {
       toast.error("Erro ao sugerir habilidade. Tente novamente.", {
         id: toastId,
@@ -147,13 +150,23 @@ export default function TabCompetencias({
 
   const removerCompetencia = async (id_competencia: number) => {
     try {
-      await api.delete(`/candidato/competencias/${id_competencia}`);
-      setCompetencias((prev) =>
-        prev.filter((c) => c.id_competencia !== id_competencia),
-      );
+      const res = await api.delete(`/candidato/competencias/${id_competencia}`);
+
+      // ✨ 1. Criamos a lista nova
+      const novaLista = competencias.filter((c) => c?.id_competencia !== id_competencia);
+      setCompetencias(novaLista);
+
       toast.success("Habilidade removida.");
-      onAtualizarProgresso();
+
+      const abaContinuaOk = novaLista.length > 0;
+      const novaNota = res.data?.data?.porcentagem_curriculo ?? res.data?.porcentagem_curriculo;
+
+      if (novaNota !== undefined) {
+        // ✨ 2. Passamos os 5 parâmetros para o Pai
+        onAtualizarProgresso(novaNota, "competencias", abaContinuaOk, "competencias", novaLista);
+      }
     } catch (error) {
+      console.error("Erro no delete:", error);
       toast.error("Erro ao remover.");
     }
   };

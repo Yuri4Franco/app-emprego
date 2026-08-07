@@ -92,9 +92,10 @@ export default function DashboardCandidatoPage() {
   const [candidaturas, setCandidaturas] = useState<CandidaturaRecente[]>([]);
   const [vagas, setVagas] = useState<VagaRecomendada[]>([]);
 
-  // O Banco de Talentos começa Visível até que a API diga o contrário
-  const [isVisivel, setIsVisivel] = useState(true);
+  const [progressoCurriculo, setProgressoCurriculo] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [isVisivel, setIsVisivel] = useState(true);
 
   useEffect(() => {
     const buscarDadosDashboard = async () => {
@@ -110,7 +111,8 @@ export default function DashboardCandidatoPage() {
         setMetricas(resMetricas.data.data);
         setCandidaturas(resCandidaturas.data.data);
         setVagas(resVagas.data.data);
-        setIsVisivel(resCurriculo.data.data?.perfil_visivel_empresas ?? true);
+        setIsVisivel(resCurriculo.data?.data?.perfil_visivel_empresas ?? true);
+        setProgressoCurriculo(resCurriculo.data?.data?.porcentagem_curriculo ?? 0)
       } catch (error) {
         console.error("Erro ao carregar dashboard:", error);
       } finally {
@@ -177,7 +179,8 @@ export default function DashboardCandidatoPage() {
             Olá, {primeiroNome}!
           </h1>
 
-          {metricas?.saude_curriculo === 0 ? (
+          {/* ✨ Trocado para progressoCurriculo */}
+          {progressoCurriculo === 0 ? (
             <p className="text-gray-600 font-medium leading-relaxed max-w-lg">
               Este é o seu painel principal. O seu primeiro passo para conseguir
               uma entrevista é cadastrar o seu currículo na plataforma. Vamos
@@ -220,8 +223,8 @@ export default function DashboardCandidatoPage() {
         {/* Bloco de Saúde do Currículo */}
         {metricas && (
           <div className="p-8 md:p-10 lg:w-2/5 bg-gray-50 border-l border-gray-100 flex flex-col justify-center relative overflow-hidden">
-            {/* Efeito de urgência / drama no background se tiver 100% mas invisível */}
-            {metricas.saude_curriculo === 100 && !isVisivel && (
+            {/* ✨ Trocado para progressoCurriculo */}
+            {progressoCurriculo === 100 && !isVisivel && (
               <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-60"></div>
             )}
 
@@ -239,8 +242,9 @@ export default function DashboardCandidatoPage() {
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path
-                    className={`${metricas.saude_curriculo === 100 ? "text-emerald-500" : "text-primary"} transition-all duration-1000 ease-out`}
-                    strokeDasharray={`${metricas.saude_curriculo}, 100`}
+                    // ✨ Cores baseadas no progresso novo
+                    className={`${progressoCurriculo === 100 ? "text-emerald-500" : "text-primary"} transition-all duration-1000 ease-out`}
+                    strokeDasharray={`${progressoCurriculo}, 100`}
                     strokeWidth="3"
                     strokeLinecap="round"
                     stroke="currentColor"
@@ -250,9 +254,10 @@ export default function DashboardCandidatoPage() {
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center">
                   <span
-                    className={`text-lg font-black ${metricas.saude_curriculo === 100 ? "text-emerald-600" : "text-gray-800"}`}
+                    className={`text-lg font-black ${progressoCurriculo === 100 ? "text-emerald-600" : "text-gray-800"}`}
                   >
-                    {metricas.saude_curriculo}%
+                    {/* ✨ O número impresso na tela */}
+                    {progressoCurriculo}%
                   </span>
                 </div>
               </div>
@@ -262,7 +267,7 @@ export default function DashboardCandidatoPage() {
                   O seu Currículo
                 </h3>
 
-                {metricas.saude_curriculo === 100 ? (
+                {progressoCurriculo === 100 ? (
                   isVisivel ? (
                     /* 100% E VISÍVEL = Tudo perfeito */
                     <>

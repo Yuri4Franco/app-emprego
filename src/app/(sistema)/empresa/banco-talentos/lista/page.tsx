@@ -1,7 +1,6 @@
-// page.tsx
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import api from "@/src/services/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -15,7 +14,6 @@ import {
 import toast from "react-hot-toast";
 
 // Importando arquivos criados
-
 import CandidatoCard from "@/src/components/empresa/banco-talentos/CandidatoCard";
 import FiltrosSidebar from "@/src/components/empresa/banco-talentos/FiltrosSidebar";
 import { CandidatoResumo, Competencia, escolaridadeOptions, turnosOptions, cnhOptions, generoOptions, toggleArrayItem } from "@/src/components/empresa/banco-talentos/constants";
@@ -42,21 +40,37 @@ function VitrineConteudo() {
   const [filtroPrimeiroEmprego, setFiltroPrimeiroEmprego] = useState(searchParams.get("primeiro_emprego") === "true");
   const [filtroSabados, setFiltroSabados] = useState(searchParams.get("sabados") === "true");
   const [filtroViagem, setFiltroViagem] = useState(searchParams.get("viagem") === "true");
-
-  // ✨ NOVOS FILTROS
   const [filtroGenero, setFiltroGenero] = useState(searchParams.get("genero") || "");
   const [filtroIdadeMin, setFiltroIdadeMin] = useState(searchParams.get("idade_min") || "");
   const [filtroIdadeMax, setFiltroIdadeMax] = useState(searchParams.get("idade_max") || "");
 
+  // ✨ Transformamos a página atual em Estado para podermos manipulá-la facilmente
+  const [paginaAtual, setPaginaAtual] = useState(Number(searchParams.get("pagina")) || 1);
+
   const [isFirstLoad, setIsFirstLoad] = useState(true);
 
-  const paginaAtual = Number(searchParams.get("pagina")) || 1;
+  // ✨ Ref para descobrirmos se é a primeira vez que a tela abriu
+  const isFirstRenderFiltros = useRef(true);
 
   useEffect(() => {
     api.get("/taxonomia/competencias")
       .then((res) => setTodasCompetencias(res.data.data || res.data.competencias || res.data))
       .catch(() => null);
   }, []);
+
+  // ✨ A MÁGICA: Espião de Filtros
+  // Se qualquer filtro mudar depois da página carregar, voltamos para a página 1 automaticamente.
+  useEffect(() => {
+    if (isFirstRenderFiltros.current) {
+      isFirstRenderFiltros.current = false;
+      return;
+    }
+    setPaginaAtual(1);
+  }, [
+    filtroArea, filtroTurno, filtroEscolaridade, filtroCnh, filtroCompetencias,
+    filtroPcd, filtroPrimeiroEmprego, filtroSabados, filtroViagem,
+    filtroGenero, filtroIdadeMin, filtroIdadeMax
+  ]);
 
   const buscarCandidatos = async () => {
     setIsLoading(true);
@@ -91,14 +105,17 @@ function VitrineConteudo() {
     }
   };
 
-  // ✨ APLICAÇÃO DO DEBOUNCE NO USE EFFECT
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       buscarCandidatos();
-    }, 400); // Aguarda 400ms após o usuário parar de digitar/clicar para chamar a API
+    }, 400);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [filtroArea, filtroTurno, filtroEscolaridade, filtroCnh, filtroCompetencias, filtroPcd, filtroPrimeiroEmprego, filtroSabados, filtroViagem, filtroGenero, filtroIdadeMin, filtroIdadeMax, paginaAtual]);
+  }, [
+    filtroArea, filtroTurno, filtroEscolaridade, filtroCnh, filtroCompetencias,
+    filtroPcd, filtroPrimeiroEmprego, filtroSabados, filtroViagem,
+    filtroGenero, filtroIdadeMin, filtroIdadeMax, paginaAtual
+  ]);
 
   useEffect(() => {
     if ("scrollRestoration" in window.history) {
@@ -106,26 +123,18 @@ function VitrineConteudo() {
     }
   }, []);
 
-  // ✨ 2. RESTAURA O SCROLL (Com Trava Dupla para vencer o Next.js)
   useEffect(() => {
     if (!isLoading && isFirstLoad && candidatos.length > 0) {
       const savedScroll = sessionStorage.getItem("vitrine_scroll_y");
-
       if (savedScroll) {
         const position = parseInt(savedScroll, 10);
-
-        // Ação 1: Restaura imediatamente quando a DOM pinta
         requestAnimationFrame(() => {
           window.scrollTo({ top: position, behavior: "instant" });
         });
-
-        // Ação 2: A Trava Dupla. Esperamos 350ms para deixar o Next.js dar o pulo falso dele, 
-        // e então puxamos a tela de volta pro lugar certo.
         const timeoutId = setTimeout(() => {
           window.scrollTo({ top: position, behavior: "instant" });
-          setIsFirstLoad(false); // Libera o sistema para salvar novos scrolls APÓS a poeira baixar
+          setIsFirstLoad(false);
         }, 350);
-
         return () => clearTimeout(timeoutId);
       } else {
         setIsFirstLoad(false);
@@ -133,22 +142,15 @@ function VitrineConteudo() {
     }
   }, [isLoading, isFirstLoad, candidatos]);
 
-  // ✨ 3. SALVA O SCROLL (Com proteção contra pulos falsos)
   useEffect(() => {
-    // Só deixa salvar se a página não estiver carregando e o primeiro load (e a trava dupla) já passou
     if (isLoading || isFirstLoad) return;
-
     let timeoutId: NodeJS.Timeout;
-
     const handleScroll = () => {
-      // Usamos um debounce de 100ms. 
-      // Se o navegador der um "pulo" sozinho, a gente não salva isso imediatamente.
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
         sessionStorage.setItem("vitrine_scroll_y", window.scrollY.toString());
       }, 100);
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -156,32 +158,29 @@ function VitrineConteudo() {
     };
   }, [isLoading, isFirstLoad]);
 
+  // ✨ Muito mais limpo! Só alteramos o estado e o useEffect(debounce) cuida do resto.
   const mudarPagina = (novaPagina: number) => {
     if (novaPagina < 1 || novaPagina > paginacao.total_paginas) return;
     sessionStorage.removeItem("vitrine_scroll_y");
     window.scrollTo({ top: 0, behavior: "smooth" });
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("pagina", novaPagina.toString());
-    router.push(`/empresa/banco-talentos/lista?${params.toString()}`);
+    setPaginaAtual(novaPagina);
   };
 
+  // ✨ O limparFiltros agora também reseta a página. O debounce fará 1 único request limpo.
   const limparFiltros = () => {
     sessionStorage.removeItem("vitrine_scroll_y");
     window.scrollTo({ top: 0, behavior: "smooth" });
     setFiltroArea(""); setFiltroTurno([]); setFiltroEscolaridade([]); setFiltroCnh([]); setFiltroCompetencias([]);
     setFiltroPcd(false); setFiltroPrimeiroEmprego(false); setFiltroSabados(false); setFiltroViagem(false);
-    setFiltroGenero(""); setFiltroIdadeMin(""); setFiltroIdadeMax(""); // Limpa os novos
-    router.push("/empresa/banco-talentos/lista");
+    setFiltroGenero(""); setFiltroIdadeMin(""); setFiltroIdadeMax("");
+    setPaginaAtual(1);
   };
 
   const temFiltroAtivo = filtroTurno.length > 0 || filtroEscolaridade.length > 0 || filtroCnh.length > 0 || filtroCompetencias.length > 0 || filtroPcd || filtroPrimeiroEmprego || filtroSabados || filtroViagem || filtroArea !== "" || filtroGenero !== "" || filtroIdadeMin !== "" || filtroIdadeMax !== "";
 
-  // Agrupando tags ativas para mostrar no topo do grid
   const getFiltrosAtivos = () => {
     const ativos = [];
     if (filtroArea) ativos.push({ label: "Área Específica", onRemove: () => setFiltroArea("") });
-
-    // Gênero e Idade no Cabeçalho
     if (filtroGenero) ativos.push({ label: `Gênero: ${generoOptions.find(g => g.value === filtroGenero)?.label || filtroGenero}`, onRemove: () => setFiltroGenero("") });
     if (filtroIdadeMin || filtroIdadeMax) {
       let label = "Idade: ";
@@ -210,7 +209,6 @@ function VitrineConteudo() {
         <HiOutlineArrowLeft size={18} /> Voltar
       </button>
 
-
       <header className="mb-8 bg-surface p-8 md:p-10 rounded-[32px] border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
         <div className="relative z-10 space-y-2">
@@ -223,8 +221,6 @@ function VitrineConteudo() {
       </header>
 
       <div className="flex flex-col lg:flex-row gap-8 items-start">
-
-        {/* COMPONENTE: FiltrosSidebar (Com os novos campos mapeados) */}
         <FiltrosSidebar
           filtros={{
             turno: filtroTurno,
@@ -319,4 +315,4 @@ export default function VitrinePage() {
       <VitrineConteudo />
     </Suspense>
   );
-}
+} 
