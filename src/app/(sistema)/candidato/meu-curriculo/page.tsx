@@ -314,9 +314,10 @@ export default function MeuCurriculoRefatoradoPage() {
           <TabRevisao
             progresso={progresso}
             statusAbas={statusAbas}
-            isVisivel={isVisivel}
+            isVisivel={dadosCandidato?.perfil_visivel_empresas || false}
             onToggleVisibilidade={handleToggleVisibilidade}
             setActiveTab={setActiveTab}
+            dadosCandidato={dadosCandidato} // ✨ ADICIONE ESTA LINHA AQUI
           />
         )}
         {activeTab !== "dados" && !isSubFormOpen && (
