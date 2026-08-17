@@ -82,7 +82,7 @@ export function ModalVagasAtivas({ isOpen, onClose }: ModalVagasAtivasProps) {
                             {/* CABEÇALHO DA TABELA/LISTA */}
                             <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50/80 border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-widest">
                                 <div className="col-span-7">Vaga & Empresa</div>
-                                <div className="col-span-5 text-right">Encerramento</div>
+                                <div className="col-span-5 text-right">Inscrições até:</div>
                             </div>
 
                             {/* ITENS DO EXTRATO */}

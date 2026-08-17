@@ -12,10 +12,10 @@ import {
   HiOutlineClock,
   HiOutlineOfficeBuilding,
   HiOutlineBriefcase,
-  HiOutlineX,
   HiOutlineCurrencyDollar,
   HiOutlineShieldCheck,
   HiOutlineDocumentText,
+  HiOutlineUserGroup,
 } from "react-icons/hi";
 
 type ActiveTab = "EM_ANALISE" | "AGUARDANDO_PAGAMENTO" | "TODAS";
@@ -113,6 +113,27 @@ function AdminVagasContent() {
     });
   };
 
+  // ✨ Função auxiliar para renderizar o Status com cores bonitas
+  const renderStatusBadge = (status: string) => {
+    const statusConfig: Record<string, string> = {
+      ATIVA: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      PAUSADA: "bg-amber-50 text-amber-700 border-amber-200",
+      ENCERRADA: "bg-gray-100 text-gray-600 border-gray-200",
+      EM_ANALISE: "bg-orange-50 text-orange-700 border-orange-200",
+      AGUARDANDO_PAGAMENTO: "bg-purple-50 text-purple-700 border-purple-200",
+      REPROVADA: "bg-red-50 text-red-700 border-red-200",
+    };
+
+    const cssClass = statusConfig[status] || "bg-gray-50 text-gray-700 border-gray-200";
+    const statusFormatado = status.replace(/_/g, " ");
+
+    return (
+      <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${cssClass}`}>
+        {statusFormatado}
+      </span>
+    );
+  };
+
   const abrirModalAcao = (vaga: any, tipo: ModeracaoAcao) => {
     setModeracao({ isOpen: true, tipo, vaga });
     setMotivo("");
@@ -208,7 +229,7 @@ function AdminVagasContent() {
         {/* LISTAGEM DE VAGAS */}
         <div className="grid gap-4">
           {isLoading ? (
-            <div className="p-20 text-center text-gray-400">
+            <div className="p-20 text-center text-gray-400 font-medium animate-pulse">
               Carregando vagas...
             </div>
           ) : vagasExibidas.length === 0 ? (
@@ -225,36 +246,62 @@ function AdminVagasContent() {
             vagasExibidas.map((vaga: any) => (
               <div
                 key={vaga.id_vaga}
-                className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row items-center justify-between gap-6"
+                className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6"
               >
-                <div className="flex items-center gap-4 w-full">
+                {/* LADO ESQUERDO: Ícone + Título + Status + Empresa */}
+                <div className="flex items-center gap-4 w-full xl:w-auto flex-1 min-w-0">
                   <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shrink-0">
                     <HiOutlineDocumentText size={24} />
                   </div>
-                  <div className="min-w-0">
-                    <h3 className="font-black text-gray-900 truncate">
-                      {vaga.titulo}
-                    </h3>
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                      <HiOutlineOfficeBuilding size={14} />{" "}
-                      {vaga.empresa?.nome_fantasia || "Confidencial"}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <h3 className="font-black text-gray-900 truncate text-base">
+                        {vaga.titulo}
+                      </h3>
+                      {renderStatusBadge(vaga.status)}
+                    </div>
+                    <p className="text-sm text-gray-500 flex items-center gap-1.5 truncate">
+                      <HiOutlineOfficeBuilding size={14} className="shrink-0" />{" "}
+                      <span className="truncate">
+                        {vaga.empresa?.nome_fantasia || "Confidencial"}
+                      </span>
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-6 w-full justify-between md:w-auto">
-                  <div className="text-right">
-                    <p className="text-[10px] font-black uppercase text-gray-400">
+
+                {/* LADO DIREITO: Candidaturas + Data + Botões */}
+                <div className="flex items-center flex-wrap xl:flex-nowrap gap-4 xl:gap-6 w-full xl:w-auto">
+
+                  {/* ✨ CARD DE CANDIDATURAS (Fica sutil, mas em destaque) */}
+                  <div className="flex items-center gap-3 px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl min-w-[130px]">
+                    <div className="w-8 h-8 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center justify-center text-blue-600">
+                      <HiOutlineUserGroup size={18} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider leading-none mb-1">
+                        Candidatos
+                      </span>
+                      <span className="text-sm font-black text-gray-900 leading-none">
+                        {vaga._count?.candidaturas || 0}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* DATA */}
+                  <div className="text-right hidden sm:block min-w-[100px]">
+                    <p className="text-[10px] font-black uppercase text-gray-400 tracking-wider">
                       Criada em
                     </p>
                     <p className="text-xs font-bold text-gray-700">
-                      {formatarData(vaga.criado_em || vaga.createdAt)}
+                      {formatarData(vaga.criada_em || vaga.createdAt)}
                     </p>
                   </div>
-                  <div className="flex gap-2">
-                    {/* ✨ BOTÃO DE VER REDIRECIONANDO PARA A PÁGINA */}
+
+                  {/* BOTÕES DE AÇÃO */}
+                  <div className="flex gap-2 ml-auto xl:ml-0">
                     <button
                       onClick={() => router.push(`/admin/vagas/${vaga.id_vaga}`)}
-                      className="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+                      className="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors shadow-sm border border-transparent hover:border-blue-100"
                       title="Analisar Detalhes da Vaga"
                     >
                       <HiOutlineEye size={20} />
@@ -264,13 +311,15 @@ function AdminVagasContent() {
                       <>
                         <button
                           onClick={() => abrirModalAcao(vaga, "APROVAR")}
-                          className="p-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-colors"
+                          className="p-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-colors border border-emerald-100"
+                          title="Aprovar Vaga"
                         >
                           <HiOutlineCheckCircle size={20} />
                         </button>
                         <button
                           onClick={() => abrirModalAcao(vaga, "REPROVAR")}
-                          className="p-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors"
+                          className="p-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors border border-red-100"
+                          title="Reprovar Vaga"
                         >
                           <HiOutlineXCircle size={20} />
                         </button>
@@ -281,8 +330,9 @@ function AdminVagasContent() {
                         onClick={() =>
                           abrirModalAcao(vaga, "CONFIRMAR_PAGAMENTO")
                         }
-                        className="p-3 bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-100 transition-colors font-bold text-xs"
+                        className="px-4 py-2 bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-100 transition-colors font-bold text-xs border border-purple-100 flex items-center gap-1.5"
                       >
+                        <HiOutlineCurrencyDollar size={16} />
                         Confirmar
                       </button>
                     )}
@@ -293,7 +343,7 @@ function AdminVagasContent() {
           )}
         </div>
 
-        {/* MODAL */}
+        {/* MODAL MANTIDO INTACTO */}
         {moderacao.isOpen && moderacao.vaga && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
             <div className="bg-white rounded-[32px] p-8 w-full max-w-lg shadow-2xl">
@@ -307,7 +357,7 @@ function AdminVagasContent() {
 
               {moderacao.tipo === "REPROVAR" && (
                 <textarea
-                  className="w-full p-4 bg-gray-50 rounded-2xl h-32 mb-6"
+                  className="w-full p-4 bg-gray-50 rounded-2xl h-32 mb-6 outline-none focus:ring-2 focus:ring-red-100 focus:border-red-500 border border-transparent transition-all text-sm"
                   placeholder="Motivo da reprovação..."
                   value={motivo}
                   onChange={(e) => setMotivo(e.target.value)}
@@ -317,14 +367,14 @@ function AdminVagasContent() {
               <div className="flex gap-4">
                 <button
                   onClick={fecharModal}
-                  className="flex-1 py-4 font-bold text-gray-500"
+                  className="flex-1 py-4 font-bold text-gray-500 hover:text-gray-700 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={executarAcao}
                   disabled={isSubmitting}
-                  className="flex-1 py-4 bg-primary text-white rounded-2xl font-bold"
+                  className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50"
                 >
                   {isSubmitting ? "Processando..." : "Confirmar"}
                 </button>
@@ -336,7 +386,6 @@ function AdminVagasContent() {
     </Suspense>
   );
 }
-
 
 export default function AdminVagasPage() {
   return (

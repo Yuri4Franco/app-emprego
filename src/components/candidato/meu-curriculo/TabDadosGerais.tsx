@@ -17,8 +17,8 @@ import {
 } from "react-icons/hi";
 import { Input } from "@/src/components/Input";
 import { ButtonType } from "@/src/components/ButtonType";
+import imageCompression from "browser-image-compression";
 
-// Importando as máscaras e schemas que separamos
 import {
   maskCPF,
   maskTelefone,
@@ -161,20 +161,40 @@ export default function TabDadosGerais({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const previewUrl = URL.createObjectURL(file);
-    setFotoUrl(previewUrl);
+    // Ativamos o loading imediatamente para o usuário saber que o processo começou
     setIsUploadingFoto(true);
 
-    const formData = new FormData();
-    formData.append("foto", file);
-
     try {
+      // ✨ 1. Opções de compressão: no máximo 1MB e 1024px de dimensão
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1024,
+        useWebWorker: true, // Usa o processador em segundo plano (não trava a tela)
+      };
+
+      // ✨ 2. Comprime o arquivo original antes de qualquer coisa (MUITO RÁPIDO)
+      const compressedFile = await imageCompression(file, options);
+
+      // ✨ 3. Cria o preview visual usando o arquivo leve
+      const previewUrl = URL.createObjectURL(compressedFile);
+      setFotoUrl(previewUrl);
+
+      // ✨ 4. Prepara o pacote (FormData) com a imagem comprimida
+      const formData = new FormData();
+      formData.append("foto", compressedFile, compressedFile.name);
+
+      // ✨ 5. Envia para o seu backend
       const res = await api.patch("/candidato/foto-perfil", formData);
       toast.success("Foto de perfil atualizada!");
-      if (res.data?.foto_url) setFotoUrl(res.data.foto_url);
+
+      // Se a API retornar a URL definitiva do Cloudinary, atualizamos o estado
+      if (res.data?.foto_url) {
+        setFotoUrl(res.data.foto_url);
+      }
     } catch (error) {
-      toast.error("Erro ao enviar a foto.");
-      setFotoUrl(dadosIniciais?.foto_url || null); // Reverte em caso de erro
+      console.error("Erro no upload da foto:", error);
+      toast.error("Erro ao enviar a foto. Tente novamente.");
+      setFotoUrl(dadosIniciais?.foto_url || null);
     } finally {
       setIsUploadingFoto(false);
     }
