@@ -113,23 +113,43 @@ function AdminVagasContent() {
     });
   };
 
-  // ✨ Função auxiliar para renderizar o Status com cores bonitas
   const renderStatusBadge = (status: string) => {
-    const statusConfig: Record<string, string> = {
-      ATIVA: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      PAUSADA: "bg-amber-50 text-amber-700 border-amber-200",
-      ENCERRADA: "bg-gray-100 text-gray-600 border-gray-200",
-      EM_ANALISE: "bg-orange-50 text-orange-700 border-orange-200",
-      AGUARDANDO_PAGAMENTO: "bg-purple-50 text-purple-700 border-purple-200",
-      REPROVADA: "bg-red-50 text-red-700 border-red-200",
+    const statusConfig: Record<string, { label: string; color: string }> = {
+      ATIVA: {
+        label: "Ativa",
+        color: "bg-emerald-50 text-emerald-700 border-emerald-200"
+      },
+      PAUSADA: {
+        label: "Em Triagem", // ✨ O texto que os usuários vão ler
+        color: "bg-amber-50 text-amber-700 border-amber-200"
+      },
+      ENCERRADA: {
+        label: "Encerrada",
+        color: "bg-gray-100 text-gray-600 border-gray-200"
+      },
+      EM_ANALISE: {
+        label: "Moderação",
+        color: "bg-orange-50 text-orange-700 border-orange-200"
+      },
+      AGUARDANDO_PAGAMENTO: {
+        label: "Pagamento Pendente",
+        color: "bg-purple-50 text-purple-700 border-purple-200"
+      },
+      REPROVADA: {
+        label: "Reprovada",
+        color: "bg-red-50 text-red-700 border-red-200"
+      },
     };
 
-    const cssClass = statusConfig[status] || "bg-gray-50 text-gray-700 border-gray-200";
-    const statusFormatado = status.replace(/_/g, " ");
+    // Pega as configurações ou cria um fallback genérico caso apareça um status não mapeado
+    const config = statusConfig[status] || {
+      label: status.replace(/_/g, " "),
+      color: "bg-gray-50 text-gray-700 border-gray-200"
+    };
 
     return (
-      <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${cssClass}`}>
-        {statusFormatado}
+      <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${config.color}`}>
+        {config.label}
       </span>
     );
   };
