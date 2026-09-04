@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "@/src/assets/logos/logo-site-aci-transparente.webp";
+import logoffar from "@/src/assets/logos/Colorido-Vertical.png";
 import { FaInstagram, FaLinkedin, FaFacebookSquare, FaWhatsapp, FaExternalLinkAlt } from "react-icons/fa";
 import { HiOutlineMail, HiOutlineLocationMarker, HiOutlinePhone } from "react-icons/hi";
 
@@ -107,23 +108,42 @@ export default function Footer() {
 
                 </div>
 
-                {/* --- RODAPÉ INFERIOR (Copyright) --- */}
-                <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <p className="text-sm text-gray-500 text-center md:text-left">
-                        &copy; {currentYear} ACI - Panambi. Todos os direitos reservados.
-                    </p>
 
-                    <p className="text-sm text-gray-400 flex items-center gap-1">
-                        Desenvolvido por
-                        <a
-                            href="https://www.linkedin.com/in/yuri-antunes-franco-a20792140/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-medium text-gray-600 hover:text-[#1459ad] transition-colors"
-                        >
-                            Yuri Antunes Franco
-                        </a>
-                    </p>
+                {/* --- RODAPÉ INFERIOR (Copyright) --- */}
+                <div className="border-t border-gray-100 pt-6 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4">
+
+                    {/* Bloco 1: Parceiro (No início a esquerda) */}
+                    <div className="flex flex-col items-center md:items-start gap-2 flex-1 w-full">
+                        <span className="text-xs text-gray-400 font-medium">Em parceria com:</span>
+                        <Image
+                            src={logoffar}
+                            alt="Logo parceiro IFFar"
+                            className="h-24 w-auto object-contain"
+                        />
+                    </div>
+
+                    {/* Bloco 2: Copyright (Alinhado ao meio no Desktop) */}
+                    <div className="flex-1 w-full flex justify-center">
+                        <p className="text-sm text-gray-500 text-center">
+                            &copy; {currentYear} ACI - Panambi. Todos os direitos reservados.
+                        </p>
+                    </div>
+
+                    {/* Bloco 3: Créditos (Alinhado à direita no Desktop) */}
+                    <div className="flex-1 w-full flex justify-center md:justify-end">
+                        <p className="text-sm text-gray-400 flex items-center gap-1">
+                            Desenvolvido por
+                            <a
+                                href="https://www.linkedin.com/in/yuri-antunes-franco-a20792140/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="font-medium text-gray-600 hover:text-[#1459ad] transition-colors"
+                            >
+                                Yuri Antunes Franco
+                            </a>
+                        </p>
+                    </div>
+
                 </div>
 
             </div>
