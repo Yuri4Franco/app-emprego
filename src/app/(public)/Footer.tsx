@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Logo from "@/src/assets/logos/logo-site-aci-transparente.webp";
-import logoffar from "@/src/assets/logos/Colorido-Vertical.png";
+import logoffar from "@/src/assets/logos/logo-iffar.png";
 import { FaInstagram, FaLinkedin, FaFacebookSquare, FaWhatsapp, FaExternalLinkAlt } from "react-icons/fa";
 import { HiOutlineMail, HiOutlineLocationMarker, HiOutlinePhone } from "react-icons/hi";
 
@@ -118,7 +118,7 @@ export default function Footer() {
                         <Image
                             src={logoffar}
                             alt="Logo parceiro IFFar"
-                            className="h-24 w-auto object-contain"
+                            className="h-14 w-auto object-contain"
                         />
                     </div>
 
