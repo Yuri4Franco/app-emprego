@@ -173,7 +173,7 @@ export function VagaCard({ vaga, menuAberto, setMenuAberto, isDuplicating, onDup
 
                   {/* VER HISTÓRICO (Apenas Encerrada) */}
                   {isEncerrada && (
-                    <button onClick={(e) => { e.stopPropagation(); router.push(`/empresa/vagas/${vaga.id_vaga}/historico`); }} className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-gray-50">
+                    <button onClick={(e) => { e.stopPropagation(); router.push(`/empresa/vagas/${vaga.id_vaga}/gestao`); }} className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-gray-50">
                       <HiOutlineDocumentReport size={18} /> Histórico da Vaga
                     </button>
                   )}
