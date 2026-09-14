@@ -139,7 +139,7 @@ export function VagaCard({ vaga, menuAberto, setMenuAberto, isDuplicating, onDup
           <div className="flex items-center gap-2 relative z-10">
             {/* BOTÕES PRINCIPAIS */}
             {isEncerrada ? (
-              <button onClick={(e) => { e.stopPropagation(); router.push(`/empresa/vagas/${vaga.id_vaga}/historico`); }} className="flex items-center gap-2 px-4 py-3 bg-gray-50 text-gray-600 rounded-[16px] hover:bg-gray-100 transition-all shadow-sm font-bold text-sm">
+              <button onClick={(e) => { e.stopPropagation(); router.push(`/empresa/vagas/${vaga.id_vaga}/gestao`); }} className="flex items-center gap-2 px-4 py-3 bg-gray-50 text-gray-600 rounded-[16px] hover:bg-gray-100 transition-all shadow-sm font-bold text-sm">
                 <HiOutlineDocumentReport size={18} /> <span className="hidden sm:block">Ver Histórico</span>
               </button>
             ) : isRascunho || isReprovada ? (
