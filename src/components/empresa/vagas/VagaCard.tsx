@@ -50,7 +50,7 @@ export function VagaCard({ vaga, menuAberto, setMenuAberto, isDuplicating, onDup
   // Lógica de Roteamento Inteligente
   const handleCardClick = () => {
     if (isRascunho || isReprovada) router.push(`/empresa/vagas/${vaga.id_vaga}/editar`);
-    else if (isEncerrada) router.push(`/empresa/vagas/${vaga.id_vaga}/historico`);
+    else if (isEncerrada) router.push(`/empresa/vagas/${vaga.id_vaga}/gestao`);
     else if (isAtivaOuPausada) router.push(`/empresa/vagas/${vaga.id_vaga}/gestao`);
   };
 
