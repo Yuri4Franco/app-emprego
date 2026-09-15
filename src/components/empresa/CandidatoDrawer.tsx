@@ -21,6 +21,7 @@ interface CandidatoDrawerProps {
   onProximo?: () => void;
   hasAnterior?: boolean;
   hasProximo?: boolean;
+  isModoLeitura?: boolean; // ✨ Flag adicionada para o modo Histórico
 }
 
 export function CandidatoDrawer({
@@ -31,6 +32,7 @@ export function CandidatoDrawer({
   onProximo,
   hasAnterior = false,
   hasProximo = false,
+  isModoLeitura = false, // ✨ Valor default
 }: CandidatoDrawerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [dados, setDados] = useState<any>(null);
@@ -190,6 +192,7 @@ export function CandidatoDrawer({
                 dados={dados}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
+                isModoLeitura={isModoLeitura} // ✨ Repassa para o Header (caso ele tenha botões de ação)
               />
             </div>
 
@@ -262,12 +265,13 @@ export function CandidatoDrawer({
                   setObservacoesEntrevista={setObservacoesEntrevista}
                   agendarEntrevista={agendarEntrevista}
                   isAgendando={isAgendando}
+                  isModoLeitura={isModoLeitura} // ✨ Repassa para ocultar botão de agendar ou textareas
                 />
               )}
             </div>
 
-            {/* 3. RODAPÉ DE TRIAGEM RÁPIDA (Oculto na Impressão) */}
-            {isExpanded && (
+            {/* 3. RODAPÉ DE TRIAGEM RÁPIDA (Oculto na Impressão e no Modo Leitura) */}
+            {isExpanded && !isModoLeitura && ( // ✨ Bloqueia renderização do Footer em Modo Leitura
               <div className="print:hidden shrink-0">
                 <DrawerFooter
                   idCandidatura={idCandidatura}

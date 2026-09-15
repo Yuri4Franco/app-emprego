@@ -42,6 +42,7 @@ export function DrawerHeader({
     dados,
     activeTab,
     setActiveTab,
+    isModoLeitura = false, // ✨ Recebe a flag
 }: any) {
     if (isExpanded) {
         return (
@@ -54,23 +55,26 @@ export function DrawerHeader({
                     <span>Voltar à Gaveta</span>
                 </button>
 
-                <div className="flex items-center gap-1.5 bg-blue-900/40 p-1 rounded-xl border border-blue-800/50">
-                    <button
-                        onClick={onAnterior}
-                        disabled={!hasAnterior}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-200 hover:bg-blue-800 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
-                    >
-                        <HiOutlineChevronLeft size={16} /> Anterior
-                    </button>
-                    <span className="w-px h-4 bg-blue-800/80"></span>
-                    <button
-                        onClick={onProximo}
-                        disabled={!hasProximo}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-200 hover:bg-blue-800 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
-                    >
-                        Próximo <HiOutlineChevronRight size={16} />
-                    </button>
-                </div>
+                {/* ✨ Oculta botões de Navegação no Modo Leitura */}
+                {!isModoLeitura && (
+                    <div className="flex items-center gap-1.5 bg-blue-900/40 p-1 rounded-xl border border-blue-800/50">
+                        <button
+                            onClick={onAnterior}
+                            disabled={!hasAnterior}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-200 hover:bg-blue-800 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
+                        >
+                            <HiOutlineChevronLeft size={16} /> Anterior
+                        </button>
+                        <span className="w-px h-4 bg-blue-800/80"></span>
+                        <button
+                            onClick={onProximo}
+                            disabled={!hasProximo}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-blue-200 hover:bg-blue-800 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer disabled:cursor-not-allowed"
+                        >
+                            Próximo <HiOutlineChevronRight size={16} />
+                        </button>
+                    </div>
+                )}
 
                 <div className="flex items-center gap-2">
                     <button
@@ -87,7 +91,6 @@ export function DrawerHeader({
         );
     }
 
-    // Fallback seguro de nome para o modo compacto
     const nomeCompacto = dados?.candidato?.nome || dados?.candidato?.usuario?.nome || "Candidato";
     const emailCompacto = dados?.candidato?.email || dados?.candidato?.usuario?.email;
 
@@ -166,13 +169,18 @@ export function DrawerHeader({
                     >
                         <HiOutlineStar size={16} /> Avaliar
                     </button>
-                    <button
-                        onClick={() => setActiveTab("AGENDAMENTO")}
-                        className={`flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeTab === "AGENDAMENTO" ? "bg-white text-purple-600 shadow-2xs" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
-                            }`}
-                    >
-                        <HiOutlineCalendar size={16} /> Agendar
-                    </button>
+
+                    {/* ✨ Oculta Aba de Agendamento no Modo Leitura */}
+                    {!isModoLeitura && (
+                        <button
+                            onClick={() => setActiveTab("AGENDAMENTO")}
+                            className={`flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeTab === "AGENDAMENTO" ? "bg-white text-purple-600 shadow-2xs" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+                                }`}
+                        >
+                            <HiOutlineCalendar size={16} /> Agendar
+                        </button>
+                    )}
+
                     <button
                         onClick={() => setActiveTab("HISTORICO")}
                         className={`flex-1 py-2 text-[10px] sm:text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${activeTab === "HISTORICO" ? "bg-white text-gray-900 shadow-2xs" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
@@ -190,6 +198,8 @@ export function DrawerHeader({
 /* FOOTER DO DRAWER (Ações Rápidas no Modo Foco)                             */
 /* ========================================================================= */
 export function DrawerFooter({ idCandidatura, nota, setNota, obs, onAtualizar, setIsExpanded, setActiveTab, onClose, hasProximo, onProximo }: any) {
+    // Nota: Este footer é escondido via CSS/React Tree no CandidatoDrawer se isModoLeitura = true. 
+    // Mantemos ele igual, pois ele nem será renderizado no Histórico.
     return (
         <footer className="bg-blue-950 text-white px-6 md:px-10 py-3.5 border-t border-blue-900/60 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 shadow-[0_-10px_30px_rgba(0,0,0,0.15)] print:hidden z-10">
             <div className="flex items-center gap-3.5 bg-blue-900/40 px-4 py-2 rounded-2xl border border-blue-800/50">
@@ -282,6 +292,7 @@ export function DrawerAbas({
     observacoesEntrevista,
     setObservacoesEntrevista,
     isAgendando,
+    isModoLeitura = false, // ✨ Recebe a flag
 }: any) {
 
     const nomeCompacto = dados?.candidato?.nome || dados?.candidato?.usuario?.nome || "Candidato";
@@ -359,35 +370,49 @@ export function DrawerAbas({
                 <div className="space-y-6 animate-in fade-in">
                     <div className="bg-amber-50 p-6 md:p-8 rounded-[32px] border border-amber-100">
                         <div className="text-center mb-6">
-                            <label className="text-[10px] font-black text-amber-900 uppercase tracking-widest block mb-3">Classificação do Perfil</label>
+                            <label className="text-[10px] font-black text-amber-900 uppercase tracking-widest block mb-3">
+                                Classificação do Perfil
+                            </label>
                             <div className="flex justify-center gap-1.5">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                    <button key={star} onClick={() => setNota(star)} className="focus:outline-none hover:scale-110 transition-transform cursor-pointer">
+                                    <button
+                                        key={star}
+                                        onClick={() => !isModoLeitura && setNota(star)} // ✨ Trava estrelas no modo leitura
+                                        className={`focus:outline-none transition-transform ${isModoLeitura ? "cursor-default opacity-80" : "hover:scale-110 cursor-pointer"}`}
+                                        disabled={isModoLeitura}
+                                    >
                                         {nota >= star ? <HiStar size={40} className="text-amber-400 drop-shadow-xs" /> : <HiOutlineStar size={40} className="text-amber-200" />}
                                     </button>
                                 ))}
                             </div>
                         </div>
+
                         <textarea
                             value={obs}
                             onChange={(e) => setObs(e.target.value)}
-                            placeholder="Notas confidenciais sobre o candidato..."
-                            className="w-full p-4 bg-white border border-amber-200/50 rounded-2xl h-40 outline-none text-sm focus:border-amber-400 resize-none font-medium text-gray-700 mb-6 shadow-2xs"
+                            disabled={isModoLeitura} // ✨ Trava textarea
+                            placeholder={isModoLeitura ? "Nenhuma nota registrada." : "Notas confidenciais sobre o candidato..."}
+                            className="w-full p-4 bg-white border border-amber-200/50 rounded-2xl h-40 outline-none text-sm focus:border-amber-400 resize-none font-medium text-gray-700 mb-6 shadow-2xs disabled:bg-gray-50/50 disabled:text-gray-500"
                         />
-                        <button
-                            onClick={salvarAvaliacao}
-                            disabled={isSalvandoAvaliacao}
-                            className="w-full py-4 font-black text-white bg-amber-500 hover:bg-amber-600 rounded-2xl shadow-lg shadow-amber-500/30 transition-all disabled:opacity-50 cursor-pointer"
-                        >
-                            {isSalvandoAvaliacao ? "Salvando..." : "Salvar Avaliação"}
-                        </button>
+
+                        {/* ✨ Oculta Botão de Salvar no Modo Leitura */}
+                        {!isModoLeitura && (
+                            <button
+                                onClick={salvarAvaliacao}
+                                disabled={isSalvandoAvaliacao}
+                                className="w-full py-4 font-black text-white bg-amber-500 hover:bg-amber-600 rounded-2xl shadow-lg shadow-amber-500/30 transition-all disabled:opacity-50 cursor-pointer"
+                            >
+                                {isSalvandoAvaliacao ? "Salvando..." : "Salvar Avaliação"}
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
 
-            {activeTab === "AGENDAMENTO" && (
+            {/* A aba de agendamento não será renderizada se isModoLeitura = true e o activeTab não for AGENDAMENTO,
+          então mantemos a renderização intacta (pois o botão que leva pra cá foi ocultado no header) */}
+            {activeTab === "AGENDAMENTO" && !isModoLeitura && (
                 <div className="space-y-6 animate-in fade-in">
-
                     {/* CARD DE CONTATO RÁPIDO */}
                     <div className="bg-white border border-gray-200 rounded-3xl p-5 shadow-xs">
                         <div className="flex items-start gap-3 mb-4">
@@ -403,8 +428,6 @@ export function DrawerAbas({
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-
-                            {/* ✨ WHATSAPP (Ação Separada: Abrir Link vs Copiar) */}
                             {whatsappCompacto ? (
                                 <div className="flex items-center justify-between p-1.5 pr-2 rounded-xl bg-emerald-50 border border-emerald-100 hover:border-emerald-200 transition-colors group">
                                     <button
@@ -447,7 +470,6 @@ export function DrawerAbas({
                                 </div>
                             ) : null}
 
-                            {/* ✨ E-MAIL (Ação Separada: Abrir Link vs Copiar) */}
                             {emailCompacto && (
                                 <div className="flex items-center justify-between p-1.5 pr-2 rounded-xl bg-blue-50 border border-blue-100 hover:border-blue-200 transition-colors group">
                                     <button
@@ -472,9 +494,8 @@ export function DrawerAbas({
                         </div>
                     </div>
 
-                    {/* FORMULÁRIO DE AGENDAMENTO REESTRUTURADO */}
+                    {/* FORMULÁRIO DE AGENDAMENTO */}
                     <div className="bg-purple-50 p-6 md:p-8 rounded-[32px] border border-purple-100 space-y-5 relative overflow-hidden">
-
                         <div className="absolute -right-4 -top-4 text-purple-900/5 rotate-12 pointer-events-none">
                             <HiOutlineCalendar size={120} />
                         </div>

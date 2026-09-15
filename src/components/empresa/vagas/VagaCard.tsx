@@ -50,7 +50,7 @@ export function VagaCard({ vaga, menuAberto, setMenuAberto, isDuplicating, onDup
   // Lógica de Roteamento Inteligente
   const handleCardClick = () => {
     if (isRascunho || isReprovada) router.push(`/empresa/vagas/${vaga.id_vaga}/editar`);
-    else if (isEncerrada) router.push(`/empresa/vagas/${vaga.id_vaga}/gestao`);
+    else if (isEncerrada) router.push(`/empresa/vagas/${vaga.id_vaga}/historico`);
     else if (isAtivaOuPausada) router.push(`/empresa/vagas/${vaga.id_vaga}/gestao`);
   };
 
@@ -139,7 +139,7 @@ export function VagaCard({ vaga, menuAberto, setMenuAberto, isDuplicating, onDup
           <div className="flex items-center gap-2 relative z-10">
             {/* BOTÕES PRINCIPAIS */}
             {isEncerrada ? (
-              <button onClick={(e) => { e.stopPropagation(); router.push(`/empresa/vagas/${vaga.id_vaga}/gestao`); }} className="flex items-center gap-2 px-4 py-3 bg-gray-50 text-gray-600 rounded-[16px] hover:bg-gray-100 transition-all shadow-sm font-bold text-sm">
+              <button onClick={(e) => { e.stopPropagation(); router.push(`/empresa/vagas/${vaga.id_vaga}/historico`); }} className="flex items-center gap-2 px-4 py-3 bg-gray-50 text-gray-600 rounded-[16px] hover:bg-gray-100 transition-all shadow-sm font-bold text-sm">
                 <HiOutlineDocumentReport size={18} /> <span className="hidden sm:block">Ver Histórico</span>
               </button>
             ) : isRascunho || isReprovada ? (
@@ -173,7 +173,7 @@ export function VagaCard({ vaga, menuAberto, setMenuAberto, isDuplicating, onDup
 
                   {/* VER HISTÓRICO (Apenas Encerrada) */}
                   {isEncerrada && (
-                    <button onClick={(e) => { e.stopPropagation(); router.push(`/empresa/vagas/${vaga.id_vaga}/gestao`); }} className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-gray-50">
+                    <button onClick={(e) => { e.stopPropagation(); router.push(`/empresa/vagas/${vaga.id_vaga}/historico`); }} className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold text-gray-600 hover:bg-blue-50 hover:text-blue-700 transition-colors border-b border-gray-50">
                       <HiOutlineDocumentReport size={18} /> Histórico da Vaga
                     </button>
                   )}

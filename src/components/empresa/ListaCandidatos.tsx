@@ -47,6 +47,7 @@ interface ListaCandidatosProps {
   onAbrirCandidato: (id: number) => void;
   etapaAtivaId: number | null;
   onMudancaEtapa: (id: number) => void;
+  isModoLeitura?: boolean; // ✨ Flag adicionada para o modo Histórico
 }
 
 export function ListaCandidatos({
@@ -55,6 +56,7 @@ export function ListaCandidatos({
   onAbrirCandidato,
   etapaAtivaId,
   onMudancaEtapa,
+  isModoLeitura = false, // ✨ Valor default
 }: ListaCandidatosProps) {
   // ==================== ESTADOS DE VISÃO ====================
   const [viewAtiva, setViewAtiva] = useState<"ATIVOS" | "ENCERRADOS">("ATIVOS");
@@ -76,7 +78,8 @@ export function ListaCandidatos({
   // ==================== PROCESSAMENTO DE DADOS ====================
   const statusEncerrados = ["REPROVADO", "DESISTENCIA"];
 
-  const colunasAtivas = colunas.map((col) => ({
+  // ✨ Se for modo leitura, não separamos os encerrados, exibimos todos conforme recebemos
+  const colunasAtivas = isModoLeitura ? colunas : colunas.map((col) => ({
     ...col,
     candidatos: col.candidatos.filter(
       (c) => !statusEncerrados.includes(c.status || ""),
@@ -172,7 +175,11 @@ export function ListaCandidatos({
   }, [colunasAtivas, etapaAtivaId, onMudancaEtapa]);
 
   const colunaAtual = colunasAtivas.find((col) => col.id_etapa === etapaAtivaId) || colunasAtivas[0];
-  const listaExibida = viewAtiva === "ATIVOS" ? colunaAtual?.candidatos || [] : candidatosEncerrados;
+  
+  // ✨ Lógica ajustada para exibir os candidatos corretamente no modo leitura
+  const listaExibida = isModoLeitura 
+    ? (colunaAtual?.candidatos || []) 
+    : (viewAtiva === "ATIVOS" ? colunaAtual?.candidatos || [] : candidatosEncerrados);
 
   const indexColunaAtual = colunasAtivas.findIndex((c) => c.id_etapa === etapaAtivaId);
   const isUltimaEtapa = indexColunaAtual === colunasAtivas.length - 1;
@@ -260,35 +267,39 @@ export function ListaCandidatos({
   return (
     <div className="flex flex-col h-full gap-4 pb-4">
       {/* ==================== TOGGLE DE VISÃO ==================== */}
-      <div className="flex bg-gray-50 p-1 md:p-1.5 rounded-[20px] md:rounded-[24px] border border-gray-100 w-full sm:w-fit mx-2 sm:mx-0">
-        <button
-          onClick={() => {
-            setViewAtiva("ATIVOS");
-            setSelecionados([]);
-          }}
-          className={`flex-1 sm:flex-none px-4 py-2 md:py-2.5 rounded-[16px] md:rounded-[20px] text-[11px] sm:text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${viewAtiva === "ATIVOS"
-              ? "bg-white text-primary shadow-sm border border-gray-100"
-              : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
-            }`}
-        >
-          <HiOutlineBriefcase size={16} /> Em Andamento
-        </button>
-        <button
-          onClick={() => {
-            setViewAtiva("ENCERRADOS");
-            setSelecionados([]);
-          }}
-          className={`flex-1 sm:flex-none px-4 py-2 md:py-2.5 rounded-[16px] md:rounded-[20px] text-[11px] sm:text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${viewAtiva === "ENCERRADOS"
-              ? "bg-white text-red-600 shadow-sm border border-gray-100"
-              : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
-            }`}
-        >
-          <HiOutlineArchive size={16} /> Histórico (Encerrados)
-        </button>
-      </div>
+      {/* ✨ Ocultamos a troca de abas Ativos/Encerrados no modo leitura */}
+      {!isModoLeitura && (
+        <div className="flex bg-gray-50 p-1 md:p-1.5 rounded-[20px] md:rounded-[24px] border border-gray-100 w-full sm:w-fit mx-2 sm:mx-0">
+          <button
+            onClick={() => {
+              setViewAtiva("ATIVOS");
+              setSelecionados([]);
+            }}
+            className={`flex-1 sm:flex-none px-4 py-2 md:py-2.5 rounded-[16px] md:rounded-[20px] text-[11px] sm:text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${viewAtiva === "ATIVOS"
+                ? "bg-white text-primary shadow-sm border border-gray-100"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+              }`}
+          >
+            <HiOutlineBriefcase size={16} /> Em Andamento
+          </button>
+          <button
+            onClick={() => {
+              setViewAtiva("ENCERRADOS");
+              setSelecionados([]);
+            }}
+            className={`flex-1 sm:flex-none px-4 py-2 md:py-2.5 rounded-[16px] md:rounded-[20px] text-[11px] sm:text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${viewAtiva === "ENCERRADOS"
+                ? "bg-white text-red-600 shadow-sm border border-gray-100"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+              }`}
+          >
+            <HiOutlineArchive size={16} /> Histórico (Encerrados)
+          </button>
+        </div>
+      )}
 
       {/* ==================== NAVEGAÇÃO DE ETAPAS ==================== */}
-      {viewAtiva === "ATIVOS" && (
+      {/* ✨ Ocultamos a navegação entre etapas no modo leitura */}
+      {viewAtiva === "ATIVOS" && !isModoLeitura && (
         <div className="flex items-center gap-2 overflow-x-auto pb-2 hide-scrollbar px-2">
           {colunasAtivas.map((coluna) => (
             <button
@@ -317,12 +328,24 @@ export function ListaCandidatos({
 
       {/* ==================== ÁREA DA TABELA ==================== */}
       <div className="w-full bg-white rounded-[24px] md:rounded-[32px] shadow-sm border border-gray-100 flex flex-col flex-1 overflow-hidden relative mx-0 sm:mx-2">
+        
         {/* BARRA DE AÇÕES EM MASSA */}
-        {selecionados.length > 0 && viewAtiva === "ATIVOS" && (
+        {/* ✨ Permitimos exibir a barra de ação em massa mesmo no modo leitura, útil para exportar o PDF */}
+        {selecionados.length > 0 && (viewAtiva === "ATIVOS" || isModoLeitura) && (
           <div className="absolute top-0 left-0 right-0 bg-gray-900 text-white p-4 flex flex-col sm:flex-row items-center justify-between z-10 animate-in slide-in-from-top-4 gap-3">
-            <span className="text-xs md:text-sm font-bold text-center sm:text-left">
-              {selecionados.length} selecionado(s) na etapa {colunaAtual?.nome_etapa}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs md:text-sm font-bold text-center sm:text-left">
+                {selecionados.length} selecionado(s) {isModoLeitura ? "" : `na etapa ${colunaAtual?.nome_etapa}`}
+              </span>
+              
+              {/* ✨ NOVO: Botão de Desmarcar Todos */}
+              <button 
+                onClick={() => setSelecionados([])}
+                className="text-[10px] md:text-xs text-gray-400 hover:text-white underline transition-colors"
+              >
+                Limpar seleção
+              </button>
+            </div>
 
             <div className="flex gap-2 w-full sm:w-auto">
               <button
@@ -335,7 +358,8 @@ export function ListaCandidatos({
                 <span>{isExportandoPDF ? progressoPDF : "Exportar PDF"}</span>
               </button>
 
-              {!isUltimaEtapa && (
+              {/* ✨ Ocultamos ações de alteração de estado no modo leitura */}
+              {!isModoLeitura && !isUltimaEtapa && (
                 <button
                   onClick={() => handleReprovarClick(null)}
                   disabled={isProcessandoLote || isExportandoPDF}
@@ -345,7 +369,7 @@ export function ListaCandidatos({
                 </button>
               )}
 
-              {!isUltimaEtapa && (
+              {!isModoLeitura && !isUltimaEtapa && (
                 <button
                   onClick={() => handleAvancarClick(null)}
                   disabled={isProcessandoLote || isExportandoPDF}
@@ -365,7 +389,8 @@ export function ListaCandidatos({
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100 text-[10px] uppercase tracking-[0.2em] text-gray-400 font-black sticky top-0 z-0">
-                {viewAtiva === "ATIVOS" && (
+                {/* ✨ Mostra checkbox no modo ATIVOS ou Leitura */}
+                {(viewAtiva === "ATIVOS" || isModoLeitura) && (
                   <th className="p-4 md:p-5 w-12 text-center">
                     <input
                       type="checkbox"
@@ -375,22 +400,26 @@ export function ListaCandidatos({
                     />
                   </th>
                 )}
-                <th className={`p-4 md:p-5 ${viewAtiva === "ENCERRADOS" ? "pl-8" : "pl-0"}`}>Candidato</th>
+                
+                {/* ✨ Ajusta espaçamento inicial dependendo da visão/modo */}
+                <th className={`p-4 md:p-5 ${viewAtiva === "ENCERRADOS" && !isModoLeitura ? "pl-8" : "pl-0"}`}>Candidato</th>
                 <th className="p-4 md:p-5">Avaliação</th>
                 <th className="p-4 md:p-5 text-center">Detalhes</th>
-                <th className="p-4 md:p-5 text-right pr-8">Ações</th>
+                <th className="p-4 md:p-5 text-right pr-8">{isModoLeitura ? "Status Final" : "Ações"}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {listaExibida.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-16 md:p-20 text-center">
+                  <td colSpan={isModoLeitura ? 5 : 5} className="p-16 md:p-20 text-center">
                     <div className="flex flex-col items-center gap-2 text-gray-300">
                       <HiOutlineClipboardList size={48} />
                       <p className="font-bold text-sm md:text-base">
-                        {viewAtiva === "ATIVOS"
-                          ? "Nenhum candidato encontrado nesta etapa."
-                          : "Nenhum candidato reprovado ou desistente no histórico."}
+                        {isModoLeitura 
+                          ? "Nenhum candidato encontrado no histórico."
+                          : viewAtiva === "ATIVOS"
+                            ? "Nenhum candidato encontrado nesta etapa."
+                            : "Nenhum candidato reprovado ou desistente no histórico."}
                       </p>
                     </div>
                   </td>
@@ -399,7 +428,7 @@ export function ListaCandidatos({
                 listaExibida.map((candidato) => {
                   let rowColorClass = "bg-white hover:bg-blue-50/20";
 
-                  if (viewAtiva === "ENCERRADOS") {
+                  if (viewAtiva === "ENCERRADOS" && !isModoLeitura) {
                     rowColorClass = "bg-gray-50/30 opacity-80 hover:opacity-100 grayscale hover:grayscale-0";
                   } else if (selecionados.includes(candidato.id_candidatura)) {
                     rowColorClass = "bg-blue-50/50";
@@ -416,7 +445,9 @@ export function ListaCandidatos({
 
                   return (
                     <tr key={candidato.id_candidatura} className={`transition-all group ${rowColorClass}`}>
-                      {viewAtiva === "ATIVOS" && (
+                      
+                      {/* ✨ Checkbox em ATIVOS ou Leitura */}
+                      {(viewAtiva === "ATIVOS" || isModoLeitura) && (
                         <td className="p-4 md:p-5 text-center">
                           <input
                             type="checkbox"
@@ -428,12 +459,12 @@ export function ListaCandidatos({
                       )}
 
                       <td
-                        className={`p-4 md:p-5 cursor-pointer ${viewAtiva === "ENCERRADOS" ? "pl-8" : "pl-0"}`}
+                        className={`p-4 md:p-5 cursor-pointer ${viewAtiva === "ENCERRADOS" && !isModoLeitura ? "pl-8" : "pl-0"}`}
                         onClick={() => onAbrirCandidato(candidato.id_candidatura)}
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-2 h-2 shrink-0 flex items-center justify-center">
-                            {isNaoLido && viewAtiva === "ATIVOS" && (
+                            {isNaoLido && viewAtiva === "ATIVOS" && !isModoLeitura && (
                               <div className="w-2 h-2 rounded-full bg-blue-500 shadow-sm" title="Não visualizado"></div>
                             )}
                           </div>
@@ -448,7 +479,7 @@ export function ListaCandidatos({
                           </div>
                           <div className="flex flex-col">
                             <span
-                              className={`text-sm group-hover:text-primary transition-colors whitespace-nowrap truncate max-w-[200px] md:max-w-xs ${isNaoLido && viewAtiva === "ATIVOS" ? "font-black text-gray-900" : "font-bold text-gray-800"
+                              className={`text-sm group-hover:text-primary transition-colors whitespace-nowrap truncate max-w-[200px] md:max-w-xs ${isNaoLido && viewAtiva === "ATIVOS" && !isModoLeitura ? "font-black text-gray-900" : "font-bold text-gray-800"
                                 }`}
                             >
                               {candidato.nome}
@@ -497,9 +528,14 @@ export function ListaCandidatos({
                         </div>
                       </td>
 
-                      {/* ✨ AÇÕES DE LINHA COM BOTÃO DE REPROVAR E AVANÇAR */}
                       <td className="p-4 md:p-5 text-right pr-6 md:pr-8">
-                        {viewAtiva === "ATIVOS" ? (
+                        {isModoLeitura ? (
+                          /* ✨ Etiqueta de Status para o modo Leitura */
+                          <span className="inline-block px-3 py-1.5 bg-gray-50 text-gray-500 border border-gray-200 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-sm">
+                            {candidato.status || "Histórico"}
+                          </span>
+                        ) : viewAtiva === "ATIVOS" ? (
+                          /* Ações normais para o modo de Gestão */
                           !isUltimaEtapa && (
                             <div className="flex items-center justify-end gap-1.5 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all">
                               <button
@@ -525,6 +561,7 @@ export function ListaCandidatos({
                             </div>
                           )
                         ) : (
+                          /* Status normal de Encerrados */
                           <span className="inline-block px-3 py-1 bg-red-50 text-red-600 border border-red-100 rounded-lg text-[10px] font-black uppercase tracking-wider">
                             {candidato.status}
                           </span>
