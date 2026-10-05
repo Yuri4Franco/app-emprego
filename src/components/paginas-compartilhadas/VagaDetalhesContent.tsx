@@ -140,7 +140,9 @@ export default function VagaDetalhesContent({
               "title": vaga.titulo,
               "description": vaga.descricao,
               "datePosted": vaga.criada_em || new Date().toISOString(),
-              "validThrough": vaga.data_fechamento ? new Date(vaga.data_fechamento).toISOString() : undefined,
+              "validThrough": vaga.data_fechamento
+                ? new Date(vaga.data_fechamento).toISOString()
+                : new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString(),
               "employmentType": mapearContratoGoogle(vaga.tipo_contrato),
               "hiringOrganization": {
                 "@type": "Organization",
@@ -151,11 +153,25 @@ export default function VagaDetalhesContent({
                 "@type": "Place",
                 "address": {
                   "@type": "PostalAddress",
+                  "streetAddress": empresa?.endereco?.rua || "Não informado",
                   "addressLocality": empresa?.endereco?.cidade || "Panambi",
                   "addressRegion": empresa?.endereco?.uf || "RS",
+                  "postalCode": empresa?.endereco?.cep || "98280-000",
                   "addressCountry": "BR"
                 }
-              }
+              },
+              ...(!vaga.ocultar_salario && !vaga.salario_a_combinar && vaga.faixa_salarial_de && {
+                "baseSalary": {
+                  "@type": "MonetaryAmount",
+                  "currency": "BRL",
+                  "value": {
+                    "@type": "QuantitativeValue",
+                    "minValue": Number(vaga.faixa_salarial_de),
+                    "maxValue": Number(vaga.faixa_salarial_ate) > 0 ? Number(vaga.faixa_salarial_ate) : Number(vaga.faixa_salarial_de),
+                    "unitText": "MONTH"
+                  }
+                }
+              })
             })
           }}
         />
