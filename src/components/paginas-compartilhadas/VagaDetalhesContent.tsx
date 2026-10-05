@@ -112,8 +112,55 @@ export default function VagaDetalhesContent({
     ? [...vaga.etapas].sort((a, b) => a.ordem - b.ordem)
     : [];
 
+  const mapearContratoGoogle = (tipo: string) => {
+    const mapa: Record<string, string> = {
+      CLT_EFETIVO: "FULL_TIME",
+      CLT_TEMPORARIO: "TEMPORARY",
+      CLT_INTERMITENTE: "PART_TIME",
+      PJ: "CONTRACTOR",
+      AUTONOMO: "CONTRACTOR",
+      FREELANCE: "CONTRACTOR",
+      ESTAGIO: "INTERN",
+      JOVEM_APRENDIZ: "INTERN",
+    };
+    return mapa[tipo] || "OTHER";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
+
+
+      {isAtiva && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org/",
+              "@type": "JobPosting",
+              "title": vaga.titulo,
+              "description": vaga.descricao,
+              "datePosted": vaga.criada_em || new Date().toISOString(),
+              "validThrough": vaga.data_fechamento ? new Date(vaga.data_fechamento).toISOString() : undefined,
+              "employmentType": mapearContratoGoogle(vaga.tipo_contrato),
+              "hiringOrganization": {
+                "@type": "Organization",
+                "name": nomeEmpresa,
+                "logo": !isConfidencial && empresa?.logotipo_url ? empresa.logotipo_url : "https://www.acivagas.com.br/logo_aci_vagas.webp"
+              },
+              "jobLocation": {
+                "@type": "Place",
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": empresa?.endereco?.cidade || "Panambi",
+                  "addressRegion": empresa?.endereco?.uf || "RS",
+                  "addressCountry": "BR"
+                }
+              }
+            })
+          }}
+        />
+      )}
+
       {/* 1. BANNER */}
       <div className="w-full h-64 md:h-96 lg:h-[420px] relative bg-gray-900 flex items-center justify-center">
         <Image
