@@ -99,7 +99,7 @@ export default function TrocarSenhaPage() {
                     </div>
                     <h2 className="text-2xl font-black text-gray-900 tracking-tight">Senha Forte</h2>
                     <p className="text-gray-500 text-sm mt-2 leading-relaxed">
-                        Para garantir a segurança da conta na <strong>ACI Empregos</strong>, crie uma senha que siga os requisitos abaixo.
+                        Para garantir a segurança da conta na <strong>ACI Vagas</strong>, crie uma senha que siga os requisitos abaixo.
                     </p>
                 </div>
 

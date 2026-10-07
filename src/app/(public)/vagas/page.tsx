@@ -12,7 +12,7 @@ async function getVagasIniciais() {
 }
 
 export const metadata = {
-    title: "Vagas de Emprego em Panambi | ACI Empregos",
+    title: "Vagas de Emprego em Panambi | ACI Vagas",
     description: "Encontre as melhores oportunidades em Panambi e região. Filtre por cargo, empresa e modelo de trabalho.",
 };
 
