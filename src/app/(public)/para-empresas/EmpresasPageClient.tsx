@@ -26,6 +26,7 @@ interface MetricasGerais {
     empresas_cadastradas: number;
     vagas_divulgadas: number;
     candidaturas_realizadas: number;
+    candidatos_ativos: number;
 }
 
 const faqData = [
@@ -57,7 +58,24 @@ export default function EmpresasPageClient({ metricasIniciais }: { metricasInici
     const toggleFAQ = (index: number) =>
         setOpenIndex(openIndex === index ? null : index);
 
-    const [isLoadingMetricas, setIsLoadingMetricas] = useState(true);
+    const [mesesNoAr, setMesesNoAr] = useState<number | null>(null);
+
+    useEffect(() => {
+        const dataLancamento = new Date('2026-06-26T00:00:00');
+        const dataAtual = new Date();
+
+        let meses = (dataAtual.getFullYear() - dataLancamento.getFullYear()) * 12;
+        meses -= dataLancamento.getMonth();
+        meses += dataAtual.getMonth();
+
+        // Subtrai 1 mês se o dia atual for antes do dia 26
+        if (dataAtual.getDate() < dataLancamento.getDate()) {
+            meses--;
+        }
+
+        setMesesNoAr(meses > 0 ? meses : 1); // Garante a exibição mínima de 1 mês
+    }, []);
+
 
     return (
         <div className="w-full bg-white">
@@ -201,58 +219,80 @@ export default function EmpresasPageClient({ metricasIniciais }: { metricasInici
 
             {/* --- 4. NÚMEROS (Social Proof) --- */}
             <section className="relative py-24 bg-primary overflow-hidden">
+                {/* Efeitos de fundo: Apenas tons de branco e azul claro para manter o tom corporativo */}
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
-                    <div className="absolute -top-32 -left-32 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-                    <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-white rounded-full blur-3xl opacity-50"></div>
-                    <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    <div className="absolute -top-32 -left-32 w-96 h-96 bg-white rounded-full blur-3xl mix-blend-screen"></div>
+                    <div className="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-blue-300 rounded-full blur-3xl mix-blend-screen opacity-50"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
                 </div>
 
                 <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">
+                    <div className="text-center mb-16 space-y-4">
+                        <span className="inline-block py-1 px-4 rounded-full bg-white/10 text-blue-100 text-sm font-bold tracking-widest uppercase border border-white/20 backdrop-blur-sm">
+                            Nosso Impacto
+                        </span>
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight">
                             A força da ACI Vagas
                         </h2>
-                        <p className="text-blue-100 max-w-2xl mx-auto text-lg">
-                            Conectando os melhores talentos às maiores oportunidades de Panambi e região todos os dias.
+                        {/* A informação de lançamento inserida de forma elegante no texto */}
+                        <p className="text-blue-100 max-w-2xl mx-auto text-lg leading-relaxed">
+                            Desde o nosso lançamento em <strong>junho de 2026</strong>, já ajudamos dezenas de empresas a encontrar os melhores candidatos. Os números comprovam:
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12 text-center divide-x-0 lg:divide-x divide-white/20">
-                        <div className="flex flex-col items-center justify-center space-y-3">
-                            <div className="text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-tighter">
+                    {/* Grid Corporativo: Tons monocromáticos azuis/brancos */}
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
+
+                        {/* 1. Total de Usuários (Candidatos Ativos) */}
+                        <div className="flex flex-col items-center justify-center p-6 md:p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+                            <div className="text-4xl md:text-5xl lg:text-5xl font-black text-white tracking-tighter mb-2">
+                                {metricasIniciais.candidatos_ativos}
+                            </div>
+                            <span className="text-blue-200 font-bold uppercase tracking-wider text-[10px] md:text-xs text-center">
+                                Total de Usuários
+                            </span>
+                        </div>
+
+                        {/* 2. Currículos Disponíveis */}
+                        <div className="flex flex-col items-center justify-center p-6 md:p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+                            <div className="text-4xl md:text-5xl lg:text-5xl font-black text-white tracking-tighter mb-2">
                                 {metricasIniciais.curriculos_ativos}
                             </div>
-                            <span className="text-blue-200 font-bold uppercase tracking-widest text-xs md:text-sm">
+                            <span className="text-blue-200 font-bold uppercase tracking-wider text-[10px] md:text-xs text-center">
                                 Currículos Disponíveis
                             </span>
                         </div>
 
-                        <div className="flex flex-col items-center justify-center space-y-3">
-                            <div className="text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-tighter">
+                        {/* 3. Empresas Parceiras */}
+                        <div className="flex flex-col items-center justify-center p-6 md:p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+                            <div className="text-4xl md:text-5xl lg:text-5xl font-black text-white tracking-tighter mb-2">
                                 {metricasIniciais.empresas_cadastradas}
                             </div>
-                            <span className="text-blue-200 font-bold uppercase tracking-widest text-xs md:text-sm">
+                            <span className="text-blue-200 font-bold uppercase tracking-wider text-[10px] md:text-xs text-center">
                                 Empresas Parceiras
                             </span>
                         </div>
 
-                        <div className="flex flex-col items-center justify-center space-y-3">
-                            <div className="text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-tighter">
+                        {/* 4. Vagas Divulgadas */}
+                        <div className="flex flex-col items-center justify-center p-6 md:p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+                            <div className="text-4xl md:text-5xl lg:text-5xl font-black text-white tracking-tighter mb-2">
                                 {metricasIniciais.vagas_divulgadas}
                             </div>
-                            <span className="text-blue-200 font-bold uppercase tracking-widest text-xs md:text-sm">
+                            <span className="text-blue-200 font-bold uppercase tracking-wider text-[10px] md:text-xs text-center">
                                 Vagas Divulgadas
                             </span>
                         </div>
 
-                        <div className="flex flex-col items-center justify-center space-y-3">
-                            <div className="text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-tighter">
+                        {/* 5. Candidaturas Feitas */}
+                        <div className="col-span-2 lg:col-span-1 flex flex-col items-center justify-center p-6 md:p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+                            <div className="text-4xl md:text-5xl lg:text-5xl font-black text-white tracking-tighter mb-2">
                                 {metricasIniciais.candidaturas_realizadas}
                             </div>
-                            <span className="text-blue-200 font-bold uppercase tracking-widest text-xs md:text-sm">
-                                Candidaturas Feitas
+                            <span className="text-blue-200 font-bold uppercase tracking-wider text-[10px] md:text-xs text-center">
+                                Candidaturas Realizadas
                             </span>
                         </div>
+
                     </div>
                 </div>
             </section>

@@ -3,12 +3,12 @@
 import EmpresasPageClient from "./EmpresasPageClient";
 
 export default async function EmpresasPage() {
-  // 1. Valores padrão caso a API esteja fora do ar
   let metricasIniciais = {
     curriculos_ativos: 0,
     empresas_cadastradas: 0,
     vagas_divulgadas: 0,
     candidaturas_realizadas: 0,
+    candidatos_ativos: 0,
   };
 
   try {
