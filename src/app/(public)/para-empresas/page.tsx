@@ -13,7 +13,7 @@ export default async function EmpresasPage() {
 
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/metricas-gerais`, {
-      next: { revalidate: 86400 },
+      next: { revalidate: 60 },
     });
 
     if (res.ok) {
