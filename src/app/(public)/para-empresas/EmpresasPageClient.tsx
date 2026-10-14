@@ -58,25 +58,6 @@ export default function EmpresasPageClient({ metricasIniciais }: { metricasInici
     const toggleFAQ = (index: number) =>
         setOpenIndex(openIndex === index ? null : index);
 
-    const [mesesNoAr, setMesesNoAr] = useState<number | null>(null);
-
-    useEffect(() => {
-        const dataLancamento = new Date('2026-06-26T00:00:00');
-        const dataAtual = new Date();
-
-        let meses = (dataAtual.getFullYear() - dataLancamento.getFullYear()) * 12;
-        meses -= dataLancamento.getMonth();
-        meses += dataAtual.getMonth();
-
-        // Subtrai 1 mês se o dia atual for antes do dia 26
-        if (dataAtual.getDate() < dataLancamento.getDate()) {
-            meses--;
-        }
-
-        setMesesNoAr(meses > 0 ? meses : 1); // Garante a exibição mínima de 1 mês
-    }, []);
-
-
     return (
         <div className="w-full bg-white">
             {/* --- 1. HERO SECTION --- */}
