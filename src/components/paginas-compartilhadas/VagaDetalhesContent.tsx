@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import DOMPurify from 'isomorphic-dompurify';
 import {
   HiOutlineBriefcase,
   HiOutlineLocationMarker,
@@ -391,7 +392,7 @@ export default function VagaDetalhesContent({
           <Section title="Descrição da Vaga">
             <div
               className="rich-text text-gray-600 leading-relaxed text-lg"
-              dangerouslySetInnerHTML={{ __html: vaga.descricao }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(vaga.descricao) }}
             />
           </Section>
 
@@ -399,7 +400,7 @@ export default function VagaDetalhesContent({
             <Section title="Responsabilidades e Atribuições">
               <div
                 className="rich-text text-gray-600 leading-relaxed text-lg"
-                dangerouslySetInnerHTML={{ __html: vaga.responsabilidades }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(vaga.responsabilidades) }}
               />
             </Section>
           )}
@@ -519,7 +520,7 @@ export default function VagaDetalhesContent({
                   {/* Texto "Quem Somos" com tipografia refinada */}
                   <div
                     className="rich-text text-gray-200 leading-relaxed text-lg max-w-3xl"
-                    dangerouslySetInnerHTML={{ __html: empresa.quem_somos }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(empresa.quem_somos) }}
                   />
 
                   {/* Área de Ações */}
@@ -640,7 +641,7 @@ function SubSection({
       {isHtml ? (
         <div
           className="rich-text text-gray-600"
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
         />
       ) : (
         <div className="text-gray-600 leading-relaxed text-lg whitespace-pre-wrap">

@@ -2,6 +2,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import logoDefault from "@/src/assets/default/logo.webp";
 import bannerDefault from "@/src/assets/default/banner.webp";
+import DOMPurify from 'isomorphic-dompurify';
 import {
   HiOutlineLocationMarker,
   HiOutlineGlobeAlt,
@@ -159,7 +160,7 @@ export default async function PerfilPublicoEmpresaPage({ params }: PageProps) {
               </h2>
               <div
                 className="rich-text text-gray-600 leading-relaxed text-base md:text-lg font-medium"
-                dangerouslySetInnerHTML={{ __html: empresa.quem_somos }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(empresa.quem_somos) }}
               />
             </section>
           )}
